@@ -1,6 +1,6 @@
 from django.shortcuts import render
-from .models import BatterStat#, PlayerInfo, PitcherStat, GameInfo, FieldingStat
-from .serializers import BatterStatSerializer#, PlayerInfoSerializer, PitcherStatSerializer, GameInfoSerializer, FieldingStatSerializer
+from .models import BatterStat, PitcherStat, PlayerInfo, FieldingStat, GameInfo
+from .serializers import BatterStatSerializer, PitcherStatSerializer, PlayerInfoSerializer, FieldingStatSerializer, GameInfoSerializer
 from rest_framework import viewsets, status
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
@@ -11,6 +11,26 @@ from rest_framework.response import Response
 class BatterStatViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = BatterStat.objects.all()
     serializer_class = BatterStatSerializer
+    permission_classes = [AllowAny]
+
+class PitcherStatViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = PitcherStat.objects.all()
+    serializer_class = PitcherStatSerializer
+    permission_classes = [AllowAny]
+
+class FieldingStatViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = FieldingStat.objects.all()
+    serializer_class = FieldingStatSerializer
+    permission_classes = [AllowAny]
+
+class GameInfoViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = GameInfo.objects.all()
+    serializer_class = GameInfoSerializer
+    permission_classes = [AllowAny]
+
+class PlayerInfoViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = PlayerInfo.objects.all()
+    serializer_class = PlayerInfoSerializer
     permission_classes = [AllowAny]
 
 class BatterStatCreateView(APIView):
@@ -27,4 +47,45 @@ class BatterStatCreateView(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class PitcherStatCreateView(APIView):
+    permission_classes = [AllowAny]
 
+    def post(self, request):
+        api_key = request.headers.get('X-API-Key')
+        expected_key = settings.SCRAPER_API_KEY
+        if api_key != expected_key:
+            return Response({"error": "Unauthorized"}, status=status.HTTP_401_UNAUTHORIZED)
+        serializer = PitcherStatSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class FieldingStatCreateView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        api_key = request.headers.get('X-API-Key')
+        expected_key = settings.SCRAPER_API_KEY
+        if api_key != expected_key:
+            return Response({"error": "Unauthorized"}, status=status.HTTP_401_UNAUTHORIZED)
+        serializer = FieldingStatSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class GameInfoCreateView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        api_key = request.headers.get('X-API-Key')
+        expected_key = settings.SCRAPER_API_KEY
+        if api_key != expected_key:
+            return Response({"error": "Unauthorized"}, status=status.HTTP_401_UNAUTHORIZED)
+        serializer = GameInfoSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

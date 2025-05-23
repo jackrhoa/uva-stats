@@ -87,9 +87,9 @@ class GameStats:
         self.game_number = self.get_game_number()
         self.set_win_loss_save()
         self.add_selected_team_batting()
-        # self.add_selected_team_pitching()
-        # self.add_selected_team_fielding()
-        # self.add_game()
+        self.add_selected_team_pitching()
+        self.add_selected_team_fielding()
+        self.add_game()
     def set_home_and_opponent(self) -> None:
         '''Sets selected_team_home and opponent variables in GameStats object
         \n
@@ -161,12 +161,16 @@ class GameStats:
         if self.selected_team_home:
             self.selected_team_runs = int(self.box_score_df_list[0].loc[3][num_rows-3])
             self.opponent_runs = int(self.box_score_df_list[0].loc[2][num_rows-3])
+            # selected team hits
             self.opponent_team_hits = int(self.box_score_df_list[0].loc[2][num_rows-2])
+            # selected teeam errorrs
             self.opponent_team_errors = int(self.box_score_df_list[0].loc[2][num_rows-1])
         else:
             self.selected_team_runs = int(self.box_score_df_list[0].loc[2][num_rows-3])
             self.opponent_runs = int(self.box_score_df_list[0].loc[3][num_rows-3])
+            # selected team hits
             self.opponent_team_hits = int(self.box_score_df_list[0].loc[3][num_rows-2])
+            # selected teeam errorrs
             self.opponent_team_errors = int(self.box_score_df_list[0].loc[3][num_rows-1])
         if self.selected_team_runs == self.opponent_runs:
             raise ValueError('Unable to determine score')
@@ -204,12 +208,12 @@ class GameStats:
                 defaults={"player_position": pos, 'jersey_number': number}
             )
             if created:
-                print(f"Created new player: {player_info.player_name}")
+                print(f"Created new batter: {player_info.player_name}")
             else:
-                print(f"Found existing player: {player_info.player_name}")
+                print(f"Found existing batter: {player_info.player_name}")
             
             data = {
-                'player': player_info.player_id,
+                'player_id': player_info.player_id,
                 'game_id': int(f'{self.date.strftime("%Y")}{self.game_number}'),
                 'runs': int(selected_team_batting['R'].loc[i]),
                 'ab': int(selected_team_batting['AB'].loc[i]),
@@ -263,118 +267,228 @@ class GameStats:
         # session.commit()
         # session.close()
     
-    # def add_selected_team_pitching(self) -> None:
-    #     '''Adds the selected team pitching stats to the pitching table in database
-    #     \n
-    #     '''
-    #     session = Session()
-    #     if self.selected_team_home:
-    #         selected_team_pitching = self.individual_stats_df_list[6]
-    #     else:
-    #         selected_team_pitching = self.individual_stats_df_list[5]
-    #     for i in range(len(selected_team_pitching)-1):
-    #         player_name = selected_team_pitching['Name'].loc[i].strip()
-    #         number = int(selected_team_pitching['#'].loc[i])
+    def add_selected_team_pitching(self) -> None:
+        '''Adds the selected team pitching stats to the pitching table in database
+        \n
+        '''
+        # session = Session()
+        
 
-    #         stat = PitcherStat(
-    #             id=int(f'{self.date.strftime("%Y")}{self.game_number}{99}{number}'),
-    #             player_name=player_name,
-    #             game_date=self.date,
-    #             starter=bool(i== 0),
-    #             ip=float(selected_team_pitching['IP'].loc[i]),
-    #             h=int(selected_team_pitching['H'].loc[i]),
-    #             r=int(selected_team_pitching['R'].loc[i]),
-    #             er=int(selected_team_pitching['ER'].loc[i]),
-    #             bb=int(selected_team_pitching['BB'].loc[i]),
-    #             k=int(selected_team_pitching['SO'].loc[i]),
-    #             bf=int(selected_team_pitching['BF'].loc[i]),
-    #             doubles_allowed=int(selected_team_pitching['2B-A'].loc[i]),
-    #             triples_allowed=int(selected_team_pitching['3B-A'].loc[i]),
-    #             bk=int(selected_team_pitching['Bk'].loc[i]),
-    #             hr_allowed=int(selected_team_pitching['HR-A'].loc[i]),
-    #             # pitches=int(selected_team_pitching['Pitches'].loc[i]),
-    #             wp=int(selected_team_pitching['WP'].loc[i]),
-    #             hb=int(selected_team_pitching['HB'].loc[i]),
-    #             ibb=int(selected_team_pitching['IBB'].loc[i]),
-    #             ir=int(selected_team_pitching['Inh Run'].loc[i]),
-    #             irs=int(selected_team_pitching['Inh Run Score'].loc[i]),
-    #             sh_allowed=int(selected_team_pitching['SHA'].loc[i]),
-    #             sf_allowed=int(selected_team_pitching['SFA'].loc[i]),
-    #             kl=int(selected_team_pitching['KL'].loc[i]),
-    #             pickoffs=int(selected_team_pitching['pickoffs'].loc[i]),
-    #             win=self.winning_pitcher == player_name,
-    #             loss=self.losing_pitcher == player_name,
-    #             sv=self.saving_pitcher == player_name,
-    #         )
-    #         session.add(stat)
-    #     session.commit()
-    #     session.close()
-    
-    # def add_selected_team_fielding(self) -> None:
-    #     '''Adds the selected team fielding stats to the fielding table in database
-    #     \n
-    #     '''
-    #     session = Session()
-    #     if self.selected_team_home:
-    #         selected_team_fielding = self.individual_stats_df_list[8]
-    #     else:
-    #         selected_team_fielding = self.individual_stats_df_list[7]
-    #     for i in range(len(selected_team_fielding)-1):
-    #         player_name = selected_team_fielding['Name'].loc[i].strip()
-    #         pos = selected_team_fielding['P'].loc[i].strip()
-    #         number = int(selected_team_fielding['#'].loc[i])
+        if self.selected_team_home:
+            selected_team_pitching = self.individual_stats_df_list[6]
+        else:
+            selected_team_pitching = self.individual_stats_df_list[5]
+        for i in range(len(selected_team_pitching)-1):
+            player_name = selected_team_pitching['Name'].loc[i].strip()
+            number = int(selected_team_pitching['#'].loc[i])
+            
+            player_info, created = PlayerInfo.objects.get_or_create(
+                player_name=player_name,
+                defaults={"player_position": 'P', 'jersey_number': number}
+            )
 
-    #         stat = FieldingStat(
-    #             id=int(f'{self.date.strftime("%Y")}{self.game_number}{99}{number}'),
-    #             player_name=player_name,
-    #             player_position=pos,
-    #             game_date=self.date,
-    #             po=int(selected_team_fielding['PO'].loc[i]),
-    #             a=int(selected_team_fielding['A'].loc[i]),
-    #             e=int(selected_team_fielding['E'].loc[i]),
-    #             catcher_interference=int(selected_team_fielding['CI'].loc[i]),
-    #             pb=int(selected_team_fielding['PB'].loc[i]),
-    #             sb_allowed=int(selected_team_fielding['SBA'].loc[i]),
-    #             cs=int(selected_team_fielding['CSB'].loc[i]),
-    #             dp=int(selected_team_fielding['IDP'].loc[i]),
-    #             tp=int(selected_team_fielding['TP'].loc[i]),
-    #         )
-    #         session.add(stat)
-    #     session.commit()
-    #     session.close()
+            if created:
+                print(f"Created new pitcher: {player_info.player_name}")
+            else:
+                print(f"Found existing pitcher: {player_info.player_name}")
+            
+
+            data = {
+                'player_id': player_info.player_id,
+                'game_id': int(f'{self.date.strftime("%Y")}{self.game_number}'),
+                'starter': bool(i == 0),
+                'ip': float(selected_team_pitching['IP'].loc[i]),
+                'h': int(selected_team_pitching['H'].loc[i]),
+                'r': int(selected_team_pitching['R'].loc[i]),
+                'er': int(selected_team_pitching['ER'].loc[i]),
+                'bb': int(selected_team_pitching['BB'].loc[i]),
+                'so': int(selected_team_pitching['SO'].loc[i]),
+                'bf': int(selected_team_pitching['BF'].loc[i]),
+                'doubles_allowed': int(selected_team_pitching['2B-A'].loc[i]),
+                'triples_allowed': int(selected_team_pitching['3B-A'].loc[i]),
+                'hr_allowed': int(selected_team_pitching['HR-A'].loc[i]),
+                'wp': int(selected_team_pitching['WP'].loc[i]),
+                'hb': int(selected_team_pitching['HB'].loc[i]),
+                'ibb': int(selected_team_pitching['IBB'].loc[i]),
+                'balk': int(selected_team_pitching['Bk'].loc[i]),
+                'ir': int(selected_team_pitching['Inh Run'].loc[i]),
+                'irs': int(selected_team_pitching['Inh Run Score'].loc[i]),
+                'sh_allowed': int(selected_team_pitching['SHA'].loc[i]),
+                'sf_allowed': int(selected_team_pitching['SFA'].loc[i]),
+                'kl': int(selected_team_pitching['KL'].loc[i]),
+                'pickoffs': int(selected_team_pitching['pickoffs'].loc[i]),
+                'win': self.winning_pitcher == player_name,
+                'loss': self.losing_pitcher == player_name,
+                'sv': self.saving_pitcher == player_name,
+            }
+
+            post_stats(
+                endpoint='pitcher_stats/create',
+                data=data
+            )
+
+
+        #     stat = PitcherStat(
+        #         id=int(f'{self.date.strftime("%Y")}{self.game_number}{99}{number}'),
+        #         player_name=player_name,
+        #         game_date=self.date,
+        #         starter=bool(i== 0),
+        #         ip=float(selected_team_pitching['IP'].loc[i]),
+        #         h=int(selected_team_pitching['H'].loc[i]),
+        #         r=int(selected_team_pitching['R'].loc[i]),
+        #         er=int(selected_team_pitching['ER'].loc[i]),
+        #         bb=int(selected_team_pitching['BB'].loc[i]),
+        #         k=int(selected_team_pitching['SO'].loc[i]),
+        #         bf=int(selected_team_pitching['BF'].loc[i]),
+        #         doubles_allowed=int(selected_team_pitching['2B-A'].loc[i]),
+        #         triples_allowed=int(selected_team_pitching['3B-A'].loc[i]),
+        #         bk=int(selected_team_pitching['Bk'].loc[i]),
+        #         hr_allowed=int(selected_team_pitching['HR-A'].loc[i]),
+        #         # pitches=int(selected_team_pitching['Pitches'].loc[i]),
+        #         wp=int(selected_team_pitching['WP'].loc[i]),
+        #         hb=int(selected_team_pitching['HB'].loc[i]),
+        #         ibb=int(selected_team_pitching['IBB'].loc[i]),
+        #         ir=int(selected_team_pitching['Inh Run'].loc[i]),
+        #         irs=int(selected_team_pitching['Inh Run Score'].loc[i]),
+        #         sh_allowed=int(selected_team_pitching['SHA'].loc[i]),
+        #         sf_allowed=int(selected_team_pitching['SFA'].loc[i]),
+        #         kl=int(selected_team_pitching['KL'].loc[i]),
+        #         pickoffs=int(selected_team_pitching['pickoffs'].loc[i]),
+        #         win=self.winning_pitcher == player_name,
+        #         loss=self.losing_pitcher == player_name,
+        #         sv=self.saving_pitcher == player_name,
+        #     )
+        #     session.add(stat)
+        # session.commit()
+        # session.close()
     
-    # def add_game(self) -> None:
-    #     '''Adds the game to the database
-    #     \n
-    #     '''
-    #     selected_team_dpt, selected_team_tpt = self.get_dpt_tpt()[0]
-    #     opponent_dp, opponent_tpt = self.get_dpt_tpt()[1]
-    #     session = Session()
-    #     game = Game(
-    #         id=int(f'{self.date.strftime("%Y")}{self.game_number}'),
-    #         game_date=self.date,
-    #         selected_team=self.selected_team,
-    #         opponent=self.opponent,
-    #         selected_team_home=bool(self.selected_team_home),
-    #         total_innings=int(self.total_innings),
-    #         selected_team_won=bool(self.selected_team_won),
-    #         selected_team_runs=int(self.selected_team_runs),
-    #         opp_runs=int(self.opponent_runs),
-    #         opp_e=int(self.opponent_team_errors),
-    #         opp_h=int(self.opponent_team_hits),
-    #         selected_team_dpt=int(selected_team_dpt),
-    #         opp_dpt=int(opponent_dp),
-    #         selected_team_tpt=int(selected_team_tpt),
-    #         opp_tpt=int(opponent_tpt),
-    #         win=self.winning_pitcher,
-    #         loss=self.losing_pitcher,
-    #         sv=self.saving_pitcher,
-    #         box_score_link=f'https://stats.ncaa.org/contests/{self.ncaa_game_id}/box_score',
-    #         attendance=int(self.attendance),
-    #         )   
-    #     session.add(game)
-    #     session.commit()
-    #     session.close()
+    def add_selected_team_fielding(self) -> None:
+        '''Adds the selected team fielding stats to the fielding table in database
+        \n
+        '''
+        # session = Session()
+        if self.selected_team_home:
+            selected_team_fielding = self.individual_stats_df_list[8]
+        else:
+            selected_team_fielding = self.individual_stats_df_list[7]
+        for i in range(len(selected_team_fielding)-1):
+            player_name = selected_team_fielding['Name'].loc[i].strip()
+            pos = selected_team_fielding['P'].loc[i].strip()
+            number = int(selected_team_fielding['#'].loc[i])
+
+            player_info, created = PlayerInfo.objects.get_or_create(
+                player_name=player_name,
+                defaults={"player_position": pos, 'jersey_number': number}
+            )
+
+            if created:
+                print(f'Found a fielder who didn\'t bat or pitch: {player_info.player_name}')
+            else:
+                print(f'Found existing fielder: {player_info.player_name}')
+            
+            data = {
+                'player_id': player_info.player_id,
+                'player_position': pos,
+                'game_id': int(f'{self.date.strftime("%Y")}{self.game_number}'),
+                'po': int(selected_team_fielding['PO'].loc[i]),
+                'a': int(selected_team_fielding['A'].loc[i]),
+                'e': int(selected_team_fielding['E'].loc[i]),
+                'catchers_interference': int(selected_team_fielding['CI'].loc[i]),
+                'pb': int(selected_team_fielding['PB'].loc[i]),
+                'sba': int(selected_team_fielding['SBA'].loc[i]),
+                'cs': int(selected_team_fielding['CSB'].loc[i]),
+                'dp': int(selected_team_fielding['IDP'].loc[i]),
+                'tp': int(selected_team_fielding['TP'].loc[i]),
+            }
+
+            post_stats(
+                endpoint='fielding_stats/create',
+                data=data
+            )
+
+            # stat = FieldingStat(
+            #     id=int(f'{self.date.strftime("%Y")}{self.game_number}{99}{number}'),
+            #     player_name=player_name,
+            #     player_position=pos,
+            #     game_date=self.date,
+            #     po=int(selected_team_fielding['PO'].loc[i]),
+            #     a=int(selected_team_fielding['A'].loc[i]),
+            #     e=int(selected_team_fielding['E'].loc[i]),
+            #     catcher_interference=int(selected_team_fielding['CI'].loc[i]),
+            #     pb=int(selected_team_fielding['PB'].loc[i]),
+            #     sb_allowed=int(selected_team_fielding['SBA'].loc[i]),
+            #     cs=int(selected_team_fielding['CSB'].loc[i]),
+            #     dp=int(selected_team_fielding['IDP'].loc[i]),
+            #     tp=int(selected_team_fielding['TP'].loc[i]),
+            # )
+        #     session.add(stat)
+        # session.commit()
+        # session.close()
+    
+    def add_game(self) -> None:
+        '''Adds the game to the database
+        \n
+        '''
+        selected_team_dpt, selected_team_tpt = self.get_dpt_tpt()[0]
+        opponent_dp, opponent_tpt = self.get_dpt_tpt()[1]
+        # session = Session()
+
+        game = {
+            'game_id': int(f'{self.date.strftime("%Y")}{self.game_number}'),
+            'game_date': str(self.date),
+            'selected_team': self.selected_team,
+            'opponent': self.opponent,
+            'selected_team_home': bool(self.selected_team_home),
+            'total_innings': int(self.total_innings),
+            'selected_team_runs': int(self.selected_team_runs),
+            'opponent_runs': int(self.opponent_runs),
+            # 'selected_team_hits': int(self.opponent_team_hits),
+            'opponent_hits': int(self.opponent_team_hits),
+            # 'selected_team_errors': int(self.opponent_team_errors),
+            'opponent_errors': int(self.opponent_team_errors),
+            'selected_team_dpt': int(selected_team_dpt),
+            'opponent_dpt': int(opponent_dp),
+            'selected_team_tpt': int(selected_team_tpt),
+            'opponent_tpt': int(opponent_tpt),
+            'winning_pitcher': self.winning_pitcher,
+            'losing_pitcher': self.losing_pitcher,
+            'save_pitcher': self.saving_pitcher,
+            'box_score_link': f'https://stats.ncaa.org/contests/{self.ncaa_game_id}/box_score',
+            'attendance': int(self.attendance),
+        }
+
+        post_stats(
+            endpoint='game_info/create',
+            data=game
+        )
+
+        print(f'Game {self.game_number} added to database')
+
+        # game = Game(
+        #     id=int(f'{self.date.strftime("%Y")}{self.game_number}'),
+        #     game_date=self.date,
+        #     selected_team=self.selected_team,
+        #     opponent=self.opponent,
+        #     selected_team_home=bool(self.selected_team_home),
+        #     total_innings=int(self.total_innings),
+        #     selected_team_won=bool(self.selected_team_won),
+        #     selected_team_runs=int(self.selected_team_runs),
+        #     opp_runs=int(self.opponent_runs),
+        #     opp_e=int(self.opponent_team_errors),
+        #     opp_h=int(self.opponent_team_hits),
+        #     selected_team_dpt=int(selected_team_dpt),
+        #     opp_dpt=int(opponent_dp),
+        #     selected_team_tpt=int(selected_team_tpt),
+        #     opp_tpt=int(opponent_tpt),
+        #     win=self.winning_pitcher,
+        #     loss=self.losing_pitcher,
+        #     sv=self.saving_pitcher,
+        #     box_score_link=f'https://stats.ncaa.org/contests/{self.ncaa_game_id}/box_score',
+        #     attendance=int(self.attendance),
+        #     )   
+        # session.add(game)
+        # session.commit()
+        # session.close()
     
     def get_dpt_tpt(self) -> tuple[tuple[int, int], tuple[int, int]]:
         '''Returns the double plays and triple plays turned by both teams
@@ -431,5 +545,6 @@ class GameStats:
     
 
 if __name__ == "__main__":
+
     QTR_FLS = GameStats(
-        ncaa_game_id=6385130)
+        ncaa_game_id=6317491)

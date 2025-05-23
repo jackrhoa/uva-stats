@@ -1,2 +1,3 @@
 /.DS_Store
 /.venv
+DjangoAPI/baseball_stats/db.sqlite3
