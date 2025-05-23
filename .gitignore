@@ -1,3 +1,5 @@
 /.DS_Store
 /.venv
 DjangoAPI/baseball_stats/db.sqlite3
+DjangoAPI/baseball_stats/__pycache__/
+DjangoAPI/baseball_stats/migrations/__pycache__/
