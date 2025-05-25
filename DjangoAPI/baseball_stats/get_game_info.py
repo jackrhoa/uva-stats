@@ -1,6 +1,8 @@
 import os
 import django
-
+from collections import defaultdict
+import time
+from selenium.webdriver.common.by import By
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'baseball_stats.settings')  # change if your settings module is elsewhere
 django.setup()
 
@@ -9,7 +11,7 @@ from datetime import datetime
 import math
 import re
 from io import StringIO
-from app.models import PlayerInfo, BatterStat
+from app.models import PlayerInfo, BatterStat, GameInfo
 # from .models import BatterStat, PitcherStat, FieldingStat, Game, Session
 
 from selenium import webdriver
@@ -86,10 +88,11 @@ class GameStats:
         self.saving_pitcher: str = None
         self.game_number = self.get_game_number()
         self.set_win_loss_save()
+        self.add_game()
         self.add_selected_team_batting()
         self.add_selected_team_pitching()
         self.add_selected_team_fielding()
-        self.add_game()
+        driver.quit()
     def set_home_and_opponent(self) -> None:
         '''Sets selected_team_home and opponent variables in GameStats object
         \n
@@ -193,6 +196,18 @@ class GameStats:
         \n
         '''
         # session = Session()
+
+        try:
+            game = GameInfo.objects.get(
+                game_id=int(f'{self.date.strftime("%Y")}{self.game_number}')
+            )
+        except GameInfo.DoesNotExist:
+            raise ValueError(f'Game not found in database for game {self.date.strftime("%Y")}{self.game_number}')
+        except GameInfo.MultipleObjectsReturned:
+            raise ValueError(f'Multiple games found in database for game {self.date.strftime("%Y")}{self.game_number}')
+        except:
+            raise ValueError(f'Unable to find game {self.date.strftime("%Y")}{self.game_number} in database')
+
         if self.selected_team_home:
             selected_team_batting = self.individual_stats_df_list[4]
         else:
@@ -202,11 +217,20 @@ class GameStats:
             pos = selected_team_batting['P'].loc[i].strip()
             number = int(selected_team_batting['#'].loc[i])
 
-            # Make sure this matches how names appear in scraped data
             player_info, created = PlayerInfo.objects.get_or_create(
                 player_name=player_name,
-                defaults={"player_position": pos, 'jersey_number': number}
+                defaults={"player_position": {pos: 1}, 'jersey_number': number}
             )
+            # if the player already exists, update their position
+            # why or {}
+            print(player_info.player_position)
+            if not created:
+                positions = player_info.player_position
+                positions[pos] = positions.get(pos, 0) + 1
+                player_info.player_position = dict(positions)
+                player_info.save()
+
+
             if created:
                 print(f"Created new batter: {player_info.player_name}")
             else:
@@ -214,7 +238,7 @@ class GameStats:
             
             data = {
                 'player_id': player_info.player_id,
-                'game_id': int(f'{self.date.strftime("%Y")}{self.game_number}'),
+                'game_id': game.game_id,
                 'runs': int(selected_team_batting['R'].loc[i]),
                 'ab': int(selected_team_batting['AB'].loc[i]),
                 'hits': int(selected_team_batting['H'].loc[i]),
@@ -274,6 +298,17 @@ class GameStats:
         # session = Session()
         
 
+        try:
+            game = GameInfo.objects.get(
+                game_id=int(f'{self.date.strftime("%Y")}{self.game_number}')
+            )
+        except GameInfo.DoesNotExist:
+            raise ValueError(f'Game not found in database for game {self.date.strftime("%Y")}{self.game_number}')
+        except GameInfo.MultipleObjectsReturned:
+            raise ValueError(f'Multiple games found in database for game {self.date.strftime("%Y")}{self.game_number}')
+        except:
+            raise ValueError(f'Unable to find game {self.date.strftime("%Y")}{self.game_number} in database')        
+
         if self.selected_team_home:
             selected_team_pitching = self.individual_stats_df_list[6]
         else:
@@ -295,7 +330,7 @@ class GameStats:
 
             data = {
                 'player_id': player_info.player_id,
-                'game_id': int(f'{self.date.strftime("%Y")}{self.game_number}'),
+                'game_id': game.game_id,
                 'starter': bool(i == 0),
                 'ip': float(selected_team_pitching['IP'].loc[i]),
                 'h': int(selected_team_pitching['H'].loc[i]),
@@ -366,6 +401,19 @@ class GameStats:
         '''Adds the selected team fielding stats to the fielding table in database
         \n
         '''
+
+        try:
+            game = GameInfo.objects.get(
+                game_id=int(f'{self.date.strftime("%Y")}{self.game_number}')
+            )
+        except GameInfo.DoesNotExist:
+            raise ValueError(f'Game not found in database for game {self.date.strftime("%Y")}{self.game_number}')
+        except GameInfo.MultipleObjectsReturned:
+            raise ValueError(f'Multiple games found in database for game {self.date.strftime("%Y")}{self.game_number}')
+        except:
+            raise ValueError(f'Unable to find game {self.date.strftime("%Y")}{self.game_number} in database')
+
+
         # session = Session()
         if self.selected_team_home:
             selected_team_fielding = self.individual_stats_df_list[8]
@@ -389,7 +437,7 @@ class GameStats:
             data = {
                 'player_id': player_info.player_id,
                 'player_position': pos,
-                'game_id': int(f'{self.date.strftime("%Y")}{self.game_number}'),
+                'game_id': game.game_id,
                 'po': int(selected_team_fielding['PO'].loc[i]),
                 'a': int(selected_team_fielding['A'].loc[i]),
                 'e': int(selected_team_fielding['E'].loc[i]),
@@ -429,10 +477,11 @@ class GameStats:
         '''Adds the game to the database
         \n
         '''
+
         selected_team_dpt, selected_team_tpt = self.get_dpt_tpt()[0]
         opponent_dp, opponent_tpt = self.get_dpt_tpt()[1]
         # session = Session()
-
+        
         game = {
             'game_id': int(f'{self.date.strftime("%Y")}{self.game_number}'),
             'game_date': str(self.date),
@@ -546,5 +595,42 @@ class GameStats:
 
 if __name__ == "__main__":
 
-    QTR_FLS = GameStats(
+    
+    VT1 = GameStats(
+        ncaa_game_id=6317487)
+    VT2 = GameStats(
+        ncaa_game_id=6317490)
+    VT3 = GameStats(
         ncaa_game_id=6317491)
+    BC = GameStats(
+        ncaa_game_id=6385130)
+    
+    # options = webdriver.ChromeOptions()
+
+    # UAS = ("Mozilla/5.0 (Windows NT 6.1; WOW64; rv:40.0) Gecko/20100101 Firefox/40.1", 
+    #     "Mozilla/5.0 (Windows NT 6.3; rv:36.0) Gecko/20100101 Firefox/36.0",
+    #     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10; rv:33.0) Gecko/20100101 Firefox/33.0",
+    #     "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36",
+    #     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2227.1 Safari/537.36",
+    #     "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2227.0 Safari/537.36",
+    #     )
+    # ua = UAS[random.randrange(len(UAS))]
+
+    # options.add_argument(f'user-agent={ua}')
+    # options.add_argument('--no-sandbox')
+    # options.add_argument('--disable-dev-shm-usage')
+    # options.add_argument('--headless')
+    
+    # driver = webdriver.Chrome(
+    #     service=ChromeService(ChromeDriverManager().install()), options=options
+    #     )
+    # driver.get('https://stats.ncaa.org/teams/596439')
+
+    # links = driver.find_elements(By.XPATH, '//a[@target="BOX_SCORE_WINDOW"]')
+
+    # for link in links:
+    #     # print(link.get_attribute('href'))
+    #     ncaa_game_id = int(link.get_attribute('href').split('/')[4])
+    #     print(ncaa_game_id)
+    #     new_game = GameStats(ncaa_game_id=ncaa_game_id)
+    #     time.sleep(1)

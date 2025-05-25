@@ -8,7 +8,7 @@ import requests
 
 
 
-API_BASE_URL = "http://127.0.0.1:8000/"
+API_BASE_URL = "http://127.0.0.1:8000/api"
 API_KEY = "ACCN_IS_THE_BEST_ESPN_LINEAR_NETWORK"
 
 def post_stats(endpoint, data):
@@ -19,4 +19,5 @@ def post_stats(endpoint, data):
     response = requests.post(f'{API_BASE_URL}{endpoint}/', json=data, headers=headers)
     if response.status_code != 201:
         print(f'Error posting to {endpoint}: {response.status_code}')
+        print(response.json())
     return response

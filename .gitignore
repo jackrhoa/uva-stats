@@ -2,4 +2,7 @@
 /.venv
 DjangoAPI/baseball_stats/db.sqlite3
 DjangoAPI/baseball_stats/__pycache__/
-DjangoAPI/baseball_stats/migrations/__pycache__/
+DjangoAPI/baseball_stats/app/migrations/__pycache__/
+*.pyc
+/ReactFrontend/node_modules
+.env

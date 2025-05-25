@@ -6,32 +6,43 @@ from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
 from django.conf import settings
 from rest_framework.response import Response
+from django_filters.rest_framework import DjangoFilterBackend
 # Create your views here.
 
 class BatterStatViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = BatterStat.objects.all()
     serializer_class = BatterStatSerializer
     permission_classes = [AllowAny]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = '__all__'
 
 class PitcherStatViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = PitcherStat.objects.all()
     serializer_class = PitcherStatSerializer
     permission_classes = [AllowAny]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = '__all__'
 
 class FieldingStatViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = FieldingStat.objects.all()
     serializer_class = FieldingStatSerializer
     permission_classes = [AllowAny]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = '__all__'
 
 class GameInfoViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = GameInfo.objects.all()
     serializer_class = GameInfoSerializer
     permission_classes = [AllowAny]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = '__all__'
 
 class PlayerInfoViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = PlayerInfo.objects.all()
     serializer_class = PlayerInfoSerializer
     permission_classes = [AllowAny]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = '__all__'
 
 class BatterStatCreateView(APIView):
     permission_classes = [AllowAny]
