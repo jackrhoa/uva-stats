@@ -9,7 +9,9 @@ function App() {
 
   return (
     <>
+      <BatterStats player_id={1} />
       <BatterStats player_id={2} />
+      <BatterStats player_id={3} />
     </>
   );
 }

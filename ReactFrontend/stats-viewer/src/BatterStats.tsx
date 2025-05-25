@@ -73,6 +73,9 @@ const BatterStats: React.FC<BatterStatsProps> = ({ player_id }) => {
               <tr>
                 <th className="px-4">Game Date</th>
                 <th className="px-3">AB</th>
+                <th className="px-3">R</th>
+                <th className="px-3">RBI</th>
+                <th className="px-3">H</th>
               </tr>
             </thead>
             <tbody>
@@ -80,6 +83,9 @@ const BatterStats: React.FC<BatterStatsProps> = ({ player_id }) => {
                 <tr key={stat.id}>
                   <td>{stat.game_id}</td>
                   <td>{stat.ab}</td>
+                  <td>{stat.runs}</td>
+                  <td>{stat.rbi}</td>
+                  <td>{stat.hits}</td>
                 </tr>
               ))}
             </tbody>
