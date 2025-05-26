@@ -3,16 +3,16 @@ import reactLogo from "./assets/react.svg";
 import viteLogo from "/vite.svg";
 import "./App.css";
 import BatterStats from "./BatterStats";
+import AllPlayerStats from "./AllPlayerStats";
+import { Routes, Route } from "react-router-dom";
 
 function App() {
   const [count, setCount] = useState(0);
-
   return (
-    <>
-      <BatterStats player_id={1} />
-      <BatterStats player_id={2} />
-      <BatterStats player_id={3} />
-    </>
+    <Routes>
+      <Route path="/" element={<AllPlayerStats />} />
+      <Route path="/player/:id" element={<BatterStats />} />
+    </Routes>
   );
 }
 
