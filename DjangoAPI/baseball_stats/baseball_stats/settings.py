@@ -16,6 +16,8 @@ from decouple import config
 
 SCRAPER_API_KEY = config('SCRAPER_API_KEY')
 
+
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -24,7 +26,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure--yk4=xg45_be&s6-uo&r!8*qrn8)1ugw@xcum=6jvacp#8q*8^'
+# old secret key
+# SECRET_KEY = 'django-insecure--yk4=xg45_be&s6-uo&r!8*qrn8)1ugw@xcum=6jvacp#8q*8^'
+SECRET_KEY = config('SECRET_KEY')
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True

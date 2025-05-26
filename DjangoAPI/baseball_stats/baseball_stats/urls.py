@@ -17,7 +17,10 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from app.views import BatterStatViewSet, BatterStatCreateView, PitcherStatViewSet, PitcherStatCreateView, PlayerInfoViewSet, FieldingStatViewSet, GameInfoViewSet, FieldingStatCreateView, GameInfoCreateView
+from app.views import BatterStatViewSet, BatterStatCreateView, \
+PitcherStatViewSet, PitcherStatCreateView, PlayerInfoViewSet, \
+FieldingStatViewSet, GameInfoViewSet, FieldingStatCreateView, \
+GameInfoCreateView, TeamBattingStatsView
 
 router = DefaultRouter()
 router.register(r'batter_stats', BatterStatViewSet, basename='batter_stats')
@@ -32,5 +35,6 @@ urlpatterns = [
     path('api/pitcher_stats/create/', PitcherStatCreateView.as_view(), name='pitcher_stat_create'),
     path('api/fielding_stats/create/', FieldingStatCreateView.as_view(), name='fielding_stat_create'),
     path('api/game_info/create/', GameInfoCreateView.as_view(), name='game_info_create'),
+    path('api/all_batter_stats/', TeamBattingStatsView.as_view(), name='team_batting_stats'),
     path('api/', include(router.urls)),
 ]

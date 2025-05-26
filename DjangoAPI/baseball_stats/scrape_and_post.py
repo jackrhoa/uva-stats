@@ -5,11 +5,11 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'baseball_stats.settings')  # ch
 django.setup()
 
 import requests
+from decouple import config
 
 
-
-API_BASE_URL = "http://127.0.0.1:8000/api"
-API_KEY = "ACCN_IS_THE_BEST_ESPN_LINEAR_NETWORK"
+API_BASE_URL = "http://127.0.0.1:8000/api/"
+API_KEY = config('SCRAPER_API_KEY')
 
 def post_stats(endpoint, data):
     headers = {
