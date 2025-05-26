@@ -3,39 +3,46 @@ import { variables } from "./Variables.tsx";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
-interface BatterStat {
+interface PitcherStat {
   id: number;
-  player_id: number;
-  player_name?: string;
+  game_date: Date;
   game_result: string;
-  game_date?: string;
-  game_id: number;
-  ab: number;
-  pa: number;
-  runs: number;
-  hits: number;
-  rbi: number;
+  box_score_link: number;
+  player_id: number;
+  player_name: string;
+  jersey_number: string;
+  ip: number;
+  h: number;
+  r: number;
+  er: number;
   bb: number;
   so: number;
-  hbp: number;
+  bf: number;
+  doubles_allowed: number;
+  triples_allowed: number;
+  hr_allowed: number;
+  wp: number;
+  hb: number;
+  starts: number;
   ibb: number;
-  sb: number;
-  cs: number;
-  dp: number;
-  double: number;
-  triple: number;
-  hr: number;
-  sf: number;
-  sh: number;
-  picked_off: number;
-  avg: number;
-  tb: number;
-  box_score_link: number;
+  balk: number;
+  ir: number;
+  irs: number;
+  sh_allowed: number;
+  sf_allowed: number;
+  kl: number;
+  pickoffs: number;
+  wins: number;
+  losses: number;
+  saves: number;
+  ab: number;
+  era: number;
+  whip: number;
+  games: number;
 }
 
-// this can be the Batter specific main page
-const BatterStats = () => {
-  const [batterStats, setBatterStats] = useState<BatterStat[]>([]);
+const PitcherStats = () => {
+  const [pitcherStats, setPitcherStats] = useState<PitcherStat[]>([]);
   const [loading, setLoading] = useState(true);
 
   const { id } = useParams<{ id: string }>();
@@ -46,26 +53,26 @@ const BatterStats = () => {
   };
 
   useEffect(() => {
-    const fetchBatterStats = async () => {
+    const fetchPitchingStats = async () => {
       try {
         const response = await fetch(
-          `${variables.API_BASE_URL}batter_stats/?player_id=${player_id}`
+          `${variables.API_BASE_URL}pitcher_stats/?player_id=${player_id}`
         );
         if (!response.ok) {
           throw new Error("HTTP error " + response.status);
         }
         const data = await response.json();
         console.log("Batter stats data:", data);
-        setBatterStats(data);
+        setPitcherStats(data);
       } catch (error) {
         console.error(
-          "Error fetching batter stats for " + player_id + ": " + error
+          "Error fetching pitching stats for " + player_id + ": " + error
         );
       } finally {
         setLoading(false);
       }
     };
-    fetchBatterStats();
+    fetchPitchingStats();
   }, []);
 
   if (loading) {
@@ -74,7 +81,7 @@ const BatterStats = () => {
 
   return (
     <div>
-      <h1 className="m-3">{batterStats[0].player_name} Batting Game Log</h1>
+      <h1 className="m-3">{pitcherStats[0].player_name} Pitching Game Log</h1>
 
       <ul>
         <div className="overflow-x-auto">
@@ -83,11 +90,8 @@ const BatterStats = () => {
               <tr>
                 <th className="px-5 border border-gray-400">Date</th>
                 <th className="px-2 border border-gray-400">Result</th>
-                <th
-                  className="px-2 border border-gray-400"
-                  title="Plate Appearances"
-                >
-                  PA
+                <th className="px-2 border border-gray-400" title="Decision">
+                  Dec
                 </th>
 
                 <th className="px-2 border border-gray-400" title="At-bats">
@@ -171,7 +175,7 @@ const BatterStats = () => {
               </tr>
             </thead>
             <tbody>
-              {batterStats.map((stat) => (
+              {pitcherStats.map((stat) => (
                 <tr key={stat.id} className="border border-gray-200">
                   <td className="px-2 border border-gray-300">
                     {stat.game_date}
@@ -216,4 +220,4 @@ const BatterStats = () => {
   );
 };
 
-export default BatterStats;
+export default PitcherStats;
