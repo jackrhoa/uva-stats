@@ -33,9 +33,45 @@ interface AllBatterStat {
   games: number;
 }
 
+interface AllPitcherStat {
+  id: number;
+  player_id: number;
+  player_name: string;
+  jersey_number: string;
+  total_ip: number;
+  total_h: number;
+  total_r: number;
+  total_er: number;
+  total_bb: number;
+  total_so: number;
+  total_bf: number;
+  total_doubles_allowed: number;
+  total_triples_allowed: number;
+  total_hr_allowed: number;
+  total_wp: number;
+  total_hb: number;
+  total_starts: number;
+  total_ibb: number;
+  total_balk: number;
+  total_ir: number;
+  total_irs: number;
+  total_sh_allowed: number;
+  total_sf_allowed: number;
+  total_kl: number;
+  total_pickoffs: number;
+  total_wins: number;
+  total_losses: number;
+  total_saves: number;
+  total_ab: number;
+  total_era: number;
+  total_whip: number;
+  total_games: number;
+}
+
 // this can be the Batter specific main page
 const AllPlayerStats = () => {
   const [batterStats, setBatterStats] = useState<AllBatterStat[]>([]);
+  const [pitcherStats, setPitcherStats] = useState<AllPitcherStat[]>([]);
   const [loading, setLoading] = useState(true);
 
   const three_decimals = (value: number) => {
@@ -46,17 +82,30 @@ const AllPlayerStats = () => {
   useEffect(() => {
     const fetchAllPlayerStats = async () => {
       try {
-        const response = await fetch(
+        const batterResponse = await fetch(
           `${variables.API_BASE_URL}all_batter_stats`
         );
-        if (!response.ok) {
-          throw new Error("HTTP error " + response.status);
+        const pitcherResponse = await fetch(
+          `${variables.API_BASE_URL}all_pitcher_stats`
+        );
+        if (!batterResponse.ok) {
+          throw new Error(
+            "HTTP error with batter data: " + batterResponse.status
+          );
         }
-        const data = await response.json();
-        console.log("Batter stats data:", data);
-        setBatterStats(data);
+        if (!pitcherResponse.ok) {
+          throw new Error(
+            "HTTP error with pitcher data: " + pitcherResponse.status
+          );
+        }
+        const pitcherData = await pitcherResponse.json();
+        const batterData = await batterResponse.json();
+        console.log("Batter stats data:", batterData);
+        console.log("Pitcher stats data:", pitcherData);
+        setBatterStats(batterData);
+        setPitcherStats(pitcherData);
       } catch (error) {
-        console.error("Error fetching all players batting stats: " + error);
+        console.error("Error fetching players' stats: " + error);
       } finally {
         setLoading(false);
       }
@@ -112,7 +161,7 @@ const AllPlayerStats = () => {
                   </td>
                   <td className="px-6 border border-gray-300">
                     <Link
-                      to={`/player/${stat.player_id}`}
+                      to={`/batter/${stat.player_id}`}
                       className="text-blue-600 hover:underline"
                     >
                       {stat.player_name}
@@ -182,6 +231,114 @@ const AllPlayerStats = () => {
                   </td>
                   <td className="px-2 border border-gray-300">
                     {stat.total_ibb}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </ul>
+      <h1>Pitchers</h1>
+      <ul>
+        <div className="overflow-x-auto">
+          <table className="table-auto border-collapse bg-gray-50 text-black w-full">
+            <thead className="bg-gray-300 text-orange-600">
+              <tr>
+                <th className="px-2 border border-gray-400">#</th>
+                <th className="px-6 border border-gray-400">Player Name</th>
+                <th className="px-2 border border-gray-400">W</th>
+                <th className="px-2 border border-gray-400">L</th>
+                <th className="px-2 border border-gray-400">SV</th>
+                <th className="px-2 border border-gray-400">ERA</th>
+                <th className="px-2 border border-gray-400">G</th>
+                <th className="px-2 border border-gray-400">GS</th>
+                <th className="px-2 border border-gray-400">IP</th>
+                <th className="px-2 border border-gray-400">H</th>
+                <th className="px-2 border border-gray-400">R</th>
+                <th className="px-2 border border-gray-400">ER</th>
+                <th className="px-2 border border-gray-400">HR</th>
+                <th className="px-2 border border-gray-400">BB</th>
+                <th className="px-2 border border-gray-400">IBB</th>
+                <th className="px-2 border border-gray-400">SO</th>
+                <th className="px-4 border border-gray-400">HBP</th>
+                <th className="px-4 border border-gray-400">BK</th>
+                <th className="px-4 border border-gray-400">WP</th>
+                <th className="px-4 border border-gray-400">BF</th>
+                <th className="px-2 border border-gray-400">WHIP</th>
+              </tr>
+            </thead>
+            <tbody>
+              {pitcherStats.map((stat) => (
+                <tr key={stat.id} className="border border-gray-200">
+                  <td className="px-2 border border-gray-300">
+                    {stat.jersey_number}
+                  </td>
+                  <td className="px-6 border border-gray-300">
+                    <Link
+                      to={`/pitcher/${stat.player_id}`}
+                      className="text-blue-600 hover:underline"
+                    >
+                      {stat.player_name}
+                    </Link>
+                  </td>
+                  <td className="px-2 border border-gray-300">
+                    {stat.total_wins}
+                  </td>
+                  <td className="px-2 border border-gray-300">
+                    {stat.total_losses}
+                  </td>
+                  <td className="px-2 border border-gray-300">
+                    {stat.total_saves}
+                  </td>
+                  <td className="px-2 border border-gray-300">
+                    {stat.total_era != null ? stat.total_era.toFixed(2) : "--"}
+                  </td>
+                  <td className="px-2 border border-gray-300">
+                    {stat.total_games}
+                  </td>
+                  <td className="px-2 border border-gray-300">
+                    {stat.total_starts}
+                  </td>
+                  <td className="px-2 border border-gray-300">
+                    {stat.total_ip.toFixed(1)}
+                  </td>
+                  <td className="px-2 border border-gray-300">
+                    {stat.total_h}
+                  </td>
+                  <td className="px-2 border border-gray-300">
+                    {stat.total_r}
+                  </td>
+                  <td className="px-2 border border-gray-300">
+                    {stat.total_er}
+                  </td>
+                  <td className="px-2 border border-gray-300">
+                    {stat.total_hr_allowed}
+                  </td>
+                  <td className="px-2 border border-gray-300">
+                    {stat.total_bb}
+                  </td>
+                  <td className="px-2 border border-gray-300">
+                    {stat.total_ibb}
+                  </td>
+                  <td className="px-2 border border-gray-300">
+                    {stat.total_so}
+                  </td>
+                  <td className="px-3 border border-gray-300">
+                    {stat.total_hb}
+                  </td>
+                  <td className="px-3 border border-gray-300">
+                    {stat.total_balk}
+                  </td>
+                  <td className="px-3 border border-gray-300">
+                    {stat.total_wp}
+                  </td>
+                  <td className="px-3 border border-gray-300">
+                    {stat.total_bf}
+                  </td>
+                  <td className="px-2 border border-gray-300">
+                    {stat.total_whip != null
+                      ? stat.total_whip.toFixed(3)
+                      : "--"}
                   </td>
                 </tr>
               ))}

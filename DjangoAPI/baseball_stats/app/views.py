@@ -2,7 +2,8 @@ from django.shortcuts import render
 from .models import BatterStat, PitcherStat, PlayerInfo, FieldingStat, GameInfo
 from .serializers import BatterStatSerializer, \
 PitcherStatSerializer, PlayerInfoSerializer, \
-FieldingStatSerializer, GameInfoSerializer, BatterStatSumSerializer
+FieldingStatSerializer, GameInfoSerializer, \
+BatterStatSumSerializer, PitcherStatSumSerializer
 from rest_framework import viewsets, status
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
@@ -141,11 +142,65 @@ class TeamBattingStatsView(APIView):
         serializer = BatterStatSumSerializer(stats, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-# class TeamPitchingStatsView(APIView):
-#     permission_classes = [AllowAny]
+class TeamPitchingStatsView(APIView):
+    permission_classes = [AllowAny]
 
-#     def get(self, request, team_id):
-#         # Assuming team_id is passed as a URL parameter
-#         stats = PitcherStat.objects.filter(player_id__team_id=team_id)
-#         serializer = PitcherStatSerializer(stats, many=True)
-#         return Response(serializer.data, status=status.HTTP_200_OK)
+    def get(self, request):
+
+        stats = (
+            PitcherStat.objects
+            .values('player_id', 'player_id__player_name', 'player_id__jersey_number')
+            .annotate(
+                total_h=models.Sum('h'),
+                total_r=models.Sum('r'),
+                total_er=models.Sum('er'),
+                total_bb=models.Sum('bb'),
+                total_so=models.Sum('so'),
+                total_bf=models.Sum('bf'),
+                total_doubles_allowed=models.Sum('doubles_allowed'),
+                total_triples_allowed=models.Sum('triples_allowed'),
+                total_hr_allowed=models.Sum('hr_allowed'),
+                total_wp=models.Sum('wp'),
+                total_hb=models.Sum('hb'),
+                total_starts=models.Sum(
+                    models.Case(
+                        models.When(starter=True, then=1),
+                        default=0,
+                        output_field=models.IntegerField()
+                    )
+                ),
+                total_ibb=models.Sum('ibb'),
+                total_balk=models.Sum('balk'),
+                total_ir=models.Sum('ir'),
+                total_irs=models.Sum('irs'),
+                total_sh_allowed=models.Sum('sh_allowed'),
+                total_sf_allowed=models.Sum('sf_allowed'),
+                total_kl=models.Sum('kl'),
+                total_pickoffs=models.Sum('pickoffs'),
+                total_wins=models.Sum(
+                    models.Case(
+                        models.When(win=True, then=1),
+                        default=0,
+                        output_field=models.IntegerField()
+                    )
+                ),
+                total_losses=models.Sum(
+                    models.Case(
+                        models.When(loss=True, then=1),
+                        default=0,
+                        output_field=models.IntegerField()
+                    )
+                ),
+                total_saves=models.Sum(
+                    models.Case(
+                        models.When(sv=True, then=1),
+                        default=0,
+                        output_field=models.IntegerField()
+                    )
+                ),
+                total_games=models.Count('game_id'),
+            )
+        )
+
+        serializer = PitcherStatSumSerializer(stats, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)

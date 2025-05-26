@@ -20,7 +20,7 @@ from rest_framework.routers import DefaultRouter
 from app.views import BatterStatViewSet, BatterStatCreateView, \
 PitcherStatViewSet, PitcherStatCreateView, PlayerInfoViewSet, \
 FieldingStatViewSet, GameInfoViewSet, FieldingStatCreateView, \
-GameInfoCreateView, TeamBattingStatsView
+GameInfoCreateView, TeamBattingStatsView, TeamPitchingStatsView
 
 router = DefaultRouter()
 router.register(r'batter_stats', BatterStatViewSet, basename='batter_stats')
@@ -36,5 +36,6 @@ urlpatterns = [
     path('api/fielding_stats/create/', FieldingStatCreateView.as_view(), name='fielding_stat_create'),
     path('api/game_info/create/', GameInfoCreateView.as_view(), name='game_info_create'),
     path('api/all_batter_stats/', TeamBattingStatsView.as_view(), name='team_batting_stats'),
+    path('api/all_pitcher_stats/', TeamPitchingStatsView.as_view(), name='team_pitching_stats'),
     path('api/', include(router.urls)),
 ]

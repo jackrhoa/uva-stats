@@ -4,6 +4,7 @@ import viteLogo from "/vite.svg";
 import "./App.css";
 import BatterStats from "./BatterStats";
 import AllPlayerStats from "./AllPlayerStats";
+import PitcherStats from "./PitcherStats";
 import { Routes, Route } from "react-router-dom";
 
 function App() {
@@ -11,7 +12,8 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<AllPlayerStats />} />
-      <Route path="/player/:id" element={<BatterStats />} />
+        <Route path="/batter/:id" element={<BatterStats />} />
+        {/* <Route path="/pitcher/:id" element={<PitcherStats />} /> */}
     </Routes>
   );
 }
