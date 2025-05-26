@@ -43,7 +43,7 @@ class BatterStat(models.Model):
     sf = models.IntegerField()
     sh = models.IntegerField()
     picked_off = models.IntegerField()
-
+    
     def __str__(self):
         return f"{self.player_id.player_name} - Game #{self.game_id} | {self.ab} AB | {self.hits} Hits | {self.runs} Runs"
 
