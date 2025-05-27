@@ -35,8 +35,8 @@ class BatterStatSerializer(serializers.ModelSerializer):
     
     def get_game_result(self, obj: BatterStat):
         expected_innings = 9
-        inning_info = f"/{obj.game_id.total_innings}" if obj.game_id.total_innings != expected_innings else ''
-        return f"{"W" if obj.game_id.selected_team_runs > obj.game_id.opponent_runs else "L"}{inning_info} {obj.game_id.selected_team_runs}-{obj.game_id.opponent_runs}"
+        inning_info = f" ({obj.game_id.total_innings})" if obj.game_id.total_innings != expected_innings else ''
+        return f"{"W" if obj.game_id.selected_team_runs > obj.game_id.opponent_runs else "L"} {obj.game_id.selected_team_runs}-{obj.game_id.opponent_runs}{inning_info}"
 
     def get_tb(self, obj: BatterStat):
         return (
@@ -133,19 +133,65 @@ class BatterStatSumSerializer(serializers.Serializer):
 
 class PitcherStatSerializer(serializers.ModelSerializer):
     player_name = serializers.CharField(source='player_id.player_name', read_only=True)
+    opponent= serializers.CharField(source='game_id.opponent', read_only=True)
     ab = serializers.SerializerMethodField()
     game_date = serializers.DateField(source='game_id.game_date', read_only=True)
     game_result = serializers.SerializerMethodField()
     box_score_link = serializers.CharField(source='game_id.box_score_link', read_only=True)
+    era = serializers.SerializerMethodField()
+    outs = serializers.SerializerMethodField()
+    decision = serializers.SerializerMethodField()
+
+    def get_outs(self, obj):
+        innings_pitched = (
+            PitcherStat.objects
+                .filter(player_id=obj.player_id, game_id__lte=obj.game_id)
+        )
+        outs = 0
+        for session in innings_pitched:
+            outs += (10 * session.ip) - 7 * int(session.ip)
+        return outs
 
     def get_ab(self, obj):
         return obj.bf -  obj.bb - obj.hb - obj.ibb - obj.sf_allowed - obj.sh_allowed
     
     def get_game_result(self, obj: BatterStat):
         expected_innings = 9
-        inning_info = f"/{obj.game_id.total_innings}" if obj.game_id.total_innings != expected_innings else ''
-        return f"{"W" if obj.game_id.selected_team_runs > obj.game_id.opponent_runs else "L"}{inning_info} {obj.game_id.selected_team_runs}-{obj.game_id.opponent_runs}"
+        inning_info = f" ({obj.game_id.total_innings})" if obj.game_id.total_innings != expected_innings else ''
+        return f"{"W" if obj.game_id.selected_team_runs > obj.game_id.opponent_runs else "L"} {obj.game_id.selected_team_runs}-{obj.game_id.opponent_runs}{inning_info}"
+    def get_era(self, obj):
+        stats = (
+            PitcherStat.objects
+        .filter(player_id=obj.player_id, 
+        game_id__lte=obj.game_id)
+        .aggregate(
+            total_er=Sum('er'),
+            total_outs=Sum('ip') * 3
+        )
+        )
+        total_er  = stats['total_er'] or 0
+        total_outs = self.get_outs(obj)
+        return (total_er * 27) / total_outs if total_outs > 0 else None
     
+    def get_decision(self, obj):
+        win_loss = "W" if obj.win else "L" if obj.loss else "S" if obj.sv else "ND"
+        record = (
+            PitcherStat.objects
+            .filter(player_id=obj.player_id, game_id__lte=obj.game_id)
+            .aggregate(
+                total_wins=Sum('win'),
+                total_losses=Sum('loss'),
+                total_saves=Sum('sv')
+            )
+        )
+        if obj.win or obj.loss:
+            print('WINS:', record['total_wins'])
+            return f'{win_loss} ({int(record["total_wins"])}-{int(record["total_losses"])})'
+        elif obj.sv:
+            return f'{win_loss} ({int(record["total_saves"])})'
+        else:
+            return " -"
+
     class Meta:
         model = PitcherStat
         fields = '__all__'
