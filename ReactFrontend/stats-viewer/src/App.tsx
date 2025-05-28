@@ -1,10 +1,8 @@
 import "./App.css";
-import BatterStats from "./BatterStats";
-import AllPlayerStats from "./AllPlayerStats";
-import PitcherStats from "./PitcherStats";
-import BetterPitcherStats from "./BetterPitcherStats";
+import BatterStats from "./components/BatterStats";
+import AllPlayerStats from "./components/AllPlayerStats";
 import { Routes, Route } from "react-router-dom";
-import PitcherStatsTanStack from "./PitcherStatsTanStack";
+import PitcherStatsTanStack from "./components/PitcherStatsTanStack";
 
 function App() {
   return (
