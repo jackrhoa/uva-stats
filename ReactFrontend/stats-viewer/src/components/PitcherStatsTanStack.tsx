@@ -7,8 +7,6 @@ import {
   flexRender,
   getSortedRowModel,
 } from "@tanstack/react-table";
-import type { Row, SortingFn } from "@tanstack/react-table";
-
 type PitcherStat = {
   id: number;
   game_date: Date;
@@ -76,42 +74,6 @@ export default function PitcherStatsTanStack() {
   }, [player_id]);
 
   // This should be used on the main page, not here
-  const byQualifiedEra: SortingFn<PitcherStat> = (
-    rowA: Row<PitcherStat>,
-    rowB: Row<PitcherStat>
-  ) => {
-    const eraA: number = rowA.getValue("era");
-    const eraB: number = rowB.getValue("era");
-
-    const ipA: number = rowA.getValue("ip");
-    const ipB: number = rowB.getValue("ip");
-
-    const team_games = 50;
-
-    const isQualifiedA = ipA >= team_games;
-    const isQualifiedB = ipB >= team_games;
-
-    if (isQualifiedA && isQualifiedB) {
-      // Both are qualified, sort by ERA
-      return eraA - eraB; // Ascending order
-    } else if (isQualifiedA) {
-      // A is qualified, B is not
-      return -1; // A comes first
-    } else if (isQualifiedB) {
-      // B is qualified, A is not
-      return 1; // B comes first
-    }
-
-    // No method currently exists for getting total games for the team, so I'm going to use 50 for now
-
-    if (eraA === null || eraA === undefined) return 1; // Treat null/undefined as greater
-    if (eraB === null || eraB === undefined) return -1; // Treat null/undefined as greater
-
-    if (team_games / ipA >= 1) {
-    }
-
-    return eraA - eraB; // Ascending order
-  };
 
   const columns = useMemo(
     () => [
