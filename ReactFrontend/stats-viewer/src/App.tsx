@@ -4,7 +4,7 @@ import BatterStats from "./components/BatterStats";
 import { Routes, Route } from "react-router-dom";
 import PitcherStatsTanStack from "./components/PitcherStatsTanStack";
 import Nav from "./components/Nav";
-import NewAllPlayerStats from "./components/NewAllPlayerStats";
+import NewAllPlayerStats from "./components/AllPlayerStats";
 function App() {
   return (
     <div>

@@ -3,13 +3,18 @@ import { variables } from "../Variables.tsx";
 import {
   useReactTable,
   getCoreRowModel,
-  flexRender,
   getSortedRowModel,
   createColumnHelper,
+  getFilteredRowModel,
 } from "@tanstack/react-table";
-import type { Row, SortingFn } from "@tanstack/react-table";
+import type { Row, SortingFn, FilterFn } from "@tanstack/react-table";
 import ToggleTabs from "./ToggleTabs.tsx";
 import DisplayTable from "./DislayTable.tsx";
+
+const greaterThanOrEqualTo: FilterFn<any> = (row, columnId, value) => {
+  const cellValue = row.getValue(columnId);
+  return typeof cellValue === "number" && cellValue >= parseFloat(value);
+};
 
 type AllBatterStat = {
   id: number;
@@ -238,11 +243,29 @@ const NewAllPlayerStats = () => {
     [batterHelper]
   );
 
+  const batterTable = useReactTable<AllBatterStat>({
+    columns: batterColumns,
+    data: batterStats,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    // Enable selection only for players with PA > 0
+    initialState: {
+      sorting: [
+        {
+          id: "total_pa",
+          desc: true, // Sort by AVG in descending order
+        },
+      ],
+    },
+  });
+
   const pitcherHelper = createColumnHelper<AllPitcherStat>();
+
   const pitcherColumns = useMemo(
     () => [
       pitcherHelper.accessor("jersey_number", {
         header: "#",
+        footer: "Total: " + 50,
         cell: (info) => info.getValue(),
         sortDescFirst: true,
       }),
@@ -253,6 +276,7 @@ const NewAllPlayerStats = () => {
       pitcherHelper.accessor("total_ip", {
         header: "IP",
         cell: (info) => info.getValue().toFixed(1),
+        filterFn: greaterThanOrEqualTo,
       }),
       pitcherHelper.accessor("total_wins", {
         header: "W",
@@ -304,51 +328,28 @@ const NewAllPlayerStats = () => {
         header: "HR",
         cell: (info) => info.getValue(),
       }),
-      pitcherHelper.accessor("total_ir", {
-        header: "IR",
-        cell: (info) => info.getValue(),
-      }),
-      pitcherHelper.accessor("total_irs", {
-        header: "IRS",
-        cell: (info) => info.getValue(),
-      }),
       pitcherHelper.accessor("total_saves", {
         header: "SV",
         cell: (info) => info.getValue(),
       }),
-      pitcherHelper.accessor("total_whip", {
-        header: "WHIP",
-        cell: (info) => three_decimals(info.getValue()),
-      }),
     ],
     [pitcherHelper]
   );
-
-  const batterTable = useReactTable<AllBatterStat>({
-    columns: batterColumns,
-    data: batterStats,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    initialState: {
-      sorting: [
-        {
-          id: "total_pa",
-          desc: true, // Sort by AVG in descending order
-        },
-      ],
-    },
-  });
 
   const pitcherTable = useReactTable<AllPitcherStat>({
     columns: pitcherColumns,
     data: pitcherStats,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    filterFns: {
+      greaterThanOrEqualTo,
+    },
     initialState: {
       sorting: [
         {
           id: "total_ip",
-          desc: true, // Sort by ERA in descending order
+          desc: true,
         },
       ],
     },
@@ -372,10 +373,22 @@ const NewAllPlayerStats = () => {
         setToggle={setToggle}
       />
       <div className={toggle === 0 ? "block" : "hidden"}>
-        <DisplayTable table={batterTable} />
+        {/* My goal is to pass a parameter which will set a highlight condition... I tried modifying the text after the . but that didn't
+        work ... I also tried passing the entire brackets, which also didn't work. I want the highlighting to look the same, so I don't need to modify
+        the styling. Just the condition... how to pass a boolean condition through parameters */}
+        <DisplayTable
+          table={batterTable}
+          highlight_condition={"total_pa"}
+          highlight_gte_value={151}
+        />
       </div>
       <div className={toggle === 2 ? "block" : "hidden"}>
-        <DisplayTable table={pitcherTable} />
+        <DisplayTable
+          table={pitcherTable}
+          highlight_condition={"total_ip"}
+          highlight_gte_value={50}
+          enableFilters={true}
+        />
       </div>
     </div>
   );
