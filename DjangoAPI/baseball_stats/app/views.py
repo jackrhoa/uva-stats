@@ -135,13 +135,13 @@ class TeamBattingStatsView(APIView):
 
                 id=models.F('player_id'),
             )
+            .filter(total_ab__gt=0)
 
         )
-
         # stats = BatterStat.objects.filter(player_id__team_id=team_id)
         serializer = BatterStatSumSerializer(stats, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-
+    
 class TeamPitchingStatsView(APIView):
     permission_classes = [AllowAny]
 
