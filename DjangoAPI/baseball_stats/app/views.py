@@ -132,15 +132,19 @@ class TeamBattingStatsView(APIView):
                 total_picked_off=models.Sum('picked_off'),
                 total_hr=models.Sum('hr'),
                 total_strikeouts=models.Sum('so'),
+                total_pa=models.Sum(
+                    models.F('ab') + models.F('bb') + models.F('hbp') + 
+                    models.F('sf') + models.F('sh') + models.F('ibb')
+                ),
 
                 id=models.F('player_id'),
             )
-            .filter(total_ab__gt=0)
-
+            .filter(total_pa__gt=0)
         )
-        # stats = BatterStat.objects.filter(player_id__team_id=team_id)
+
         serializer = BatterStatSumSerializer(stats, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
     
 class TeamPitchingStatsView(APIView):
     permission_classes = [AllowAny]
