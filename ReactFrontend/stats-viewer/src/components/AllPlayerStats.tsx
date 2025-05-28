@@ -1,13 +1,22 @@
+import { useState, useEffect, useMemo } from "react";
 import { variables } from "../Variables.tsx";
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import {
+  useReactTable,
+  getCoreRowModel,
+  flexRender,
+  getSortedRowModel,
+  createColumnHelper,
+} from "@tanstack/react-table";
+import type { Row, SortingFn } from "@tanstack/react-table";
+import ToggleTabs from "./ToggleTabs.tsx";
+import DisplayTable from "./DislayTable.tsx";
 
-interface AllBatterStat {
+type AllBatterStat = {
   id: number;
   player_id: number;
   total_hits: number;
   player_name: string;
-  jersey_number: string;
+  jersey_number: number;
   total_ab: number;
   total_pa: number;
   total_runs: number;
@@ -31,13 +40,13 @@ interface AllBatterStat {
   slg: number;
   ops: number;
   games: number;
-}
+};
 
-interface AllPitcherStat {
+type AllPitcherStat = {
   id: number;
   player_id: number;
   player_name: string;
-  jersey_number: string;
+  jersey_number: number;
   total_ip: number;
   total_h: number;
   total_r: number;
@@ -66,12 +75,13 @@ interface AllPitcherStat {
   total_era: number;
   total_whip: number;
   total_games: number;
-}
+};
 
 // this can be the Batter specific main page
-const AllPlayerStats = () => {
+const NewAllPlayerStats = () => {
   const [batterStats, setBatterStats] = useState<AllBatterStat[]>([]);
   const [pitcherStats, setPitcherStats] = useState<AllPitcherStat[]>([]);
+  const [toggle, setToggle] = useState(0);
   const [loading, setLoading] = useState(true);
 
   const three_decimals = (value: number) => {
@@ -100,8 +110,7 @@ const AllPlayerStats = () => {
         }
         const pitcherData = await pitcherResponse.json();
         const batterData = await batterResponse.json();
-        console.log("Batter stats data:", batterData);
-        console.log("Pitcher stats data:", pitcherData);
+
         setBatterStats(batterData);
         setPitcherStats(pitcherData);
       } catch (error) {
@@ -113,241 +122,262 @@ const AllPlayerStats = () => {
     fetchAllPlayerStats();
   }, []);
 
+  // This should be used on the main page, not here
+  const byQualifiedEra: SortingFn<AllPitcherStat> = (
+    rowA: Row<AllPitcherStat>,
+    rowB: Row<AllPitcherStat>
+  ) => {
+    const eraA: number = rowA.getValue("total_era");
+    const eraB: number = rowB.getValue("total_era");
+
+    const ipA: number = rowA.getValue("total_ip");
+    const ipB: number = rowB.getValue("total_ip");
+
+    const team_games = 50;
+
+    const isQualifiedA = ipA >= team_games;
+    const isQualifiedB = ipB >= team_games;
+
+    if (isQualifiedA && isQualifiedB) {
+      // Both are qualified, sort by ERA
+      return eraA - eraB; // Ascending order
+    } else if (isQualifiedA) {
+      // A is qualified, B is not
+      return -1; // A comes first
+    } else if (isQualifiedB) {
+      // B is qualified, A is not
+      return 1; // B comes first
+    }
+
+    // No method currently exists for getting total games for the team, so I'm going to use 50 for now
+
+    if (eraA === null || eraA === undefined) return 1; // Treat null/undefined as greater
+    if (eraB === null || eraB === undefined) return -1; // Treat null/undefined as greater
+
+    return eraA - eraB; // Ascending order
+  };
+
+  const batterHelper = createColumnHelper<AllBatterStat>();
+
+  const batterColumns = useMemo(
+    () => [
+      batterHelper.accessor("jersey_number", {
+        header: "#",
+        cell: (info) => info.getValue(),
+      }),
+      batterHelper.accessor("player_name", {
+        header: "Player",
+        cell: (info) => info.getValue(),
+      }),
+      batterHelper.accessor("games", {
+        header: "G",
+        cell: (info) => info.getValue(),
+      }),
+      batterHelper.accessor("total_pa", {
+        header: "PA",
+        cell: (info) => info.getValue(),
+      }),
+      batterHelper.accessor("total_ab", {
+        header: "AB",
+        cell: (info) => info.getValue(),
+      }),
+      batterHelper.accessor("total_runs", {
+        header: "R",
+        cell: (info) => info.getValue(),
+      }),
+      batterHelper.accessor("total_hits", {
+        header: "H",
+        cell: (info) => info.getValue(),
+      }),
+      batterHelper.accessor("total_rbi", {
+        header: "RBI",
+        cell: (info) => info.getValue(),
+      }),
+
+      batterHelper.accessor("avg", {
+        header: "AVG",
+        cell: (info) => three_decimals(info.getValue()),
+      }),
+      batterHelper.accessor("total_double", {
+        header: "2B",
+        cell: (info) => info.getValue(),
+      }),
+      batterHelper.accessor("total_triple", {
+        header: "3B",
+        cell: (info) => info.getValue(),
+      }),
+      batterHelper.accessor("total_hr", {
+        header: "HR",
+        cell: (info) => info.getValue(),
+      }),
+      batterHelper.accessor("total_bb", {
+        header: "BB",
+        cell: (info) => info.getValue(),
+      }),
+      batterHelper.accessor("total_strikeouts", {
+        header: "SO",
+        cell: (info) => info.getValue(),
+      }),
+      batterHelper.accessor("total_sb", {
+        header: "SB",
+        cell: (info) => info.getValue(),
+      }),
+      batterHelper.accessor("total_cs", {
+        header: "CS",
+        cell: (info) => info.getValue(),
+      }),
+      batterHelper.accessor("total_hbp", {
+        header: "HBP",
+        cell: (info) => info.getValue(),
+      }),
+      batterHelper.accessor("total_dp", {
+        header: "DP",
+        cell: (info) => info.getValue(),
+      }),
+    ],
+    [batterHelper]
+  );
+
+  const pitcherHelper = createColumnHelper<AllPitcherStat>();
+  const pitcherColumns = useMemo(
+    () => [
+      pitcherHelper.accessor("jersey_number", {
+        header: "#",
+        cell: (info) => info.getValue(),
+        sortDescFirst: true,
+      }),
+      pitcherHelper.accessor("player_name", {
+        header: "Player",
+        cell: (info) => info.getValue(),
+      }),
+      pitcherHelper.accessor("total_ip", {
+        header: "IP",
+        cell: (info) => info.getValue().toFixed(1),
+      }),
+      pitcherHelper.accessor("total_wins", {
+        header: "W",
+        cell: (info) => info.getValue(),
+      }),
+      pitcherHelper.accessor("total_losses", {
+        header: "L",
+        cell: (info) => info.getValue(),
+      }),
+      pitcherHelper.accessor("total_starts", {
+        header: "GS",
+        cell: (info) => info.getValue(),
+      }),
+      pitcherHelper.accessor("total_games", {
+        header: "G",
+        cell: (info) => info.getValue(),
+      }),
+      pitcherHelper.accessor("total_era", {
+        header: "ERA",
+        cell: (info) =>
+          info.getValue() != null ? info.getValue().toFixed(2) : "--",
+        sortDescFirst: true,
+      }),
+      pitcherHelper.accessor("total_h", {
+        header: "H",
+        cell: (info) => info.getValue(),
+      }),
+      pitcherHelper.accessor("total_r", {
+        header: "R",
+        cell: (info) => info.getValue(),
+      }),
+      pitcherHelper.accessor("total_er", {
+        header: "ER",
+        cell: (info) => info.getValue(),
+      }),
+      pitcherHelper.accessor("total_bb", {
+        header: "BB",
+        cell: (info) => info.getValue(),
+      }),
+      pitcherHelper.accessor("total_so", {
+        header: "SO",
+        cell: (info) => info.getValue(),
+      }),
+      pitcherHelper.accessor("total_bf", {
+        header: "BF",
+        cell: (info) => info.getValue(),
+      }),
+      pitcherHelper.accessor("total_hr_allowed", {
+        header: "HR",
+        cell: (info) => info.getValue(),
+      }),
+      pitcherHelper.accessor("total_ir", {
+        header: "IR",
+        cell: (info) => info.getValue(),
+      }),
+      pitcherHelper.accessor("total_irs", {
+        header: "IRS",
+        cell: (info) => info.getValue(),
+      }),
+      pitcherHelper.accessor("total_saves", {
+        header: "SV",
+        cell: (info) => info.getValue(),
+      }),
+      pitcherHelper.accessor("total_whip", {
+        header: "WHIP",
+        cell: (info) => three_decimals(info.getValue()),
+      }),
+    ],
+    [pitcherHelper]
+  );
+
+  const batterTable = useReactTable<AllBatterStat>({
+    columns: batterColumns,
+    data: batterStats,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    initialState: {
+      sorting: [
+        {
+          id: "total_pa",
+          desc: true, // Sort by AVG in descending order
+        },
+      ],
+    },
+  });
+
+  const pitcherTable = useReactTable<AllPitcherStat>({
+    columns: pitcherColumns,
+    data: pitcherStats,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    initialState: {
+      sorting: [
+        {
+          id: "total_ip",
+          desc: true, // Sort by ERA in descending order
+        },
+      ],
+    },
+  });
+
   if (loading) {
     return <div>Loading...</div>;
   }
 
   return (
-    <div>
-      <h1>Batters</h1>
-
-      <ul>
-        <div className="overflow-x-auto">
-          <table className="table-auto border-collapse bg-gray-50 text-black w-full">
-            <thead className="bg-gray-300 text-orange-600">
-              <tr>
-                <th className="px-2 border border-gray-400">#</th>
-                <th className="px-6 border border-gray-400">Player Name</th>
-                <th className="px-2 border border-gray-400">G</th>
-                <th className="px-2 border border-gray-400">PA</th>
-                <th className="px-2 border border-gray-400">AB</th>
-                <th className="px-2 border border-gray-400">R</th>
-                <th className="px-2 border border-gray-400">H</th>
-                <th className="px-2 border border-gray-400">2B</th>
-                <th className="px-2 border border-gray-400">3B</th>
-                <th className="px-2 border border-gray-400">HR</th>
-                <th className="px-2 border border-gray-400">RBI</th>
-                <th className="px-2 border border-gray-400">SB</th>
-                <th className="px-2 border border-gray-400">CS</th>
-                <th className="px-2 border border-gray-400">BB</th>
-                <th className="px-2 border border-gray-400">SO</th>
-                <th className="px-4 border border-gray-400">BA</th>
-                <th className="px-4 border border-gray-400">OBP</th>
-                <th className="px-4 border border-gray-400">SLG</th>
-                <th className="px-4 border border-gray-400">OPS</th>
-                <th className="px-2 border border-gray-400">TB</th>
-                <th className="px-2 border border-gray-400">DP</th>
-                <th className="px-2 border border-gray-400">HBP</th>
-                <th className="px-2 border border-gray-400">SH</th>
-                <th className="px-2 border border-gray-400">SF</th>
-                <th className="px-2 border border-gray-400">IBB</th>
-              </tr>
-            </thead>
-            <tbody>
-              {batterStats.map((stat) => (
-                <tr key={stat.id} className="border border-gray-200">
-                  <td className="px-2 border border-gray-300">
-                    {stat.jersey_number}
-                  </td>
-                  <td className="px-6 border border-gray-300">
-                    <Link
-                      to={`/batter/${stat.player_id}`}
-                      className="text-blue-600 hover:underline"
-                    >
-                      {stat.player_name}
-                    </Link>
-                  </td>
-                  <td className="px-2 border border-gray-300">{stat.games}</td>
-                  <td className="px-2 border border-gray-300">
-                    {stat.total_pa}
-                  </td>
-                  <td className="px-2 border border-gray-300">
-                    {stat.total_ab}
-                  </td>
-                  <td className="px-2 border border-gray-300">
-                    {stat.total_runs}
-                  </td>
-                  <td className="px-2 border border-gray-300">
-                    {stat.total_hits}
-                  </td>
-                  <td className="px-2 border border-gray-300">
-                    {stat.total_double}
-                  </td>
-                  <td className="px-2 border border-gray-300">
-                    {stat.total_triple}
-                  </td>
-                  <td className="px-2 border border-gray-300">
-                    {stat.total_hr}
-                  </td>
-                  <td className="px-2 border border-gray-300">
-                    {stat.total_rbi}
-                  </td>
-                  <td className="px-2 border border-gray-300">
-                    {stat.total_sb}
-                  </td>
-                  <td className="px-2 border border-gray-300">
-                    {stat.total_cs}
-                  </td>
-                  <td className="px-2 border border-gray-300">
-                    {stat.total_bb}
-                  </td>
-                  <td className="px-2 border border-gray-300">
-                    {stat.total_strikeouts}
-                  </td>
-                  <td className="px-3 border border-gray-300">
-                    {three_decimals(stat.avg)}
-                  </td>
-                  <td className="px-3 border border-gray-300">
-                    {three_decimals(stat.obp)}
-                  </td>
-                  <td className="px-3 border border-gray-300">
-                    {three_decimals(stat.slg)}
-                  </td>
-                  <td className="px-3 border border-gray-300">
-                    {three_decimals(stat.ops)}
-                  </td>
-                  <td className="px-2 border border-gray-300">{stat.tb}</td>
-                  <td className="px-2 border border-gray-300">
-                    {stat.total_dp}
-                  </td>
-                  <td className="px-2 border border-gray-300">
-                    {stat.total_hbp}
-                  </td>
-                  <td className="px-2 border border-gray-300">
-                    {stat.total_sh}
-                  </td>
-                  <td className="px-2 border border-gray-300">
-                    {stat.total_sf}
-                  </td>
-                  <td className="px-2 border border-gray-300">
-                    {stat.total_ibb}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </ul>
-      <h1>Pitchers</h1>
-      <ul>
-        <div className="overflow-x-auto">
-          <table className="table-auto border-collapse bg-gray-50 text-black w-full">
-            <thead className="bg-gray-300 text-orange-600">
-              <tr>
-                <th className="px-2 border border-gray-400">#</th>
-                <th className="px-6 border border-gray-400">Player Name</th>
-                <th className="px-2 border border-gray-400">W</th>
-                <th className="px-2 border border-gray-400">L</th>
-                <th className="px-2 border border-gray-400">SV</th>
-                <th className="px-2 border border-gray-400">ERA</th>
-                <th className="px-2 border border-gray-400">G</th>
-                <th className="px-2 border border-gray-400">GS</th>
-                <th className="px-2 border border-gray-400">IP</th>
-                <th className="px-2 border border-gray-400">H</th>
-                <th className="px-2 border border-gray-400">R</th>
-                <th className="px-2 border border-gray-400">ER</th>
-                <th className="px-2 border border-gray-400">HR</th>
-                <th className="px-2 border border-gray-400">BB</th>
-                <th className="px-2 border border-gray-400">IBB</th>
-                <th className="px-2 border border-gray-400">SO</th>
-                <th className="px-4 border border-gray-400">HBP</th>
-                <th className="px-4 border border-gray-400">BK</th>
-                <th className="px-4 border border-gray-400">WP</th>
-                <th className="px-4 border border-gray-400">BF</th>
-                <th className="px-2 border border-gray-400">WHIP</th>
-              </tr>
-            </thead>
-            <tbody>
-              {pitcherStats.map((stat) => (
-                <tr key={stat.id} className="border border-gray-200">
-                  <td className="px-2 border border-gray-300">
-                    {stat.jersey_number}
-                  </td>
-                  <td className="px-6 border border-gray-300">
-                    <Link
-                      to={`/pitcher/${stat.player_id}`}
-                      className="text-blue-600 hover:underline"
-                    >
-                      {stat.player_name}
-                    </Link>
-                  </td>
-                  <td className="px-2 border border-gray-300">
-                    {stat.total_wins}
-                  </td>
-                  <td className="px-2 border border-gray-300">
-                    {stat.total_losses}
-                  </td>
-                  <td className="px-2 border border-gray-300">
-                    {stat.total_saves}
-                  </td>
-                  <td className="px-2 border border-gray-300">
-                    {stat.total_era != null ? stat.total_era.toFixed(2) : "--"}
-                  </td>
-                  <td className="px-2 border border-gray-300">
-                    {stat.total_games}
-                  </td>
-                  <td className="px-2 border border-gray-300">
-                    {stat.total_starts}
-                  </td>
-                  <td className="px-2 border border-gray-300">
-                    {stat.total_ip.toFixed(1)}
-                  </td>
-                  <td className="px-2 border border-gray-300">
-                    {stat.total_h}
-                  </td>
-                  <td className="px-2 border border-gray-300">
-                    {stat.total_r}
-                  </td>
-                  <td className="px-2 border border-gray-300">
-                    {stat.total_er}
-                  </td>
-                  <td className="px-2 border border-gray-300">
-                    {stat.total_hr_allowed}
-                  </td>
-                  <td className="px-2 border border-gray-300">
-                    {stat.total_bb}
-                  </td>
-                  <td className="px-2 border border-gray-300">
-                    {stat.total_ibb}
-                  </td>
-                  <td className="px-2 border border-gray-300">
-                    {stat.total_so}
-                  </td>
-                  <td className="px-3 border border-gray-300">
-                    {stat.total_hb}
-                  </td>
-                  <td className="px-3 border border-gray-300">
-                    {stat.total_balk}
-                  </td>
-                  <td className="px-3 border border-gray-300">
-                    {stat.total_wp}
-                  </td>
-                  <td className="px-3 border border-gray-300">
-                    {stat.total_bf}
-                  </td>
-                  <td className="px-2 border border-gray-300">
-                    {stat.total_whip != null
-                      ? stat.total_whip.toFixed(3)
-                      : "--"}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </ul>
+    <div className="w-full min-h-screen px-4 py-6">
+      <ToggleTabs
+        options={[
+          "Batting",
+          "Advanced Batting",
+          "Pitching",
+          "Advanced Pitching",
+          "Fielding",
+        ]}
+        toggle={toggle}
+        setToggle={setToggle}
+      />
+      <div className={toggle === 0 ? "block" : "hidden"}>
+        <DisplayTable table={batterTable} />
+      </div>
+      <div className={toggle === 2 ? "block" : "hidden"}>
+        <DisplayTable table={pitcherTable} />
+      </div>
     </div>
   );
 };
-
-export default AllPlayerStats;
+export default NewAllPlayerStats;
