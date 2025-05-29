@@ -15,11 +15,19 @@ from django_filters import CharFilter
 # Create your views here.
 
 class BatterStatViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = BatterStat.objects.order_by('game_id', 'player_id')
+    
     serializer_class = BatterStatSerializer
     permission_classes = [AllowAny]
     filter_backends = [DjangoFilterBackend]
     filterset_fields = '__all__'
+
+    def get_queryset(self):
+        return BatterStat.objects.annotate(
+        pa=(
+            models.F('ab') + models.F('bb') + models.F('hbp') +
+            models.F('sf') + models.F('sh') + models.F('ibb')
+        )
+    ).filter(pa__gt=0)
 
 class PitcherStatViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = PitcherStat.objects.order_by('game_id', 'player_id')
@@ -29,7 +37,7 @@ class PitcherStatViewSet(viewsets.ReadOnlyModelViewSet):
     filterset_fields = '__all__'
 
 class FieldingStatViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = FieldingStat.objects.order_by('game_id', 'player_id')
+    queryset = FieldingStat.objects.order_by('game_id', 'player_id').filter(~models.Q(player_position="P"))
     serializer_class = FieldingStatSerializer
     permission_classes = [AllowAny]
     filter_backends = [DjangoFilterBackend]
