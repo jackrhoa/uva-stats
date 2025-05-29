@@ -6,15 +6,21 @@ class BatterStatSerializer(serializers.ModelSerializer):
     player_name = serializers.CharField(source='player_id.player_name', read_only=True)
     game_date = serializers.DateField(source='game_id.game_date', read_only=True)
     game_result = serializers.SerializerMethodField()
+    opponent = serializers.CharField(source='game_id.opponent', read_only=True)
     pa = serializers.SerializerMethodField()
     avg = serializers.SerializerMethodField()
     tb = serializers.SerializerMethodField()
     box_score_link = serializers.CharField(source='game_id.box_score_link', read_only=True)
+    obp = serializers.SerializerMethodField()
+    slg = serializers.SerializerMethodField()
+    hrpct = serializers.SerializerMethodField()
+    bbpct = serializers.SerializerMethodField()
+    kpct = serializers.SerializerMethodField()
+    babip = serializers.SerializerMethodField()
+    ab_per_hr = serializers.SerializerMethodField()
 
-    class Meta:
-        model = BatterStat
-        fields = '__all__'
-        read_only_fields = ['id'] + ['player_name']
+
+    
 
     def get_pa(self, obj: BatterStat):
         return obj.ab + obj.bb + obj.hbp + obj.ibb + obj.sh + obj.sf
@@ -45,6 +51,131 @@ class BatterStatSerializer(serializers.ModelSerializer):
             (obj.triple * 3) +
             (obj.hr * 4)
         )
+    
+    def get_obp(self, obj: BatterStat):
+        on_base = (
+            BatterStat.objects
+                .filter(player_id=obj.player_id, game_id__lte=obj.game_id)
+                .aggregate(
+                    total_hits=Sum('hits'),
+                    total_bb=Sum('bb'),
+                    total_hbp=Sum('hbp'),
+                    total_ibb=Sum('ibb'),
+                    total_sf=Sum('sf'),
+                    total_ab=Sum('ab')
+                )   
+        )
+        return (on_base['total_hits'] + on_base['total_bb'] + on_base['total_hbp'] + on_base['total_ibb']) / \
+        (on_base['total_ab'] + on_base['total_bb'] + on_base['total_hbp'] + on_base['total_ibb'] + on_base['total_sf']) \
+        if (on_base['total_ab'] + on_base['total_bb'] + on_base['total_hbp'] + on_base['total_ibb'] + on_base['total_sf']) > 0 else None
+    
+    def get_slg(self, obj: BatterStat):
+        hits = (
+            BatterStat.objects
+                .filter(player_id=obj.player_id, game_id__lte=obj.game_id)
+                .aggregate(
+                    total_hits=Sum('hits'),
+                    total_double=Sum('double'),
+                    total_triple=Sum('triple'),
+                    total_hr=Sum('hr'),
+                    total_ab=Sum('ab')
+                )
+        )
+        return (
+            (hits['total_hits'] - hits['total_double'] - hits['total_triple'] - hits['total_hr']) +
+            (hits['total_double'] * 2) +
+            (hits['total_triple'] * 3) +
+            (hits['total_hr'] * 4)
+        ) / hits['total_ab'] if hits['total_ab'] > 0 else None
+        
+    def get_hrpct(self, obj: BatterStat):
+        hr_stats = (
+            BatterStat.objects
+                .filter(player_id=obj.player_id, game_id__lte=obj.game_id)
+                .aggregate(
+                    total_hr=Sum('hr'),
+                    total_ab=Sum('ab')
+                )
+        )
+        return hr_stats['total_hr'] / hr_stats['total_ab'] * 100 if hr_stats['total_ab'] > 0 else None
+
+    def get_bbpct(self, obj: BatterStat):
+        bb_stats = (
+            BatterStat.objects
+                .filter(player_id=obj.player_id, game_id__lte=obj.game_id)
+                .aggregate(
+                    total_bb=Sum('bb'),
+                    total_ab=Sum('ab'),
+                    total_hbp=Sum('hbp'),
+                    total_ibb=Sum('ibb'),
+                    total_sf=Sum('sf'),
+                    total_sh=Sum('sh'
+                )
+        )
+        )
+        total_pa = (bb_stats['total_ab'] + bb_stats['total_bb'] + bb_stats['total_hbp'] + bb_stats['total_ibb'] + bb_stats['total_sf'] + bb_stats['total_sh'])
+        return bb_stats['total_bb'] / total_pa * 100 if total_pa > 0 else None
+
+    def get_kpct(self, obj: BatterStat):
+        k_stats = (
+            BatterStat.objects
+                .filter(player_id=obj.player_id, game_id__lte=obj.game_id)
+                .aggregate(
+                    total_so=Sum('so'),
+                    total_ab=Sum('ab'),
+                    total_bb=Sum('bb'),
+                    total_hbp=Sum('hbp'),
+                    total_ibb=Sum('ibb'),
+                    total_sf=Sum('sf'),
+                    total_sh=Sum('sh')
+                )
+        )
+        total_pa = (k_stats['total_ab'] + k_stats['total_bb'] + k_stats['total_hbp'] + k_stats['total_ibb'] + k_stats['total_sf'] + k_stats['total_sh'])
+        return k_stats['total_so'] / total_pa * 100 if total_pa > 0 else None
+    
+    def get_babip(self, obj: BatterStat):
+        babip_stats = (
+            BatterStat.objects
+                .filter(player_id=obj.player_id, game_id__lte=obj.game_id)
+                .aggregate(
+                    total_hits=Sum('hits'),
+                    total_ab=Sum('ab'),
+                    total_sf=Sum('sf'),
+                    total_hr=Sum('hr'),
+                    total_k=Sum('so')
+                )
+        )
+
+        if babip_stats['total_hits'] + babip_stats['total_hr'] >= 0 and \
+            (babip_stats['total_ab'] - babip_stats['total_k'] - babip_stats['total_hr'] + babip_stats['total_sf']) > 0:
+            total_babip = (
+                (babip_stats['total_hits'] -
+                babip_stats['total_hr']) / (
+                babip_stats['total_ab'] -
+                babip_stats['total_k'] -
+                babip_stats['total_hr'] +
+                babip_stats['total_sf']
+                )
+            )
+            return total_babip
+        else:
+            return None
+    def get_ab_per_hr(self, obj: BatterStat):
+        hr_stats = (
+            BatterStat.objects
+                .filter(player_id=obj.player_id, game_id__lte=obj.game_id)
+                .aggregate(
+                    total_hr=Sum('hr'),
+                    total_ab=Sum('ab')
+                )
+        )
+        return hr_stats['total_ab'] / hr_stats['total_hr'] if hr_stats['total_hr'] > 0 else None
+    
+    class Meta:
+        model = BatterStat
+        fields = '__all__'
+        read_only_fields = ['id'] + ['player_name']
+
 class BatterStatSumSerializer(serializers.Serializer):
     id = serializers.IntegerField(
         read_only=True)
@@ -268,6 +399,34 @@ class PitcherStatSumSerializer(serializers.Serializer):
 
 class FieldingStatSerializer(serializers.ModelSerializer):
     player_name = serializers.CharField(source='player_id.player_name', read_only=True)
+    game_date = serializers.DateField(source='game_id.game_date', read_only=True)
+    game_result = serializers.SerializerMethodField()
+    box_score_link = serializers.CharField(source='game_id.box_score_link', read_only=True)
+    opponent = serializers.CharField(source='game_id.opponent', read_only=True)
+    cum_fcpt = serializers.SerializerMethodField()
+
+    def get_cum_fcpt(self, obj: FieldingStat):
+        current_fcpt = (
+            FieldingStat.objects
+                .filter(player_id=obj.player_id, game_id__lte=obj.game_id)
+                .aggregate(
+                    num=(
+                    (Sum('po') + Sum('a'))),
+                     den=Sum('po') + Sum('a') + Sum('e')
+        )
+    
+        )
+        if current_fcpt['den'] > 0:
+            current_fcpt['total_fcpt'] = current_fcpt['num'] / current_fcpt['den']
+            return float(current_fcpt['total_fcpt'])
+        else:
+            current_fcpt['total_fcpt'] = None
+            return None
+
+    def get_game_result(self, obj: BatterStat):
+        expected_innings = 9
+        inning_info = f" ({obj.game_id.total_innings})" if obj.game_id.total_innings != expected_innings else ''
+        return f"{"W" if obj.game_id.selected_team_runs > obj.game_id.opponent_runs else "L"} {obj.game_id.selected_team_runs}-{obj.game_id.opponent_runs}{inning_info}"
     
     class Meta:
         model = FieldingStat
