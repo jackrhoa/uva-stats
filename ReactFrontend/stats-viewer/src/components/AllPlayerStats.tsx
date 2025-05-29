@@ -9,7 +9,7 @@ import {
 } from "@tanstack/react-table";
 import type { Row, SortingFn, FilterFn } from "@tanstack/react-table";
 import ToggleTabs from "./ToggleTabs.tsx";
-import DisplayTable from "./DislayTable.tsx";
+import DisplayTable from "./DisplayTable.tsx";
 
 const greaterThanOrEqualTo: FilterFn<any> = (row, columnId, value) => {
   const cellValue = row.getValue(columnId);
@@ -83,13 +83,13 @@ type AllPitcherStat = {
 };
 
 // this can be the Batter specific main page
-const NewAllPlayerStats = () => {
+const AllPlayerStats = () => {
   const [batterStats, setBatterStats] = useState<AllBatterStat[]>([]);
   const [pitcherStats, setPitcherStats] = useState<AllPitcherStat[]>([]);
   const [toggle, setToggle] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  const three_decimals = (value: number) => {
+  const dot_and_three_decimals = (value: number) => {
     const rounded = value.toFixed(3);
     return rounded.startsWith("0.") ? rounded.slice(1) : rounded;
   };
@@ -115,7 +115,6 @@ const NewAllPlayerStats = () => {
         }
         const pitcherData = await pitcherResponse.json();
         const batterData = await batterResponse.json();
-
         setBatterStats(batterData);
         setPitcherStats(pitcherData);
       } catch (error) {
@@ -172,7 +171,14 @@ const NewAllPlayerStats = () => {
       }),
       batterHelper.accessor("player_name", {
         header: "Player",
-        cell: (info) => info.getValue(),
+        cell: (info) => (
+          <a
+            href={`player/${info.row.original.player_id}`}
+            className="text-blue-600 hover:underline"
+          >
+            {info.getValue()}
+          </a>
+        ),
       }),
       batterHelper.accessor("games", {
         header: "G",
@@ -201,7 +207,7 @@ const NewAllPlayerStats = () => {
 
       batterHelper.accessor("avg", {
         header: "AVG",
-        cell: (info) => three_decimals(info.getValue()),
+        cell: (info) => dot_and_three_decimals(info.getValue()),
       }),
       batterHelper.accessor("total_double", {
         header: "2B",
@@ -271,7 +277,18 @@ const NewAllPlayerStats = () => {
       }),
       pitcherHelper.accessor("player_name", {
         header: "Player",
-        cell: (info) => info.getValue(),
+        cell: (info) => {
+          const row = info.row;
+          return (
+            <a
+              href={`/player/${row.original.player_id}`}
+              className="text-blue-600 hover:underline"
+            >
+              {info.getValue()}
+            </a>
+          );
+          // {info.getValue()}
+        },
       }),
       pitcherHelper.accessor("total_ip", {
         header: "IP",
@@ -393,4 +410,4 @@ const NewAllPlayerStats = () => {
     </div>
   );
 };
-export default NewAllPlayerStats;
+export default AllPlayerStats;
