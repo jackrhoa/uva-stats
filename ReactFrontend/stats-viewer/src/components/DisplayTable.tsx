@@ -33,16 +33,26 @@ const DislayTable: React.FC<DisplayTableProps> = ({
   const e = { total: 0 };
   const tb = { total: 0 };
   const hr = { total: 0 };
-
   table.getRowModel().rows.forEach((row) => {
     table.getAllLeafColumns().forEach((column) => {
       const value = row.getValue(column.id);
+      if (typeof value === "string") {
+        if (column.id === "total_ip" || column.id === "ip") {
+          const ip: number = parseFloat(value);
+          outs.total += 10 * ip - 7 * Math.floor(ip);
+        }
+      }
+
       if (typeof value === "number") {
         totals[column.id] = (totals[column.id] || 0) + value;
 
         // Track specific statistics needed for averages
         if (column.id === "total_hits" || column.id === "hits")
           hits.total += value;
+        if (column.id === "total_ip" || column.id === "ip") {
+          outs.total += 10 * value - 7 * Math.floor(value);
+        }
+
         if (column.id === "total_ab" || column.id === "ab") ab.total += value;
         if (column.id === "total_pa" || column.id === "pa") pa.total += value;
         if (column.id === "total_strikeouts" || column.id === "so")
@@ -55,8 +65,7 @@ const DislayTable: React.FC<DisplayTableProps> = ({
         if (column.id === "total_ibb" || column.id === "ibb")
           ibb.total += value;
         if (column.id === "total_tb" || column.id === "tb") tb.total += value;
-        if (column.id === "total_ip" || column.id === "ip")
-          outs.total += 10 * value - 7 * Math.floor(value);
+
         if (column.id === "total_po" || column.id === "po") po.total += value;
         if (column.id === "total_a" || column.id === "a") a.total += value;
         if (column.id === "total_e" || column.id === "e") e.total += value;
@@ -79,8 +88,16 @@ const DislayTable: React.FC<DisplayTableProps> = ({
         : null,
     total_era: outs.total > 0 ? (27 * er.total) / outs.total : 0,
     total_kp9: outs.total > 0 ? (27 * so.total) / outs.total : 0,
-    // total_abphr: ab.total > 0 ? ab.total / hr.total : null,
-    total_ab_per_hr: ab.total > 0 ? (hr.total / ab.total) * 100 : null,
+    total_babip:
+      ab.total > 0
+        ? (hits.total - hr.total) / (ab.total - so.total - hr.total + sf.total)
+        : null,
+    total_ab_per_hr: ab.total > 0 ? ab.total / hr.total : null,
+    total_chances: a.total + po.total + e.total,
+    hr_pct: ab.total > 0 ? hr.total / ab.total : null,
+    bb_pct: pa.total > 0 ? bb.total / pa.total : null,
+    k_pct: pa.total > 0 ? so.total / pa.total : null,
+    iso: ab.total > 0 ? (tb.total - hits.total) / ab.total : null,
   };
   return (
     <div
@@ -195,7 +212,7 @@ const DislayTable: React.FC<DisplayTableProps> = ({
           {table.getRowModel().rows.map((row) => (
             <tr
               key={row.id}
-              className={`${
+              className={` ${
                 highlight_condition &&
                 parseFloat(row.getValue(highlight_condition)) >
                   highlight_gte_value
@@ -219,7 +236,9 @@ const DislayTable: React.FC<DisplayTableProps> = ({
             {table.getAllLeafColumns().map((column) => (
               <td
                 key={column.id}
-                className="px-3 py-2 text-center border border-gray-200 font-mono text-gray-800 bg-gray-100 h-12"
+                className={`px-3 py-2 text-center border border-gray-200 font-mono text-gray-800 bg-gray-100 h-12 ${
+                  column.getIsVisible() ? "" : "hidden"
+                }`}
               >
                 {column.id === "player_name"
                   ? "TOTALS"
@@ -228,7 +247,9 @@ const DislayTable: React.FC<DisplayTableProps> = ({
                   : column.id === "total_avg" || column.id === "avg"
                   ? averages.total_avg.toFixed(3).replace(/^0+/, "")
                   : column.id === "total_era" || column.id === "era"
-                  ? averages.total_era.toFixed(2)
+                  ? averages.total_era != null
+                    ? averages.total_era.toFixed(2)
+                    : null
                   : column.id === "total_obp" || column.id === "obp"
                   ? averages.total_obp != null
                     ? averages.total_obp.toFixed(3).replace(/^0+/, "")
@@ -243,9 +264,25 @@ const DislayTable: React.FC<DisplayTableProps> = ({
                         .toFixed(3)
                         .replace(/^0+/, "")
                     : "--"
+                  : column.id === "total_iso" || column.id === "iso"
+                  ? averages.iso != null
+                    ? averages.iso.toFixed(3).replace(/^0+/, "")
+                    : "--"
+                  : column.id === "hrpct"
+                  ? averages.hr_pct != null
+                    ? (averages.hr_pct * 100).toFixed(2) + "%"
+                    : "--"
+                  : column.id === "bbpct"
+                  ? averages.bb_pct != null
+                    ? (averages.bb_pct * 100).toFixed(2) + "%"
+                    : "--"
+                  : column.id === "kpct"
+                  ? averages.k_pct != null
+                    ? (averages.k_pct * 100).toFixed(2) + "%"
+                    : "--"
                   : column.id === "total_kp9" || column.id === "kp9"
                   ? averages.total_kp9.toFixed(2)
-                  : column.id === "IP" || column.id === "total_ip"
+                  : column.id === "ip" || column.id === "total_ip"
                   ? (
                       Math.floor(outs.total / 3) +
                       (outs.total % 3) * 0.1
@@ -256,10 +293,16 @@ const DislayTable: React.FC<DisplayTableProps> = ({
                         .toFixed(3)
                         .replace(/^0+/, "")
                     : "--"
+                  : column.id === "total_babip" || column.id === "babip"
+                  ? averages.total_babip != null
+                    ? averages.total_babip.toFixed(3).replace(/^0+/, "")
+                    : "--"
                   : column.id === "total_abphr" || column.id === "ab_per_hr"
                   ? averages.total_ab_per_hr != null
                     ? averages.total_ab_per_hr.toFixed(1)
                     : "--"
+                  : column.id === "tc" || column.id === "TC"
+                  ? averages.total_chances
                   : typeof totals[column.id] === "number"
                   ? typeof column.columnDef.cell === "function" &&
                     column.columnDef.cell.toString().includes("toFixed")
