@@ -6,10 +6,11 @@ import {
   getCoreRowModel,
   getSortedRowModel,
   createColumnHelper,
+  getFilteredRowModel,
 } from "@tanstack/react-table";
 import DisplayTable from "./DisplayTable.tsx";
-import type { ColumnHelper } from "@tanstack/react-table";
-import ToggleTabs from "./ToggleTabs.tsx";
+import FilterGUI from "./FilterGUI.tsx";
+import type { ColumnHelper, ColumnFiltersState } from "@tanstack/react-table";
 
 const dot_and_three_decimals = (value: number) => {
   const rounded = value.toFixed(3);
@@ -117,15 +118,25 @@ type FieldingStat = {
 
 const createBatterColumns = (helper: ColumnHelper<BatterStat>) => [
   helper.accessor("game_date", {
-    header: "Game Date",
+    header: "DATE",
     cell: (info: any) => info.getValue(),
+    filterFn: (row, columnId, filterValue: Array<Date>) => {
+      if (!filterValue || filterValue.length !== 2) {
+        return true; // No filter applied
+      }
+      const [filterStart, filterEnd] = filterValue;
+      const date = new Date(row.getValue(columnId));
+      const startDate = new Date(filterStart);
+      const endDate = new Date(filterEnd);
+      return date >= startDate && date <= endDate;
+    },
   }),
   helper.accessor("opponent", {
-    header: "Opponent",
+    header: "OPPONENT",
     cell: (info: any) => info.getValue(),
   }),
   helper.accessor("game_result", {
-    header: "Game Result",
+    header: "RESULT",
     cell: (info: any) => (
       <a
         href={info.row.original.box_score_link}
@@ -267,7 +278,7 @@ const createPitcherColumns = (helper: ColumnHelper<PitcherStat>) => [
     cell: (info: any) => (info.getValue() > 0 ? "SP" : "RP"),
   }),
   helper.accessor("decision", {
-    header: "Decision",
+    header: "DEC",
     cell: (info: any) => info.getValue(),
     sortDescFirst: true,
   }),
@@ -300,7 +311,7 @@ const createPitcherColumns = (helper: ColumnHelper<PitcherStat>) => [
 
 const createFieldingColumns = (helper: ColumnHelper<FieldingStat>) => [
   helper.accessor("game_date", {
-    header: "Game Date",
+    header: "DATE",
     cell: (info: any) => info.getValue(),
   }),
   helper.accessor("opponent", {
@@ -308,7 +319,7 @@ const createFieldingColumns = (helper: ColumnHelper<FieldingStat>) => [
     cell: (info: any) => info.getValue(),
   }),
   helper.accessor("game_result", {
-    header: "Game Result",
+    header: "RESULT",
     cell: (info: any) => (
       <a
         href={info.row.original.box_score_link}
@@ -323,12 +334,16 @@ const createFieldingColumns = (helper: ColumnHelper<FieldingStat>) => [
     header: "POS",
     cell: (info: any) => info.getValue(),
   }),
-  helper.accessor("id", {
+  {
     header: "TC",
+    id: "tc",
     cell: (info: any) => {
-      return info.row.original.po + info.row.original.a + info.row.original.e;
+      const po = info.row.original.po;
+      const a = info.row.original.a;
+      const e = info.row.original.e;
+      return po + a + e;
     },
-  }),
+  },
   helper.accessor("po", {
     header: "PO",
     cell: (info: any) => info.getValue(),
@@ -361,15 +376,25 @@ const createFieldingColumns = (helper: ColumnHelper<FieldingStat>) => [
 
 const createAdvancedBattingColumns = (helper: ColumnHelper<BatterStat>) => [
   helper.accessor("game_date", {
-    header: "Game Date",
+    header: "DATE",
     cell: (info: any) => info.getValue(),
+    filterFn: (row, columnId, filterValue: Array<Date>) => {
+      if (!filterValue || filterValue.length !== 2) {
+        return true; // No filter applied
+      }
+      const [filterStart, filterEnd] = filterValue;
+      const date = new Date(row.getValue(columnId));
+      const startDate = new Date(filterStart);
+      const endDate = new Date(filterEnd);
+      return date >= startDate && date <= endDate;
+    },
   }),
   helper.accessor("opponent", {
     header: "Opponent",
     cell: (info: any) => info.getValue(),
   }),
   helper.accessor("game_result", {
-    header: "Game Result",
+    header: "RESULT",
     cell: (info: any) => (
       <a
         href={info.row.original.box_score_link}
@@ -378,14 +403,39 @@ const createAdvancedBattingColumns = (helper: ColumnHelper<BatterStat>) => [
         {info.getValue()}
       </a>
     ),
+    filterFn: "includesString",
     sortDescFirst: true,
   }),
   helper.accessor("pa", {
     header: "PA",
     cell: (info: any) => info.getValue(),
   }),
+  helper.accessor("ab", {
+    header: "AB",
+    cell: (info: any) => info.getValue(),
+  }),
   helper.accessor("hr", {
     header: "HR",
+    cell: (info: any) => info.getValue(),
+  }),
+  helper.accessor("bb", {
+    header: "BB",
+    cell: (info: any) => info.getValue(),
+  }),
+  helper.accessor("so", {
+    header: "K",
+    cell: (info: any) => info.getValue(),
+  }),
+  helper.accessor("tb", {
+    header: "TB",
+    cell: (info: any) => info.getValue(),
+  }),
+  helper.accessor("hits", {
+    header: "H",
+    cell: (info: any) => info.getValue(),
+  }),
+  helper.accessor("sf", {
+    header: "SF",
     cell: (info: any) => info.getValue(),
   }),
   helper.accessor("hrpct", {
@@ -420,7 +470,30 @@ const createAdvancedBattingColumns = (helper: ColumnHelper<BatterStat>) => [
   helper.accessor("ab_per_hr", {
     header: "AB/HR",
     cell: (info: any) =>
-      info.getValue() != null ? info.getValue().toFixed(2) : "--",
+      info.getValue() != null ? info.getValue().toFixed(1) : "--",
+  }),
+];
+
+const createAdvancedPitchingColumns = (helper: ColumnHelper<PitcherStat>) => [
+  helper.accessor("game_date", {
+    header: "DATE",
+    cell: (info: any) => info.getValue(),
+  }),
+  helper.accessor("opponent", {
+    header: "OPPONENT",
+    cell: (info: any) => info.getValue(),
+  }),
+  helper.accessor("game_result", {
+    header: "RESULT",
+    cell: (info: any) => (
+      <a
+        href={info.row.original.box_score_link}
+        className="text-blue-600 hover:underline"
+      >
+        {info.getValue()}
+      </a>
+    ),
+    sortDescFirst: true,
   }),
 ];
 
@@ -435,6 +508,11 @@ function createTableConfig<T>(
     columns,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
+    initialState: {
+      columnVisibility: {
+        //
+      },
+    },
   });
   return table;
 }
@@ -452,6 +530,8 @@ export default function PitcherStatsTanStack() {
   const [loading, setLoading] = useState(true);
   const { id } = useParams<{ id: string }>();
   const player_id = parseInt(id || "-1");
+
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
   useEffect(() => {
     const fetchPlayerStats = async () => {
@@ -487,15 +567,15 @@ export default function PitcherStatsTanStack() {
       setToggle(0);
       console.log("Batter stats found, setting toggle to 0");
     } else if (pitcherStats.length > 0) {
-      console.log("Pitcher stats found, setting toggle to 1");
-      setToggle(1);
+      console.log("Only pitcher stats found, setting toggle to 2");
+      setToggle(2);
     }
   }, [batterStats, pitcherStats, fieldingStats, loading]);
 
-  const batterTable = createTableConfig<BatterStat>(
-    batterStats,
-    createBatterColumns
-  );
+  // const batterTable = createTableConfig<BatterStat>(
+  //   batterStats,
+  //   createBatterColumns
+  // );
   const pitcherTable = createTableConfig<PitcherStat>(
     pitcherStats,
     createPitcherColumns
@@ -505,12 +585,79 @@ export default function PitcherStatsTanStack() {
     createFieldingColumns
   );
 
-  const advancedBatterTable = createTableConfig<BatterStat>(
-    batterStats,
-    createAdvancedBattingColumns
-  );
+  const advancedPitcherTable = useReactTable({
+    data: pitcherStats,
+    columns: createAdvancedPitchingColumns(createColumnHelper()),
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    // initialState: {
+    //   columnVisibility: {},
+    // },
+  });
 
   console.log("Toggle state:", toggle);
+
+  const batterTable = useReactTable({
+    data: batterStats,
+    columns: createBatterColumns(createColumnHelper()),
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    // initialState: {
+    //   columnVisibility: {
+    //     hr: false,
+    //     bb: false,
+    //     so: false,
+    //     ab: false,
+    //     tb: false,
+    //     hits: false,
+    //     pa: false,
+    //     sf: false,
+    //   },
+
+    //   // columnFilters: [
+    //   //   {
+    //   //     id: "game_date",
+    //   //     value: "2025-04",
+    //   //   },
+    //   // ],
+    // },
+    state: {
+      columnFilters,
+    },
+    onColumnFiltersChange: setColumnFilters,
+  });
+
+  const advancedBatterTable = useReactTable({
+    data: batterStats,
+    columns: createAdvancedBattingColumns(createColumnHelper()),
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    initialState: {
+      columnVisibility: {
+        hr: false,
+        bb: false,
+        so: false,
+        ab: false,
+        tb: false,
+        hits: false,
+        pa: false,
+        sf: false,
+      },
+
+      // columnFilters: [
+      //   {
+      //     id: "game_date",
+      //     value: "2025-04",
+      //   },
+      // ],
+    },
+    state: {
+      columnFilters,
+    },
+    onColumnFiltersChange: setColumnFilters,
+  });
 
   if (loading) {
     return <div>Loading...</div>;
@@ -535,7 +682,9 @@ export default function PitcherStatsTanStack() {
                 ? "bg-blue-600 text-white text-semibold border-transparent"
                 : "border-gray text-gray-500 hover:bg-blue-300"
             }`}
-            onClick={() => setToggle(0)}
+            onClick={() => {
+              setToggle(0);
+            }}
           >
             Batting
           </li>
@@ -555,7 +704,7 @@ export default function PitcherStatsTanStack() {
         <div className={pitcherStats.length > 0 ? "block" : "hidden"}>
           <li
             className={`border-1 px-2 py-1 rounded-full cursor-pointer ${
-              toggle === 1
+              toggle === 2
                 ? "bg-blue-600 text-white text-semibold border-transparent"
                 : "border-gray text-gray-500 hover:bg-blue-300"
             }`}
@@ -564,19 +713,42 @@ export default function PitcherStatsTanStack() {
             Pitching
           </li>
         </div>
-        <div className={fieldingStats.length > 0 ? "block" : "hidden"}>
+        <div className={pitcherStats.length > 0 ? "block" : "hidden"}>
           <li
             className={`border-1 px-2 py-1 rounded-full cursor-pointer ${
-              toggle === 2
+              toggle === 3
                 ? "bg-blue-600 text-white text-semibold border-transparent"
                 : "border-gray text-gray-500 hover:bg-blue-300"
             }`}
             onClick={() => setToggle(3)}
           >
+            Advanced Pitching
+          </li>
+        </div>
+        <div className={fieldingStats.length > 0 ? "block" : "hidden"}>
+          <li
+            className={`border-1 px-2 py-1 rounded-full cursor-pointer ${
+              toggle === 4
+                ? "bg-blue-600 text-white text-semibold border-transparent"
+                : "border-gray text-gray-500 hover:bg-blue-300"
+            }`}
+            onClick={() => setToggle(4)}
+          >
             Fielding
           </li>
         </div>
       </ul>
+      <div>
+        <FilterGUI
+          options={[
+            ["pa", "PA"],
+            ["ab", "AB"],
+            ["game_date", "Date"],
+          ]}
+          columnFilters={columnFilters}
+          setColumnFilters={setColumnFilters}
+        />
+      </div>
       <div className={toggle === 0 ? "block" : "hidden"}>
         <DisplayTable table={batterTable} />
       </div>
@@ -587,6 +759,11 @@ export default function PitcherStatsTanStack() {
         {pitcherStats.length > 0 && <DisplayTable table={pitcherTable} />}
       </div>
       <div className={toggle === 3 ? "block" : "hidden"}>
+        {pitcherStats.length > 0 && (
+          <DisplayTable table={advancedPitcherTable} />
+        )}
+      </div>
+      <div className={toggle === 4 ? "block" : "hidden"}>
         {fieldingStats.length > 0 && <DisplayTable table={fieldingTable} />}
       </div>
     </div>
