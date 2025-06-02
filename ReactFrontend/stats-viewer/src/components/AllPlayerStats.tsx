@@ -16,6 +16,40 @@ const greaterThanOrEqualTo: FilterFn<any> = (row, columnId, value) => {
   return typeof cellValue === "number" && cellValue >= parseFloat(value);
 };
 
+const byQualifiedEra: SortingFn<AllPitcherStat> = (
+  rowA: Row<AllPitcherStat>,
+  rowB: Row<AllPitcherStat>
+) => {
+  const eraA: number = rowA.getValue("total_era");
+  const eraB: number = rowB.getValue("total_era");
+
+  const ipA: number = rowA.getValue("total_ip");
+  const ipB: number = rowB.getValue("total_ip");
+
+  const team_games = 50;
+
+  const isQualifiedA = ipA >= team_games;
+  const isQualifiedB = ipB >= team_games;
+
+  if (isQualifiedA && isQualifiedB) {
+    // Both are qualified, sort by ERA
+    return eraA - eraB; // Ascending order
+  } else if (isQualifiedA) {
+    // A is qualified, B is not
+    return -1; // A comes first
+  } else if (isQualifiedB) {
+    // B is qualified, A is not
+    return 1; // B comes first
+  }
+
+  // No method currently exists for getting total games for the team, so I'm going to use 50 for now
+
+  if (eraA === null || eraA === undefined) return 1; // Treat null/undefined as greater
+  if (eraB === null || eraB === undefined) return -1; // Treat null/undefined as greater
+
+  return eraA - eraB; // Ascending order
+};
+
 type AllBatterStat = {
   id: number;
   player_id: number;
@@ -125,41 +159,6 @@ const AllPlayerStats = () => {
     };
     fetchAllPlayerStats();
   }, []);
-
-  // This should be used on the main page, not here
-  const byQualifiedEra: SortingFn<AllPitcherStat> = (
-    rowA: Row<AllPitcherStat>,
-    rowB: Row<AllPitcherStat>
-  ) => {
-    const eraA: number = rowA.getValue("total_era");
-    const eraB: number = rowB.getValue("total_era");
-
-    const ipA: number = rowA.getValue("total_ip");
-    const ipB: number = rowB.getValue("total_ip");
-
-    const team_games = 50;
-
-    const isQualifiedA = ipA >= team_games;
-    const isQualifiedB = ipB >= team_games;
-
-    if (isQualifiedA && isQualifiedB) {
-      // Both are qualified, sort by ERA
-      return eraA - eraB; // Ascending order
-    } else if (isQualifiedA) {
-      // A is qualified, B is not
-      return -1; // A comes first
-    } else if (isQualifiedB) {
-      // B is qualified, A is not
-      return 1; // B comes first
-    }
-
-    // No method currently exists for getting total games for the team, so I'm going to use 50 for now
-
-    if (eraA === null || eraA === undefined) return 1; // Treat null/undefined as greater
-    if (eraB === null || eraB === undefined) return -1; // Treat null/undefined as greater
-
-    return eraA - eraB; // Ascending order
-  };
 
   const batterHelper = createColumnHelper<AllBatterStat>();
 
@@ -372,6 +371,157 @@ const AllPlayerStats = () => {
     },
   });
 
+  const advancedBatterColumns = useMemo(
+    () => [
+      batterHelper.accessor("jersey_number", {
+        header: "#",
+        cell: (info) => info.getValue(),
+      }),
+      batterHelper.accessor("player_name", {
+        header: "Player",
+        cell: (info) => (
+          <a
+            href={`/player/${info.row.original.player_id}`}
+            className="text-blue-600 hover:underline"
+          >
+            {info.getValue()}
+          </a>
+        ),
+      }),
+      batterHelper.accessor("games", {
+        header: "G",
+        cell: (info) => info.getValue(),
+      }),
+      batterHelper.accessor("total_pa", {
+        header: "PA",
+        cell: (info) => info.getValue(),
+      }),
+      batterHelper.accessor("avg", {
+        header: "AVG",
+        cell: (info) => dot_and_three_decimals(info.getValue()),
+      }),
+      batterHelper.accessor("ops", {
+        header: "OPS",
+        cell: (info) => dot_and_three_decimals(info.getValue()),
+      }),
+      batterHelper.accessor("obp", {
+        header: "OBP",
+        cell: (info) => dot_and_three_decimals(info.getValue()),
+      }),
+      batterHelper.accessor("slg", {
+        header: "SLG",
+        cell: (info) => dot_and_three_decimals(info.getValue()),
+      }),
+      {
+        header: "HR%",
+        id: "hr_pct",
+        accessorFn: (row: any) => row.total_hr / row.total_ab,
+        cell: (info: any) => {
+          const hr = info.row.original.total_hr;
+          const ab = info.row.original.total_ab;
+          return ab > 0 ? ((hr / ab) * 100).toFixed(2) + "%" : "--";
+        },
+      },
+      {
+        header: "BB%",
+        id: "bb_pct",
+        accessorFn: (row: any) => row.total_bb / row.total_pa,
+        cell: (info: any) => {
+          const bb = info.row.original.total_bb;
+          const pa = info.row.original.total_pa;
+          return pa > 0 ? ((bb / pa) * 100).toFixed(2) + "%" : "--";
+        },
+      },
+      {
+        header: "K%",
+        id: "k_pct",
+        accessorFn: (row: any) => row.total_strikeouts / row.total_pa,
+        cell: (info: any) => {
+          const k = info.row.original.total_strikeouts;
+          const pa = info.row.original.total_pa;
+          return pa > 0 ? ((k / pa) * 100).toFixed(2) + "%" : "--";
+        },
+        sortDescFirst: false,
+      },
+      {
+        header: "ISO",
+        id: "iso",
+        accessorFn: (row: any) => {
+          const totalDoubles = row.total_double;
+          const totalTriples = row.total_triple;
+          const totalHomeRuns = row.total_hr;
+          const totalAtBats = row.total_ab;
+          return totalAtBats > 0
+            ? (totalDoubles + 2 * totalTriples + 3 * totalHomeRuns) /
+                totalAtBats
+            : null;
+        },
+        cell: (info: any) => {
+          const iso = info.getValue();
+          return iso != null ? dot_and_three_decimals(iso) : "--";
+        },
+      },
+      {
+        header: "BABIP",
+        id: "babip",
+        accessorFn: (row: any) => {
+          const totalHits = row.total_hits;
+          const totalAtBats = row.total_ab;
+          const totalSacFlies = row.total_sf;
+          const totalStrikeouts = row.total_strikeouts;
+          const totalHomeRuns = row.total_hr;
+          return totalAtBats > 0
+            ? (totalHits - totalHomeRuns) /
+                (totalAtBats - totalStrikeouts - totalHomeRuns + totalSacFlies)
+            : null;
+        },
+        cell: (info: any) => {
+          const babip = info.getValue();
+          return babip != null ? dot_and_three_decimals(babip) : "--";
+        },
+      },
+      {
+        header: "AB/HR",
+        id: "ab_per_hr",
+        accessorFn: (row: any) => {
+          const totalAtBats = row.total_ab;
+          const totalHomeRuns = row.total_hr;
+          return totalHomeRuns > 0 ? totalAtBats / totalHomeRuns : null;
+        },
+        cell: (info: any) => {
+          const abPerHr = info.getValue();
+          return abPerHr != null ? abPerHr.toFixed(1) : "--";
+        },
+        // sortDescFirst: true,
+        sortingFn: (rowA: any, rowB: any) => {
+          const abPerHrA = rowA.getValue("ab_per_hr");
+          const abPerHrB = rowB.getValue("ab_per_hr");
+
+          if (abPerHrA === null || abPerHrA === undefined) return -1; // Treat null/undefined as greater
+          if (abPerHrB === null || abPerHrB === undefined) return 1; // Treat null/undefined as greater
+
+          return abPerHrB - abPerHrA; // Ascending order
+        },
+      },
+    ],
+    [batterHelper]
+  );
+
+  const advancedBatterTable = useReactTable<AllBatterStat>({
+    columns: advancedBatterColumns,
+    data: batterStats,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    initialState: {
+      sorting: [
+        {
+          id: "total_pa",
+          desc: true, // Sort by OPS in descending order
+        },
+      ],
+    },
+  });
+
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -399,12 +549,18 @@ const AllPlayerStats = () => {
           highlight_gte_value={151}
         />
       </div>
+      <div className={toggle === 1 ? "block" : "hidden"}>
+        <DisplayTable
+          table={advancedBatterTable}
+          highlight_condition={"total_pa"}
+          highlight_gte_value={151}
+        />
+      </div>
       <div className={toggle === 2 ? "block" : "hidden"}>
         <DisplayTable
           table={pitcherTable}
           highlight_condition={"total_ip"}
           highlight_gte_value={50}
-          enableFilters={true}
         />
       </div>
     </div>

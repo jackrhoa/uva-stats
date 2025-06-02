@@ -337,12 +337,8 @@ const createFieldingColumns = (helper: ColumnHelper<FieldingStat>) => [
   {
     header: "TC",
     id: "tc",
-    cell: (info: any) => {
-      const po = info.row.original.po;
-      const a = info.row.original.a;
-      const e = info.row.original.e;
-      return po + a + e;
-    },
+    accessorFn: (row: any) => row.po + row.a + row.e,
+    cell: (info: any) => info.getValue(),
   },
   helper.accessor("po", {
     header: "PO",

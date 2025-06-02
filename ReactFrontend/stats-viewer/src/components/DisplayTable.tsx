@@ -6,14 +6,12 @@ interface DisplayTableProps {
   table: Table<any>;
   highlight_condition?: any;
   highlight_gte_value?: number;
-  enableFilters?: boolean;
 }
 
 const DislayTable: React.FC<DisplayTableProps> = ({
   table,
   highlight_condition,
   highlight_gte_value = 0,
-  enableFilters,
 }) => {
   const totals: Record<string, any> = {};
 
@@ -110,54 +108,6 @@ const DislayTable: React.FC<DisplayTableProps> = ({
         } as React.CSSProperties
       }
     >
-      {enableFilters && (
-        <div className="flex gap-4 px-4 py-2 bg-gray-100 border-b border-gray-300">
-          <div className="flex flex-col">
-            <label
-              htmlFor="minHR"
-              className="text-xs font-semibold text-gray-600"
-            >
-              Min HR
-            </label>
-            <input
-              id="minHR"
-              type="number"
-              className="border px-2 py-1 rounded text-black"
-              onChange={(e) => {
-                const column = table.getColumn("total_hr");
-                column?.setFilterValue(
-                  e.target.value ? Number(e.target.value) : undefined
-                );
-              }}
-              placeholder="e.g. 5"
-            />
-          </div>
-
-          <div className="flex flex-col">
-            <label
-              htmlFor="wins"
-              className="text-xs font-semibold text-gray-600"
-            >
-              Has Win
-            </label>
-            <select
-              id="wins"
-              className="border px-2 py-1 rounded text-black"
-              onChange={(e) => {
-                const value = e.target.value;
-                const column = table.getColumn("total_wins");
-                column?.setFilterValue(
-                  value === "true" ? 1 : value === "false" ? 0 : undefined
-                );
-              }}
-            >
-              <option value="">All</option>
-              <option value="true">Yes</option>
-              <option value="false">No</option>
-            </select>
-          </div>
-        </div>
-      )}
       <table
         className="w-full h-full border-separate border-spacing-0 bg-white text-sm table-auto"
         style={{ borderCollapse: "separate" }}

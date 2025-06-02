@@ -15,7 +15,15 @@ const ToggleTabs: React.FC<ColumnFiltersProps> = ({
   const [inputValue, setInputValue] = useState<string[]>([
     ...Array(options.length).fill(""),
   ]);
-  const [dateRange, setDateRange] = useState<[string, string]>(["", ""]);
+  // const currentDate = new Date().toLocaleDateString("en-NYC", {
+  //   year: "numeric",
+  //   month: "2-digit",
+  //   day: "2-digit",
+  // });
+  const [dateRange, setDateRange] = useState<[string, string]>([
+    "",
+    "2025-06-01",
+  ]);
   return (
     <ul className="flex justify-center items-center space-x-4 mb-6 text-white font-medium">
       {options.map((label, index) => (
