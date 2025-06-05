@@ -458,7 +458,6 @@ class FieldingStatSumSerializer(serializers.Serializer):
     def get_total_games(self, obj):
         return FieldingStat.objects.filter(player_id=obj['player_id']).count()
             
-
 class GameInfoSerializer(serializers.ModelSerializer):
     result = serializers.SerializerMethodField()
     

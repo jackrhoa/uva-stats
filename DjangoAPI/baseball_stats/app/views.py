@@ -113,12 +113,14 @@ class GameInfoCreateView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-class TeamBattingStatsView(APIView):
+class TeamBattingStatsViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [AllowAny]
+    serializer_class = BatterStatSumSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = '__all__'
 
-    def get(self, request):
-
-        stats = (
+    def get_queryset(self):
+        return (
             BatterStat.objects
             .values('player_id', 'player_id__player_name', 'player_id__jersey_number')
             .annotate(
@@ -149,15 +151,13 @@ class TeamBattingStatsView(APIView):
             .filter(total_pa__gt=0)
         )
 
-        serializer = BatterStatSumSerializer(stats, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-class TeamPitchingStatsView(APIView):
+class TeamPitchingStatsViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [AllowAny]
-
-    def get(self, request):
-
-        stats = (
+    serializer_class = PitcherStatSumSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = '__all__'
+    def get_queryset(self):
+        return (
             PitcherStat.objects
             .values('player_id', 'player_id__player_name', 'player_id__jersey_number')
             .annotate(
@@ -212,8 +212,6 @@ class TeamPitchingStatsView(APIView):
             )
         )
 
-        serializer = PitcherStatSumSerializer(stats, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
     
 class TeamFieldingStatsViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [AllowAny]
