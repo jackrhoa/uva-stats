@@ -6,12 +6,14 @@ interface DisplayTableProps {
   table: Table<any>;
   highlight_condition?: any;
   highlight_gte_value?: number;
+  filterEnabled?: boolean;
 }
 
 const DislayTable: React.FC<DisplayTableProps> = ({
   table,
   highlight_condition,
   highlight_gte_value = 0,
+  filterEnabled,
 }) => {
   const totals: Record<string, any> = {};
 
@@ -31,6 +33,9 @@ const DislayTable: React.FC<DisplayTableProps> = ({
   const e = { total: 0 };
   const tb = { total: 0 };
   const hr = { total: 0 };
+  const sb = { total: 0 };
+  const cs = { total: 0 };
+
   table.getRowModel().rows.forEach((row) => {
     table.getAllLeafColumns().forEach((column) => {
       const value = row.getValue(column.id);
@@ -68,6 +73,8 @@ const DislayTable: React.FC<DisplayTableProps> = ({
         if (column.id === "total_a" || column.id === "a") a.total += value;
         if (column.id === "total_e" || column.id === "e") e.total += value;
         if (column.id === "total_er" || column.id === "er") er.total += value;
+        if (column.id === "sb" || column.id === "total_sb") sb.total += value;
+        if (column.id === "cs" || column.id === "total_cs") cs.total += value;
       }
     });
   });
@@ -191,7 +198,7 @@ const DislayTable: React.FC<DisplayTableProps> = ({
                 }`}
               >
                 {column.id === "player_name"
-                  ? "TOTALS"
+                  ? "SEASON TOTALS"
                   : column.id === "jersey_number"
                   ? table.getRowModel().rows.length
                   : column.id === "total_avg" || column.id === "avg"
@@ -251,6 +258,10 @@ const DislayTable: React.FC<DisplayTableProps> = ({
                   ? averages.total_ab_per_hr != null
                     ? averages.total_ab_per_hr.toFixed(1)
                     : "--"
+                  : column.id === "sb_att"
+                  ? `${sb.total}-${sb.total + cs.total}`
+                  : column.id === "h_ab"
+                  ? `${hits.total}-${ab.total}`
                   : column.id === "tc" || column.id === "TC"
                   ? averages.total_chances
                   : typeof totals[column.id] === "number"
@@ -259,6 +270,20 @@ const DislayTable: React.FC<DisplayTableProps> = ({
                     ? totals[column.id].toFixed(1)
                     : totals[column.id]
                   : ""}
+              </td>
+            ))}
+          </tr>
+          <tr className="bg-green-200 font-semibold border-t-2 border-gray-400">
+            {table.getAllFlatColumns().map((column) => (
+              <td
+                key={column.id}
+                className={`px-3 py-2 text-center border border-gray-200 font-mono text-gray-800 bg-gray-100 h-12 ${
+                  column.getIsVisible() ? "" : "hidden"
+                }`}
+              >
+                {column.id === "player_name"
+                  ? "SELECTED SPAN TOTALS"
+                  : column.id === "jersey_number"}
               </td>
             ))}
           </tr>
