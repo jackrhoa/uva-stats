@@ -302,12 +302,12 @@ const AllPlayerStats = () => {
         header: "L",
         cell: (info) => info.getValue(),
       }),
-      pitcherHelper.accessor("total_starts", {
-        header: "GS",
-        cell: (info) => info.getValue(),
-      }),
       pitcherHelper.accessor("total_games", {
         header: "G",
+        cell: (info) => info.getValue(),
+      }),
+      pitcherHelper.accessor("total_starts", {
+        header: "GS",
         cell: (info) => info.getValue(),
       }),
       pitcherHelper.accessor("total_era", {
@@ -522,6 +522,184 @@ const AllPlayerStats = () => {
     },
   });
 
+  const pitcherAdvancedColumns = useMemo(
+    () => [
+      pitcherHelper.accessor("jersey_number", {
+        header: "#",
+        cell: (info) => {
+          return info.getValue();
+        },
+      }),
+      pitcherHelper.accessor("player_name", {
+        header: "Player",
+        cell: (info) => {
+          const row = info.row;
+          return (
+            <a
+              href={`/player/${row.original.player_id}`}
+              className="text-blue-600 hover:underline"
+            >
+              {info.getValue()}
+            </a>
+          );
+        },
+      }),
+      pitcherHelper.accessor("total_ip", {
+        header: "IP",
+        cell: (info) =>
+          typeof info.getValue() === "number"
+            ? info.getValue().toFixed(1)
+            : "--",
+        filterFn: greaterThanOrEqualTo,
+      }),
+      pitcherHelper.accessor("total_h", {
+        header: "H",
+        cell: (info) => info.getValue(),
+      }),
+      pitcherHelper.accessor("total_r", {
+        header: "R",
+        cell: (info) => info.getValue(),
+      }),
+      pitcherHelper.accessor("total_er", {
+        header: "ER",
+        cell: (info) => info.getValue(),
+      }),
+      pitcherHelper.accessor("total_bb", {
+        header: "BB",
+        cell: (info) => info.getValue(),
+      }),
+      pitcherHelper.accessor("total_so", {
+        header: "SO",
+        cell: (info) => info.getValue(),
+      }),
+      pitcherHelper.accessor("total_bf", {
+        header: "BF",
+        cell: (info) => info.getValue(),
+      }),
+      pitcherHelper.accessor("total_hr_allowed", {
+        header: "HR",
+        cell: (info) => info.getValue(),
+      }),
+      pitcherHelper.accessor("total_games", {
+        header: "G",
+        cell: (info) => info.getValue(),
+      }),
+      pitcherHelper.accessor("total_starts", {
+        header: "GS",
+        cell: (info) => info.getValue(),
+      }),
+      pitcherHelper.accessor("total_era", {
+        header: "ERA",
+        cell: (info) =>
+          typeof info.getValue() === "number"
+            ? info.getValue().toFixed(2)
+            : "--",
+        sortDescFirst: false,
+      }),
+      pitcherHelper.accessor("total_whip", {
+        header: "WHIP",
+        cell: (info) =>
+          typeof info.getValue() === "number"
+            ? info.getValue().toFixed(3)
+            : "--",
+        sortDescFirst: false,
+      }),
+      {
+        header: "H/9",
+        id: "h_9ip",
+        accessorFn: (row: any) => {
+          const ip: number = parseFloat(row.total_ip);
+          const outs = 10 * ip - 7 * Math.floor(ip);
+          return outs > 0 ? (27 * row.total_h) / outs : null;
+        },
+        cell: (info: any) =>
+          typeof info.getValue() === "number"
+            ? info.getValue().toFixed(1)
+            : "--",
+        sortDescFirst: false,
+      },
+      {
+        header: "BB/9",
+        id: "bb_9ip",
+        accessorFn: (row: any) => {
+          const ip: number = parseFloat(row.total_ip);
+          const outs = 10 * ip - 7 * Math.floor(ip);
+          return outs > 0 ? (27 * row.total_bb) / outs : null;
+        },
+        cell: (info: any) =>
+          typeof info.getValue() === "number"
+            ? info.getValue().toFixed(1)
+            : "--",
+        sortDescFirst: false,
+      },
+      {
+        header: "K/9",
+        id: "k_9ip",
+        accessorFn: (row: any) => {
+          const ip: number = parseFloat(row.total_ip);
+          const outs = 10 * ip - 7 * Math.floor(ip);
+          return outs > 0 ? (27 * parseInt(row.total_so)) / outs : null;
+        },
+        cell: (info: any) =>
+          typeof info.getValue() === "number"
+            ? info.getValue().toFixed(1)
+            : "--",
+        sortDescFirst: false,
+      },
+      {
+        header: "HR/9",
+        id: "hr_9ip",
+        accessorFn: (row: any) => {
+          const ip: number = parseFloat(row.total_ip);
+          const outs = 10 * ip - 7 * Math.floor(ip);
+          return outs > 0 ? (27 * parseInt(row.total_hr_allowed)) / outs : null;
+        },
+        cell: (info: any) =>
+          typeof info.getValue() === "number"
+            ? info.getValue().toFixed(1)
+            : "--",
+        sortDescFirst: false,
+      },
+      {
+        header: "K/BB",
+        id: "k_bb",
+        accessorFn: (row: any) => {
+          return row.total_bb > 0 ? row.total_so / row.total_bb : null;
+        },
+        cell: (info: any) =>
+          typeof info.getValue() === "number"
+            ? info.getValue().toFixed(1)
+            : "--",
+        sortDescFirst: true,
+      },
+    ],
+    [pitcherHelper]
+  );
+
+  const pitcherAdvancedTable = useReactTable<AllPitcherStat>({
+    columns: pitcherAdvancedColumns,
+    data: pitcherStats,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    initialState: {
+      columnVisibility: {
+        total_h: false,
+        total_r: false,
+        total_er: false,
+        total_bb: false,
+        total_so: false,
+        total_bf: false,
+        total_hr_allowed: false,
+      },
+      sorting: [
+        {
+          id: "total_ip",
+          desc: true, // Sort by OPS in descending order
+        },
+      ],
+    },
+  });
+
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -559,6 +737,13 @@ const AllPlayerStats = () => {
       <div className={toggle === 2 ? "block" : "hidden"}>
         <DisplayTable
           table={pitcherTable}
+          highlight_condition={"total_ip"}
+          highlight_gte_value={50}
+        />
+      </div>
+      <div className={toggle === 3 ? "block" : "hidden"}>
+        <DisplayTable
+          table={pitcherAdvancedTable}
           highlight_condition={"total_ip"}
           highlight_gte_value={50}
         />
