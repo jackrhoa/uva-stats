@@ -20,13 +20,15 @@ from rest_framework.routers import DefaultRouter
 from app.views import BatterStatViewSet, BatterStatCreateView, \
 PitcherStatViewSet, PitcherStatCreateView, PlayerInfoViewSet, \
 FieldingStatViewSet, GameInfoViewSet, FieldingStatCreateView, \
-GameInfoCreateView, TeamBattingStatsView, TeamPitchingStatsView
+GameInfoCreateView, TeamBattingStatsView, TeamPitchingStatsView, \
+TeamFieldingStatsViewSet
 
 router = DefaultRouter()
 router.register(r'batter_stats', BatterStatViewSet, basename='batter_stats')
 router.register(r'pitcher_stats', PitcherStatViewSet, basename='pitcher_stats')
 router.register(r'player_info', PlayerInfoViewSet, basename='player_info')
 router.register(r'fielding_stats', FieldingStatViewSet, basename='fielding_stats')
+router.register(r'total_fielding_stats', TeamFieldingStatsViewSet, basename='team_fielding_stats')
 router.register(r'game_info', GameInfoViewSet, basename='game_info')
 
 urlpatterns = [
@@ -37,5 +39,6 @@ urlpatterns = [
     path('api/game_info/create/', GameInfoCreateView.as_view(), name='game_info_create'),
     path('api/all_batter_stats/', TeamBattingStatsView.as_view(), name='team_batting_stats'),
     path('api/all_pitcher_stats/', TeamPitchingStatsView.as_view(), name='team_pitching_stats'),
+    # path('api/all_fielding_stats/', TeamFieldingStatsViewSet.as_view(), name='team_fielding_stats'),
     path('api/', include(router.urls)),
 ]

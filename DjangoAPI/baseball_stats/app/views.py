@@ -3,7 +3,8 @@ from .models import BatterStat, PitcherStat, PlayerInfo, FieldingStat, GameInfo
 from .serializers import BatterStatSerializer, \
 PitcherStatSerializer, PlayerInfoSerializer, \
 FieldingStatSerializer, GameInfoSerializer, \
-BatterStatSumSerializer, PitcherStatSumSerializer
+BatterStatSumSerializer, PitcherStatSumSerializer, \
+FieldingStatSumSerializer
 from rest_framework import viewsets, status
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
@@ -11,11 +12,9 @@ from django.conf import settings
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db import models
-from django_filters import CharFilter
 # Create your views here.
 
 class BatterStatViewSet(viewsets.ReadOnlyModelViewSet):
-    
     serializer_class = BatterStatSerializer
     permission_classes = [AllowAny]
     filter_backends = [DjangoFilterBackend]
@@ -153,7 +152,6 @@ class TeamBattingStatsView(APIView):
         serializer = BatterStatSumSerializer(stats, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    
 class TeamPitchingStatsView(APIView):
     permission_classes = [AllowAny]
 
@@ -216,3 +214,27 @@ class TeamPitchingStatsView(APIView):
 
         serializer = PitcherStatSumSerializer(stats, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+class TeamFieldingStatsViewSet(viewsets.ReadOnlyModelViewSet):
+    permission_classes = [AllowAny]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = '__all__'
+    serializer_class = FieldingStatSumSerializer
+    def get_queryset(self):
+        return (
+            FieldingStat.objects
+            .values('player_id', 'player_id__player_name', 'player_id__jersey_number')
+            .annotate(
+                total_po=models.Sum('po'),
+                total_a=models.Sum('a'),
+                total_e=models.Sum('e'),
+                total_pb=models.Sum('pb'),
+                total_sba=models.Sum('sba'),
+                total_cs=models.Sum('cs'),
+                total_dp=models.Sum('dp'),
+                total_tp=models.Sum('tp'),
+                total_games=models.Count('game_id'),
+                total_catchers_interference=models.Sum('catchers_interference'),
+                all_positions=models.F('player_position')
+            )
+        )
