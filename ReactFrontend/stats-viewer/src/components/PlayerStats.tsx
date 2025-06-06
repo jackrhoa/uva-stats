@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { variables } from "../Variables.tsx";
 import {
@@ -15,110 +15,16 @@ import type {
   ColumnFiltersState,
   SortingFn,
 } from "@tanstack/react-table";
+import usePlayerStats from "../hooks/usePlayerStats.tsx";
+import type {
+  BattingStat,
+  PitchingStat,
+  FieldingStat,
+} from "../types/statTypes.tsx";
 
 const dot_and_three_decimals = (value: number) => {
   const rounded = value.toFixed(3);
   return rounded.startsWith("0.") ? rounded.slice(1) : rounded;
-};
-
-type PitcherStat = {
-  id: number;
-  game_date: Date;
-  game_result: string;
-  opponent: string;
-  decision: string;
-  box_score_link: number;
-  player_id: number;
-  player_name: string;
-  player_position: string;
-  jersey_number: string;
-  ip: number;
-  h: number;
-  r: number;
-  er: number;
-  bb: number;
-  so: number;
-  bf: number;
-  doubles_allowed: number;
-  triples_allowed: number;
-  hr_allowed: number;
-  wp: number;
-  hb: number;
-  starter: number;
-  ibb: number;
-  balk: number;
-  ir: number;
-  irs: number;
-  sh_allowed: number;
-  sf_allowed: number;
-  kl: number;
-  pickoffs: number;
-  wins: number;
-  losses: number;
-  saves: number;
-  ab: number;
-  era: number;
-  whip: number;
-  games: number;
-};
-
-type BatterStat = {
-  id: number;
-  player_id: number;
-  player_name: string;
-  game_result: string;
-  game_date: string;
-  opponent: string;
-  game_id: number;
-  ab: number;
-  pa: number;
-  runs: number;
-  hits: number;
-  rbi: number;
-  bb: number;
-  so: number;
-  hbp: number;
-  ibb: number;
-  sb: number;
-  cs: number;
-  dp: number;
-  double: number;
-  triple: number;
-  hr: number;
-  sf: number;
-  sh: number;
-  picked_off: number;
-  avg: number;
-  obp: number;
-  slg: number;
-  hrpct: number;
-  bbpct: number;
-  kpct: number;
-  ab_per_hr: number;
-  babip: number;
-  tb: number;
-  box_score_link: number;
-};
-
-type FieldingStat = {
-  id: number;
-  player_name: string;
-  player_id: number;
-  game_date: Date;
-  opponent: string;
-  game_result: string;
-  game_id: number;
-  player_position: string;
-  po: number;
-  a: number;
-  e: number;
-  cum_fcpt: number;
-  catchers_interference: number;
-  passed_balls: number;
-  sba: number;
-  cs: number;
-  dp: number;
-  tp: number;
 };
 
 const dashStatSortingFn: SortingFn<any> = (rowA, rowB, columnId) => {
@@ -173,7 +79,7 @@ const dashStatSortingFn: SortingFn<any> = (rowA, rowB, columnId) => {
   return statA1 / statA2 - statB1 / statB2; // Sort by ratio
 };
 
-const createBatterGameLogColumns = (helper: ColumnHelper<BatterStat>) => [
+const createBatterGameLogColumns = (helper: ColumnHelper<BattingStat>) => [
   helper.accessor("game_date", {
     header: "DATE",
     cell: (info: any) => info.getValue(),
@@ -275,7 +181,7 @@ const createBatterGameLogColumns = (helper: ColumnHelper<BatterStat>) => [
   },
 ];
 
-const createPitcherColumns = (helper: ColumnHelper<PitcherStat>) => [
+const createPitcherColumns = (helper: ColumnHelper<PitchingStat>) => [
   helper.accessor("game_date", {
     header: "Game Date",
     cell: (info: any) => info.getValue(),
@@ -393,7 +299,7 @@ const createFieldingColumns = (helper: ColumnHelper<FieldingStat>) => [
   }),
 ];
 
-const createExtBattingColumns = (helper: ColumnHelper<BatterStat>) => [
+const createExtBattingColumns = (helper: ColumnHelper<BattingStat>) => [
   helper.accessor("game_date", {
     header: "DATE",
     cell: (info: any) => info.getValue(),
@@ -502,7 +408,7 @@ const createExtBattingColumns = (helper: ColumnHelper<BatterStat>) => [
   }),
 ];
 
-const createAdvancedPitchingColumns = (helper: ColumnHelper<PitcherStat>) => [
+const createAdvancedPitchingColumns = (helper: ColumnHelper<PitchingStat>) => [
   helper.accessor("game_date", {
     header: "DATE",
     cell: (info: any) => info.getValue(),
@@ -546,77 +452,42 @@ function createTableConfig<T>(
 }
 
 export default function PitcherStatsTanStack() {
-  const [pitcherStats, setPitcherStats] = useState<PitcherStat[]>([]);
-  const [batterStats, setBatterStats] = useState<BatterStat[]>([]);
-  const [fieldingStats, setFieldingStats] = useState<FieldingStat[]>([]);
-  const [allBatterStats, setAllBatterStats] = useState<BatterStat[]>([]);
-  const [allPitcherStats, setAllPitcherStats] = useState<PitcherStat[]>([]);
-  const [allFieldingStats, setAllFieldingStats] = useState<FieldingStat[]>([]);
   const [toggle, setToggle] = useState(0);
-  const dot_and_three_decimals = (value: number) => {
-    const rounded = value.toFixed(3);
-    return rounded.startsWith("0.") ? rounded.slice(1) : rounded;
-  };
 
-  const [loading, setLoading] = useState(true);
   const { id } = useParams<{ id: string }>();
-  const player_id = parseInt(id || "-1");
 
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
-  useEffect(() => {
-    const fetchPlayerStats = async () => {
-      try {
-        const urls = [
-          `batter_stats/?player_id=${player_id}`,
-          `pitcher_stats/?player_id=${player_id}`,
-          `fielding_stats/?player_id=${player_id}`,
-          `all_batter_stats/?player_id=${player_id}`,
-          `all_pitcher_stats/?player_id=${player_id}`,
-          `all_fielding_stats/?player_id=${player_id}`,
-        ];
+  const statsToReceive = useMemo(
+    () => [
+      `batter_stats?player_id=${id}`,
+      `pitcher_stats?player_id=${id}`,
+      `fielding_stats?player_id=${id}`,
+    ],
+    [id]
+  );
 
-        const [b, p, f, ba, pa, fa] = await Promise.all(
-          urls.map((url) =>
-            fetch(`${variables.API_BASE_URL}${url}`).then((r) => r.json())
-          )
-        );
-        setBatterStats(b);
-        setPitcherStats(p);
-        setFieldingStats(f);
-        setAllBatterStats(ba);
-        setAllPitcherStats(pa);
-        setAllFieldingStats(fa);
-        console.log("Pitcher stats data:", p);
-        console.log("Batter stats data:", b);
-        console.log("Fielding stats data:", f);
-        console.log("All Batter stats data:", ba);
-        console.log("All Pitcher stats data:", pa);
-        console.log("All Fielding stats data:", fa);
-      } catch (error) {
-        console.error("Error fetching pitching stats:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchPlayerStats();
-  }, [player_id]);
+  const { playerData, loading, error } = usePlayerStats({
+    API_BASE_URL: variables.API_BASE_URL,
+    statsToReceive,
+  });
+  const batterStats = useMemo(
+    () => playerData.batter_stats || [],
+    [playerData.batter_stats]
+  );
+  const pitcherStats = useMemo(
+    () => playerData.pitcher_stats || [],
+    [playerData.pitcher_stats]
+  );
+  const fieldingStats = useMemo(
+    () => playerData.fielding_stats || [],
+    [playerData.fielding_stats]
+  );
 
-  useEffect(() => {
-    if (batterStats.length > 0) {
-      setToggle(0);
-      console.log("Batter stats found, setting toggle to 0");
-    } else if (pitcherStats.length > 0) {
-      console.log("Only pitcher stats found, setting toggle to 2");
-      setToggle(2);
-    }
-  }, [batterStats, pitcherStats, fieldingStats, loading]);
+  console.log("Batter Stats:", batterStats);
+  console.log(fieldingStats);
 
-  // const batterTable = createTableConfig<BatterStat>(
-  //   batterStats,
-  //   createBatterColumns
-  // );
-  const pitcherTable = createTableConfig<PitcherStat>(
+  const pitcherTable = createTableConfig<PitchingStat>(
     pitcherStats,
     createPitcherColumns
   );
@@ -696,6 +567,18 @@ export default function PitcherStatsTanStack() {
 
   if (loading) {
     return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
+
+  if (!batterStats && !pitcherStats && !fieldingStats) {
+    return <div>Error accessing the stats.</div>;
+  }
+
+  if (!batterStats.length && !pitcherStats.length) {
+    return <div>No player stats available.</div>;
   }
 
   return (
@@ -827,7 +710,7 @@ export default function PitcherStatsTanStack() {
       </div>
       <div className={toggle === 4 ? "block" : "hidden"}>
         {pitcherStats.length > 0 && (
-          <DisplayTable table={advancedPitcherTable} filterEnabled={false} />
+          <DisplayTable table={advancedPitcherTable} />
         )}
       </div>
       <div className={toggle === 5 ? "block" : "hidden"}>

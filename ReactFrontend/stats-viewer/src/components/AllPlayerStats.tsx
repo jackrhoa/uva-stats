@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { variables } from "../Variables.tsx";
+import usePlayerStats from "../hooks/usePlayerStats.tsx";
 import {
   useReactTable,
   getCoreRowModel,
@@ -15,6 +16,24 @@ const greaterThanOrEqualTo: FilterFn<any> = (row, columnId, value) => {
   const cellValue = row.getValue(columnId);
   return typeof cellValue === "number" && cellValue >= parseFloat(value);
 };
+
+const batterSeasonTotalHeader = (
+  <div className="flex flex-col gap-2">
+    <div>
+      <span className="font-bold">Bold</span> denotes a qualified batter (N/A
+      plate appearances per team game)
+    </div>
+  </div>
+);
+
+const pitcherSeasonTotalHeader = (
+  <div className="flex flex-col gap-2">
+    <div>
+      <span className="font-bold">Bold</span> denotes a qualified pitcher (N/A
+      inning pitched per team game)
+    </div>
+  </div>
+);
 
 const byQualifiedEra: SortingFn<AllPitcherStat> = (
   rowA: Row<AllPitcherStat>,
@@ -118,47 +137,32 @@ type AllPitcherStat = {
 
 // this can be the Batter specific main page
 const AllPlayerStats = () => {
-  const [batterStats, setBatterStats] = useState<AllBatterStat[]>([]);
-  const [pitcherStats, setPitcherStats] = useState<AllPitcherStat[]>([]);
+  // const [batterStats, setBatterStats] = useState<AllBatterStat[]>([]);
+  // const [pitcherStats, setPitcherStats] = useState<AllPitcherStat[]>([]);
   const [toggle, setToggle] = useState(0);
-  const [loading, setLoading] = useState(true);
+
+  const statsToReceive = useMemo(
+    () => ["total_batting_stats", "total_pitching_stats"],
+    []
+  );
 
   const dot_and_three_decimals = (value: number) => {
     const rounded = value.toFixed(3);
     return rounded.startsWith("0.") ? rounded.slice(1) : rounded;
   };
 
-  useEffect(() => {
-    const fetchAllPlayerStats = async () => {
-      try {
-        const batterResponse = await fetch(
-          `${variables.API_BASE_URL}all_batter_stats`
-        );
-        const pitcherResponse = await fetch(
-          `${variables.API_BASE_URL}all_pitcher_stats`
-        );
-        if (!batterResponse.ok) {
-          throw new Error(
-            "HTTP error with batter data: " + batterResponse.status
-          );
-        }
-        if (!pitcherResponse.ok) {
-          throw new Error(
-            "HTTP error with pitcher data: " + pitcherResponse.status
-          );
-        }
-        const pitcherData = await pitcherResponse.json();
-        const batterData = await batterResponse.json();
-        setBatterStats(batterData);
-        setPitcherStats(pitcherData);
-      } catch (error) {
-        console.error("Error fetching players' stats: " + error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchAllPlayerStats();
-  }, []);
+  const { playerData, loading, error } = usePlayerStats({
+    API_BASE_URL: variables.API_BASE_URL,
+    statsToReceive,
+  });
+
+  const batterStats: AllBatterStat[] = useMemo(() => {
+    return playerData.total_batting_stats || [];
+  }, [playerData.total_batting_stats]);
+
+  const pitcherStats: AllPitcherStat[] = useMemo(() => {
+    return playerData.total_pitching_stats || [];
+  }, [playerData.total_pitching_stats]);
 
   const batterHelper = createColumnHelper<AllBatterStat>();
 
@@ -704,6 +708,10 @@ const AllPlayerStats = () => {
     return <div>Loading...</div>;
   }
 
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
+
   return (
     <div className="w-full min-h-screen px-4 py-6">
       <ToggleTabs
@@ -721,31 +729,34 @@ const AllPlayerStats = () => {
         {/* My goal is to pass a parameter which will set a highlight condition... I tried modifying the text after the . but that didn't
         work ... I also tried passing the entire brackets, which also didn't work. I want the highlighting to look the same, so I don't need to modify
         the styling. Just the condition... how to pass a boolean condition through parameters */}
+
         <DisplayTable
           table={batterTable}
-          highlight_condition={"total_pa"}
-          highlight_gte_value={151}
+          isRowHighlighted={(row: any) => {
+            return row.getValue("total_pa") >= 151;
+          }}
+          customHeaders={batterSeasonTotalHeader}
         />
       </div>
       <div className={toggle === 1 ? "block" : "hidden"}>
         <DisplayTable
           table={advancedBatterTable}
-          highlight_condition={"total_pa"}
-          highlight_gte_value={151}
+          isRowHighlighted={(row: any) => row.getValue("total_pa") >= 151}
+          customHeaders={batterSeasonTotalHeader}
         />
       </div>
       <div className={toggle === 2 ? "block" : "hidden"}>
         <DisplayTable
           table={pitcherTable}
-          highlight_condition={"total_ip"}
-          highlight_gte_value={50}
+          isRowHighlighted={(row: any) => row.getValue("total_ip") >= 50}
+          customHeaders={pitcherSeasonTotalHeader}
         />
       </div>
       <div className={toggle === 3 ? "block" : "hidden"}>
         <DisplayTable
           table={pitcherAdvancedTable}
-          highlight_condition={"total_ip"}
-          highlight_gte_value={50}
+          isRowHighlighted={(row: any) => row.getValue("total_ip") >= 50}
+          customHeaders={pitcherSeasonTotalHeader}
         />
       </div>
     </div>
