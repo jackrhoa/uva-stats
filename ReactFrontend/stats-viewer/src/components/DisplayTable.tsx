@@ -1,20 +1,24 @@
 import React from "react";
-import { flexRender } from "@tanstack/react-table";
-import type { Table } from "@tanstack/react-table";
+import { flexRender, type Table, type Row } from "@tanstack/react-table";
 
-interface DisplayTableProps {
-  table: Table<any>;
-  highlight_condition?: any;
-  highlight_gte_value?: number;
-  filterEnabled?: boolean;
+export interface DisplayTableProps<T extends object> {
+  table: Table<T>;
+  isRowHighlighted?: (row: Row<T>) => boolean;
+  customHeaders?: React.ReactNode;
+  reducers?: {
+    [key: string]: (acc: any, row: Row<T>) => void;
+  };
 }
 
-const DislayTable: React.FC<DisplayTableProps> = ({
+const DislayTable = <T extends object>({
   table,
-  highlight_condition,
-  highlight_gte_value = 0,
-  filterEnabled,
-}) => {
+  isRowHighlighted,
+  customHeaders,
+}: DisplayTableProps<T>) => {
+  // These should not be defined inside the component as that results in the code being
+  // re-executed each time a new table is rendered.
+  // instead, they should be defined in the component which calls this component
+
   const totals: Record<string, any> = {};
 
   // Track columns needed for calculating averages
@@ -104,191 +108,212 @@ const DislayTable: React.FC<DisplayTableProps> = ({
     k_pct: pa.total > 0 ? so.total / pa.total : null,
     iso: ab.total > 0 ? (tb.total - hits.total) / ab.total : null,
   };
+
   return (
-    <div
-      className={`w-full h-[90vh] overflow-x-auto shadow-lg rounded-lg border border-gray-300 
+    <div className="m-5 flex flex-col gap-5">
+      {customHeaders && <div>{customHeaders}</div>}
+
+      <div
+        className={`w-full h-[90vh] overflow-x-auto shadow-lg rounded-lg border border-gray-300 
       }`}
-      style={
-        {
-          "--header-bg": "#1f2937", // bg-gray-800 equivalent
-          "--header-border": "#4b5563", // border-gray-600 equivalent
-        } as React.CSSProperties
-      }
-    >
-      <table
-        className="w-full h-full border-separate border-spacing-0 bg-white text-sm table-auto"
-        style={{ borderCollapse: "separate" }}
+        style={
+          {
+            "--header-bg": "#1f2937", // bg-gray-800 equivalent
+            "--header-border": "#4b5563", // border-gray-600 equivalent
+          } as React.CSSProperties
+        }
       >
-        <thead className="sticky top-0 z-10 bg-gray-800">
-          {table.getHeaderGroups().map((headerGroup) => (
-            <tr
-              key={headerGroup.id}
-              className="bg-gray-800 text-white"
-              style={{ background: "var(--header-bg)" }}
-            >
-              {headerGroup.headers.map((header) => (
-                <th
-                  colSpan={header.colSpan}
-                  key={header.id}
-                  className="px-3 py-3 text-center font-bold bg-gray-800 cursor-pointer hover:bg-gray-700 transition-colors uppercase tracking-wide text-xs relative before:absolute before:bottom-0 before:left-0 before:w-full before:h-px before:bg-gray-600 h-12"
-                  style={{
-                    boxShadow:
-                      "inset 1px 0 0 rgba(0,0,0,0), inset 0 1px 0 rgba(0,0,0,0), inset -1px 0 0 rgba(75,85,99,1)",
-                  }}
-                  onClick={header.column.getToggleSortingHandler()}
-                >
-                  <div className="flex items-center justify-center gap-1">
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                    <span
-                      className={`text-sm font-bold ${
-                        header.column.getIsSorted()
-                          ? "opacity-90"
-                          : "opacity-60"
-                      }`}
-                    >
-                      {
+        <table
+          className="w-full h-full border-separate border-spacing-0 bg-white text-sm table-auto"
+          style={{ borderCollapse: "separate" }}
+        >
+          <thead className="sticky top-0 z-10 bg-gray-800">
+            {table.getHeaderGroups().map((headerGroup) => (
+              <tr
+                key={headerGroup.id}
+                className="bg-gray-800 text-white"
+                style={{ background: "var(--header-bg)" }}
+              >
+                {headerGroup.headers.map((header) => (
+                  <th
+                    colSpan={header.colSpan}
+                    key={header.id}
+                    className="px-3 py-3 text-center font-bold bg-gray-800 cursor-pointer hover:bg-gray-700 transition-colors uppercase tracking-wide text-xs relative before:absolute before:bottom-0 before:left-0 before:w-full before:h-px before:bg-gray-600 h-12"
+                    style={{
+                      boxShadow:
+                        "inset 1px 0 0 rgba(0,0,0,0), inset 0 1px 0 rgba(0,0,0,0), inset -1px 0 0 rgba(75,85,99,1)",
+                    }}
+                    onClick={header.column.getToggleSortingHandler()}
+                  >
+                    <div className="flex items-center justify-center gap-1">
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                      <span
+                        className={`text-sm font-bold ${
+                          header.column.getIsSorted()
+                            ? "opacity-90"
+                            : "opacity-60"
+                        }`}
+                      >
                         {
-                          asc: "▲",
-                          desc: "▼",
-                          false: header.column.getCanSort() ? "⇕" : "",
-                        }[(header.column.getIsSorted() as string) ?? false]
-                      }
-                    </span>
-                  </div>
-                </th>
-              ))}
-            </tr>
-          ))}
-        </thead>
-        <tbody className="h-full">
-          {table.getRowModel().rows.map((row) => (
-            <tr
-              key={row.id}
-              className={` ${
-                highlight_condition &&
-                parseFloat(row.getValue(highlight_condition)) >
-                  highlight_gte_value
-                  ? "bg-blue-50"
-                  : "bg-white"
-              } hover:bg-orange-50 transition-colors`}
-            >
-              {row.getVisibleCells().map((cell) => (
+                          {
+                            asc: "▲",
+                            desc: "▼",
+                            false: header.column.getCanSort() ? "⇕" : "",
+                          }[(header.column.getIsSorted() as string) ?? false]
+                        }
+                      </span>
+                    </div>
+                  </th>
+                ))}
+              </tr>
+            ))}
+          </thead>
+          <tbody className="h-full">
+            {table.getRowModel().rows.map((row) => (
+              <tr
+                key={row.id}
+                className={`  ${
+                  isRowHighlighted?.(row) ? "bg-blue-50" : "bg-white"
+                }
+               hover:bg-orange-50 transition-colors`}
+              >
+                {row.getVisibleCells().map((cell) => (
+                  <td
+                    key={cell.id}
+                    className={`px-3 py-2 text-center border border-gray-200 font-mono text-gray-800 h-12 ${
+                      cell.column.id === "player_name" &&
+                      isRowHighlighted?.(row)
+                        ? "font-bold"
+                        : "font-mono"
+                    }
+                    `}
+                  >
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+          <tfoot className="sticky bottom-0 z-10 bg-gray-100 font-bold text-sm">
+            {table.getFooterGroups().map((footerGroup) => (
+              <tr
+                key={footerGroup.id}
+                className="font-semibold border-t-2 border-gray-400"
+              >
+                {footerGroup.headers.map((footer) => (
+                  <td
+                    key={footer.id}
+                    className={`px-3 py-2 text-center border border-gray-200 text-gray-800 bg-gray-100 h-12 ${
+                      footer.column.getIsVisible() ? "" : "hidden"
+                    }`}
+                  >
+                    {/* Render the footer if it exists, otherwise empty */}
+                    {footer.isPlaceholder
+                      ? null
+                      : typeof footer.column.columnDef.footer === "function"
+                      ? flexRender(
+                          footer.column.columnDef.footer,
+                          footer.getContext()
+                        )
+                      : footer.column.columnDef.footer || ""}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tfoot>
+          {/* <tfoot className="sticky bottom-0 z-10 bg-gray-100">
+            <tr className="font-semibold border-t-2 border-gray-400">
+              {table.getAllLeafColumns().map((column) => (
                 <td
-                  key={cell.id}
-                  className="px-3 py-2 text-center border border-gray-200 font-mono text-gray-800 h-12"
+                  key={column.id}
+                  className={`px-3 py-2 text-center border border-gray-200 text-gray-800 bg-gray-100 h-12 ${
+                    column.getIsVisible() ? "" : "hidden"
+                  }`}
                 >
-                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  {column.id === "player_name"
+                    ? "SEASON TOTALS"
+                    : column.id === "jersey_number"
+                    ? table.getRowModel().rows.length
+                    : column.id === "total_avg" || column.id === "avg"
+                    ? averages.total_avg.toFixed(3).replace(/^0+/, "")
+                    : column.id === "total_era" || column.id === "era"
+                    ? averages.total_era != null
+                      ? averages.total_era.toFixed(2)
+                      : null
+                    : column.id === "total_obp" || column.id === "obp"
+                    ? averages.total_obp != null
+                      ? averages.total_obp.toFixed(3).replace(/^0+/, "")
+                      : "--"
+                    : column.id === "total_slg" || column.id === "slg"
+                    ? averages.total_slg != null
+                      ? averages.total_slg.toFixed(3).replace(/^0+/, "")
+                      : "--"
+                    : column.id === "total_ops" || column.id === "ops"
+                    ? averages.total_obp != null && averages.total_slg != null
+                      ? (averages.total_obp + averages.total_slg)
+                          .toFixed(3)
+                          .replace(/^0+/, "")
+                      : "--"
+                    : column.id === "total_iso" || column.id === "iso"
+                    ? averages.iso != null
+                      ? averages.iso.toFixed(3).replace(/^0+/, "")
+                      : "--"
+                    : column.id === "hrpct"
+                    ? averages.hr_pct != null
+                      ? (averages.hr_pct * 100).toFixed(2) + "%"
+                      : "--"
+                    : column.id === "bbpct"
+                    ? averages.bb_pct != null
+                      ? (averages.bb_pct * 100).toFixed(2) + "%"
+                      : "--"
+                    : column.id === "kpct"
+                    ? averages.k_pct != null
+                      ? (averages.k_pct * 100).toFixed(2) + "%"
+                      : "--"
+                    : column.id === "total_kp9" || column.id === "kp9"
+                    ? averages.total_kp9.toFixed(2)
+                    : column.id === "ip" || column.id === "total_ip"
+                    ? (
+                        Math.floor(outs.total / 3) +
+                        (outs.total % 3) * 0.1
+                      ).toFixed(1)
+                    : column.id === "cum_fcpt" || column.id === "fcpt"
+                    ? a.total + po.total + e.total > 0
+                      ? ((a.total + po.total) / (a.total + po.total + e.total))
+                          .toFixed(3)
+                          .replace(/^0+/, "")
+                      : "--"
+                    : column.id === "total_babip" || column.id === "babip"
+                    ? averages.total_babip != null
+                      ? averages.total_babip.toFixed(3).replace(/^0+/, "")
+                      : "--"
+                    : column.id === "total_abphr" || column.id === "ab_per_hr"
+                    ? averages.total_ab_per_hr != null
+                      ? averages.total_ab_per_hr.toFixed(1)
+                      : "--"
+                    : column.id === "sb_att"
+                    ? `${sb.total}-${sb.total + cs.total}`
+                    : column.id === "h_ab"
+                    ? `${hits.total}-${ab.total}`
+                    : column.id === "tc" || column.id === "TC"
+                    ? averages.total_chances
+                    : typeof totals[column.id] === "number"
+                    ? typeof column.columnDef.cell === "function" &&
+                      column.columnDef.cell.toString().includes("toFixed")
+                      ? totals[column.id].toFixed(1)
+                      : totals[column.id]
+                    : ""}
                 </td>
               ))}
             </tr>
-          ))}
-        </tbody>
-        <tfoot className="sticky bottom-0 z-10 bg-gray-100">
-          <tr className="font-semibold border-t-2 border-gray-400">
-            {table.getAllLeafColumns().map((column) => (
-              <td
-                key={column.id}
-                className={`px-3 py-2 text-center border border-gray-200 font-mono text-gray-800 bg-gray-100 h-12 ${
-                  column.getIsVisible() ? "" : "hidden"
-                }`}
-              >
-                {column.id === "player_name"
-                  ? "SEASON TOTALS"
-                  : column.id === "jersey_number"
-                  ? table.getRowModel().rows.length
-                  : column.id === "total_avg" || column.id === "avg"
-                  ? averages.total_avg.toFixed(3).replace(/^0+/, "")
-                  : column.id === "total_era" || column.id === "era"
-                  ? averages.total_era != null
-                    ? averages.total_era.toFixed(2)
-                    : null
-                  : column.id === "total_obp" || column.id === "obp"
-                  ? averages.total_obp != null
-                    ? averages.total_obp.toFixed(3).replace(/^0+/, "")
-                    : "--"
-                  : column.id === "total_slg" || column.id === "slg"
-                  ? averages.total_slg != null
-                    ? averages.total_slg.toFixed(3).replace(/^0+/, "")
-                    : "--"
-                  : column.id === "total_ops" || column.id === "ops"
-                  ? averages.total_obp != null && averages.total_slg != null
-                    ? (averages.total_obp + averages.total_slg)
-                        .toFixed(3)
-                        .replace(/^0+/, "")
-                    : "--"
-                  : column.id === "total_iso" || column.id === "iso"
-                  ? averages.iso != null
-                    ? averages.iso.toFixed(3).replace(/^0+/, "")
-                    : "--"
-                  : column.id === "hrpct"
-                  ? averages.hr_pct != null
-                    ? (averages.hr_pct * 100).toFixed(2) + "%"
-                    : "--"
-                  : column.id === "bbpct"
-                  ? averages.bb_pct != null
-                    ? (averages.bb_pct * 100).toFixed(2) + "%"
-                    : "--"
-                  : column.id === "kpct"
-                  ? averages.k_pct != null
-                    ? (averages.k_pct * 100).toFixed(2) + "%"
-                    : "--"
-                  : column.id === "total_kp9" || column.id === "kp9"
-                  ? averages.total_kp9.toFixed(2)
-                  : column.id === "ip" || column.id === "total_ip"
-                  ? (
-                      Math.floor(outs.total / 3) +
-                      (outs.total % 3) * 0.1
-                    ).toFixed(1)
-                  : column.id === "cum_fcpt" || column.id === "fcpt"
-                  ? a.total + po.total + e.total > 0
-                    ? ((a.total + po.total) / (a.total + po.total + e.total))
-                        .toFixed(3)
-                        .replace(/^0+/, "")
-                    : "--"
-                  : column.id === "total_babip" || column.id === "babip"
-                  ? averages.total_babip != null
-                    ? averages.total_babip.toFixed(3).replace(/^0+/, "")
-                    : "--"
-                  : column.id === "total_abphr" || column.id === "ab_per_hr"
-                  ? averages.total_ab_per_hr != null
-                    ? averages.total_ab_per_hr.toFixed(1)
-                    : "--"
-                  : column.id === "sb_att"
-                  ? `${sb.total}-${sb.total + cs.total}`
-                  : column.id === "h_ab"
-                  ? `${hits.total}-${ab.total}`
-                  : column.id === "tc" || column.id === "TC"
-                  ? averages.total_chances
-                  : typeof totals[column.id] === "number"
-                  ? typeof column.columnDef.cell === "function" &&
-                    column.columnDef.cell.toString().includes("toFixed")
-                    ? totals[column.id].toFixed(1)
-                    : totals[column.id]
-                  : ""}
-              </td>
-            ))}
-          </tr>
-          <tr className="bg-green-200 font-semibold border-t-2 border-gray-400">
-            {table.getAllFlatColumns().map((column) => (
-              <td
-                key={column.id}
-                className={`px-3 py-2 text-center border border-gray-200 font-mono text-gray-800 bg-gray-100 h-12 ${
-                  column.getIsVisible() ? "" : "hidden"
-                }`}
-              >
-                {column.id === "player_name"
-                  ? "SELECTED SPAN TOTALS"
-                  : column.id === "jersey_number"}
-              </td>
-            ))}
-          </tr>
-        </tfoot>
-      </table>
+          </tfoot> */}
+        </table>
+      </div>
     </div>
   );
 };

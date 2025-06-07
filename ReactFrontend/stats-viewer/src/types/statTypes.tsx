@@ -104,6 +104,8 @@ export type AllBattingStat = {
   total_hits: number;
   player_name: string;
   jersey_number: number;
+  player_position: JSON;
+  total_team_games: number;
   total_ab: number;
   total_pa: number;
   total_runs: number;
@@ -134,6 +136,7 @@ export type AllPitchingStat = {
   player_id: number;
   player_name: string;
   jersey_number: number;
+  total_team_games: number;
   total_ip: number;
   total_h: number;
   total_r: number;
