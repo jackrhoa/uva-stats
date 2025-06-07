@@ -30,7 +30,7 @@ class BatterStatSerializer(serializers.ModelSerializer):
         )
         total_hits = current_ba['total_hits'] or 0
         total_ab = current_ba['total_ab'] or 0
-        return total_hits / total_ab if total_ab > 0 else 0
+        return total_hits / total_ab if total_ab > 0 else None
     
     def get_game_result(self, obj: BatterStat):
         expected_innings = 9
@@ -188,6 +188,8 @@ class BatterStatSumSerializer(serializers.Serializer):
         source='player_id__player_name', read_only=True)
     jersey_number = serializers.IntegerField(
         source='player_id__jersey_number', read_only=True)
+    total_team_games = serializers.SerializerMethodField()
+    player_position = serializers.SerializerMethodField()
     total_ab = serializers.IntegerField()
     total_runs = serializers.IntegerField()
     total_hits = serializers.IntegerField()
@@ -226,7 +228,7 @@ class BatterStatSumSerializer(serializers.Serializer):
     def get_avg(self, obj):
         total_hits = obj['total_hits'] or 0
         total_ab = obj['total_ab'] or 0
-        return total_hits / total_ab if total_ab > 0 else 0
+        return total_hits / total_ab if total_ab > 0 else None
     
     def get_obp(self, obj):
         return (
@@ -240,7 +242,7 @@ class BatterStatSumSerializer(serializers.Serializer):
             (obj['total_ab'] + obj['total_hbp'] 
             + obj['total_ibb'] + obj['total_bb'] 
             + obj['total_sf']) > 0
-            ) else 0
+            ) else None
     def get_tb(self, obj):
         return (
             (obj['total_hits'] - obj['total_double']
@@ -255,15 +257,27 @@ class BatterStatSumSerializer(serializers.Serializer):
         total_bases = self.get_tb(obj)
         total_ab = obj['total_ab'] or 0
         return total_bases / total_ab \
-        if total_ab > 0 else 0
+        if total_ab > 0 else None
     
     def get_ops(self, obj):
         obp = self.get_obp(obj)
         slg = self.get_slg(obj)
-        return obp + slg if (obp or slg) else 0
+        return obp + slg if (obp and slg) else None
     
     def get_games(self, obj):
         return BatterStat.objects.filter(player_id=obj['player_id']).count()
+    
+    def get_player_position(self, obj):
+        position_info = (
+            PlayerInfo.objects
+                .filter(player_id=obj['player_id'])
+                .values_list('player_position', flat=True)
+        )
+        if position_info.exists():
+            return list(position_info)
+        return ["--"]
+    def get_total_team_games(self, obj):
+        return GameInfo.objects.count()
 
 class PitcherStatSerializer(serializers.ModelSerializer):
     player_name = serializers.CharField(source='player_id.player_name', read_only=True)
@@ -336,6 +350,7 @@ class PitcherStatSumSerializer(serializers.Serializer):
     player_id = serializers.IntegerField(read_only=True)
     player_name = serializers.CharField(source='player_id__player_name', read_only=True)
     jersey_number = serializers.IntegerField(source='player_id__jersey_number', read_only=True)
+    total_team_games = serializers.SerializerMethodField()
     total_ip = serializers.SerializerMethodField()
     total_outs = serializers.SerializerMethodField()
     total_h = serializers.IntegerField()
@@ -400,6 +415,8 @@ class PitcherStatSumSerializer(serializers.Serializer):
         )
         return walks_and_hits / (self.get_total_outs(obj) / 3) if self.get_total_ip(obj) > 0 else None
 
+    def get_total_team_games(self, obj):
+        return GameInfo.objects.count()
 class FieldingStatSerializer(serializers.ModelSerializer):
     player_name = serializers.CharField(source='player_id.player_name', read_only=True)
     game_date = serializers.DateField(source='game_id.game_date', read_only=True)
