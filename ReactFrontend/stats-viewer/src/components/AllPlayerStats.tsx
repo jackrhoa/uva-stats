@@ -11,7 +11,11 @@ import {
 } from "@tanstack/react-table";
 import ToggleTabs from "./ToggleTabs.tsx";
 import DisplayTable from "./DisplayTable.tsx";
-import type { AllBattingStat, AllPitchingStat } from "../types/statTypes.tsx";
+import type {
+  AllBattingStat,
+  AllFieldingStatByPlayer,
+  AllPitchingStat,
+} from "../types/statTypes.tsx";
 import { greaterThanOrEqualTo } from "../helpers/filterFns.ts";
 import {
   batterSeasonTotalHeader,
@@ -25,13 +29,18 @@ import {
   createTotalPitchingColumns,
   createTotalPitchingAdvColumns,
 } from "../columns/pitcherColumns.tsx";
+import { createTotalFieldingByPlayerColumns } from "../columns/fieldingColumns.tsx";
 
 // this can be the Batter specific main page
 const AllPlayerStats = () => {
   const [toggle, setToggle] = useState(0);
 
   const statsToReceive = useMemo(
-    () => ["total_batting_stats", "total_pitching_stats"],
+    () => [
+      "total_batting_stats",
+      "total_pitching_stats",
+      "total_fielding_stats_by_player",
+    ],
     []
   );
 
@@ -47,6 +56,10 @@ const AllPlayerStats = () => {
   const totalPitchingStats: AllPitchingStat[] = useMemo(() => {
     return playerData.total_pitching_stats || [];
   }, [playerData.total_pitching_stats]);
+
+  const totalFieldingStatsByPlayer: AllFieldingStatByPlayer[] = useMemo(() => {
+    return playerData.total_fielding_stats_by_player || [];
+  }, [playerData.total_fielding_stats_by_player]);
 
   const totalBattingTable = useReactTable<AllBattingStat>({
     columns: createTotalBattingColumns(createColumnHelper()),
@@ -146,6 +159,19 @@ const AllPlayerStats = () => {
     },
   });
 
+  const totalFieldingByPlayerTable = useReactTable<AllFieldingStatByPlayer>({
+    columns: createTotalFieldingByPlayerColumns(createColumnHelper()),
+    data: totalFieldingStatsByPlayer,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    initialState: {
+      columnVisibility: {
+        total_team_games: false,
+      },
+      sorting: [{ id: "total_po", desc: true }],
+    },
+  });
+
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -206,6 +232,16 @@ const AllPlayerStats = () => {
           table={totalPitchingAdvTable}
           isRowHighlighted={(row: Row<AllPitchingStat>) =>
             Number(row.getValue("total_ip")) >=
+            Number(row.getValue("total_team_games"))
+          }
+          customHeaders={pitcherSeasonTotalHeader}
+        />
+      </div>
+      <div className={toggle === 4 ? "block" : "hidden"}>
+        <DisplayTable
+          table={totalFieldingByPlayerTable}
+          isRowHighlighted={(row: Row<AllFieldingStatByPlayer>) =>
+            Number(row.getValue("total_po")) >=
             Number(row.getValue("total_team_games"))
           }
           customHeaders={pitcherSeasonTotalHeader}

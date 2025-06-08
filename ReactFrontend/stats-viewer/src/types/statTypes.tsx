@@ -167,6 +167,36 @@ export type AllPitchingStat = {
   total_games: number;
 };
 
-// export type AllFieldingStat = {
-//     ...
-// }
+export type AllFieldingStatByPos = {
+  player_name: string;
+  player_id: number;
+  player_position: string;
+  total_po: number;
+  total_a: number;
+  total_e: number;
+  total_catchers_interference: number;
+  total_passed_balls: number;
+  total_sba: number;
+  total_cs: number;
+  total_dp: number;
+  total_tp: number;
+};
+
+export type AllFieldingStatByPlayer = {
+  player_name: string;
+  player_id: number;
+  player_position: string;
+  total_team_games: number;
+  total_player_games: number;
+  jersey_number: number;
+  total_po: number;
+  total_a: number;
+  total_e: number;
+  total_catchers_interference: number;
+  total_passed_balls: number;
+  total_sba: number;
+  total_cs: number;
+  total_dp: number;
+  total_tp: number;
+  all_positions: JSON;
+};
