@@ -21,7 +21,7 @@ from app.views import BatterStatViewSet, BatterStatCreateView, \
 PitcherStatViewSet, PitcherStatCreateView, PlayerInfoViewSet, \
 FieldingStatViewSet, GameInfoViewSet, FieldingStatCreateView, \
 GameInfoCreateView, TeamBattingStatsViewSet, TeamPitchingStatsViewSet, \
-TeamFieldingStatsByPosViewSet
+TeamFieldingStatsByPosViewSet, TeamFieldingStatsByPlayerViewSet
 
 router = DefaultRouter()
 router.register(r'batter_stats', BatterStatViewSet, basename='batter_stats')
@@ -31,6 +31,7 @@ router.register(r'fielding_stats', FieldingStatViewSet, basename='fielding_stats
 router.register(r'total_batting_stats', TeamBattingStatsViewSet, basename='team_batting_stats')
 router.register(r'total_pitching_stats', TeamPitchingStatsViewSet, basename='team_pitching_stats')
 router.register(r'total_fielding_stats_by_pos', TeamFieldingStatsByPosViewSet, basename='team_fielding_stats')
+router.register(r'total_fielding_stats_by_player', TeamFieldingStatsByPlayerViewSet, basename='team_fielding_stats_by_player')
 router.register(r'game_info', GameInfoViewSet, basename='game_info')
 
 urlpatterns = [
