@@ -7,6 +7,7 @@ import {
   getSortedRowModel,
   createColumnHelper,
   getFilteredRowModel,
+  type ColumnFiltersState,
   type Row,
 } from "@tanstack/react-table";
 import ToggleTabs from "./ToggleTabs.tsx";
@@ -32,10 +33,11 @@ import {
   createTotalPitchingAdvColumns,
 } from "../columns/pitcherColumns.tsx";
 import { createTotalFieldingByPlayerColumns } from "../columns/fieldingColumns.tsx";
-
+import FilterGUI from "./FilterGUI.tsx";
 // this can be the Batter specific main page
 const AllPlayerStats = () => {
   const [toggle, setToggle] = useState(0);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
   const statsToReceive = useMemo(
     () => [
@@ -68,6 +70,7 @@ const AllPlayerStats = () => {
     data: totalBattingStats,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
     initialState: {
       columnVisibility: {
         total_team_games: false,
@@ -78,6 +81,9 @@ const AllPlayerStats = () => {
           desc: true,
         },
       ],
+    },
+    state: {
+      columnFilters,
     },
   });
 
@@ -180,6 +186,20 @@ const AllPlayerStats = () => {
         toggle={toggle}
         setToggle={setToggle}
       />
+      <div>
+        <div>
+          <FilterGUI
+            options={[
+              ["pa", "PA"],
+              ["ab", "AB"],
+              ["game_date", "Date"],
+              ["qualified", "Qualified"],
+            ]}
+            columnFilters={columnFilters}
+            setColumnFilters={setColumnFilters}
+          />
+        </div>
+      </div>
       <div className={toggle === 0 ? "block" : "hidden"}>
         <DisplayTable
           table={totalBattingTable}
