@@ -508,3 +508,35 @@ class PlayerInfoSerializer(serializers.ModelSerializer):
         model = PlayerInfo
         fields = '__all__'
         read_only_fields = ['id']
+
+class FieldingStatSumByPlayerSerializer(serializers.Serializer):
+    player_id = serializers.IntegerField(read_only=True)
+    player_name = serializers.CharField(source='player_id__player_name', read_only=True)
+    jersey_number = serializers.IntegerField(source='player_id__jersey_number', read_only=True)
+    total_team_games = serializers.SerializerMethodField()
+    total_player_games = serializers.SerializerMethodField()
+    total_po = serializers.IntegerField()
+    total_a = serializers.IntegerField()
+    total_e = serializers.IntegerField()
+    total_catchers_interference = serializers.IntegerField()
+    total_pb = serializers.IntegerField()
+    total_sba = serializers.IntegerField()
+    total_cs = serializers.IntegerField()
+    total_dp = serializers.IntegerField()
+    total_tp = serializers.IntegerField()
+    all_positions = serializers.SerializerMethodField()
+    def get_total_team_games(self, obj):
+        return GameInfo.objects.count()
+    
+    def get_total_player_games(self, obj):
+        return FieldingStat.objects.filter(player_id=obj['player_id']).count()
+
+    def get_all_positions(self, obj):
+        position_info = (
+            PlayerInfo.objects
+                .filter(player_id=obj['player_id'])
+                .values_list('player_position', flat=True)
+        )
+        if position_info.exists():
+            return list(position_info)
+        return ["--"]

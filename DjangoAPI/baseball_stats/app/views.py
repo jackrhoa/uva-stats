@@ -4,7 +4,7 @@ from .serializers import BatterStatSerializer, \
 PitcherStatSerializer, PlayerInfoSerializer, \
 FieldingStatSerializer, GameInfoSerializer, \
 BatterStatSumSerializer, PitcherStatSumSerializer, \
-FieldingStatSumByPosSerializer
+FieldingStatSumByPosSerializer, FieldingStatSumByPlayerSerializer
 from rest_framework import viewsets, status
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
@@ -213,7 +213,7 @@ class TeamPitchingStatsViewSet(viewsets.ReadOnlyModelViewSet):
         )
 
     
-class TeamFieldingStatsViewSet(viewsets.ReadOnlyModelViewSet):
+class TeamFieldingStatsByPosViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [AllowAny]
     filter_backends = [DjangoFilterBackend]
     filterset_fields = '__all__'
@@ -242,4 +242,28 @@ class TeamFieldingStatsViewSet(viewsets.ReadOnlyModelViewSet):
                     )
             )
         )
+        )
+    
+class TeamFieldingStatsByPlayerViewSet(viewsets.ReadOnlyModelViewSet):
+    permission_classes = [AllowAny]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = '__all__'
+    serializer_class = FieldingStatSumByPlayerSerializer
+
+    def get_queryset(self):
+        return (
+            FieldingStat.objects
+            .values('player_id', 'player_id__player_name', 'player_id__jersey_number')
+            .annotate(
+                total_po=models.Sum('po'),
+                total_a=models.Sum('a'),
+                total_e=models.Sum('e'),
+                total_pb=models.Sum('pb'),
+                total_sba=models.Sum('sba'),
+                total_cs=models.Sum('cs'),
+                total_dp=models.Sum('dp'),
+                total_tp=models.Sum('tp'),
+                total_games=models.Count('game_id'),
+                total_catchers_interference=models.Sum('catchers_interference')
+            )
         )
