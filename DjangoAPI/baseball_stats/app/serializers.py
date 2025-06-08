@@ -453,7 +453,7 @@ class FieldingStatSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ['id'] + ['player_name']
 
-class FieldingStatSumSerializer(serializers.Serializer):
+class FieldingStatSumByPosSerializer(serializers.Serializer):
     player_name = serializers.CharField(source='player_id__player_name', read_only=True)
     player_id = serializers.IntegerField(read_only=True)
     jersey_number = serializers.IntegerField(source='player_id__jersey_number', read_only=True)
@@ -466,14 +466,29 @@ class FieldingStatSumSerializer(serializers.Serializer):
     total_cs = serializers.IntegerField()
     total_dp = serializers.IntegerField()
     total_tp = serializers.IntegerField()
-    total_games = serializers.SerializerMethodField()
-    # all_positions = serializers.IntegerField(source='player_id__player_position', read_only=True)
-    all_positions = serializers.JSONField(source='player_id__player_position', read_only=True)
-    all_positions = serializers.JSONField()
+    player_position = serializers.CharField(source='all_positions', read_only=True)
+    games_at_position = serializers.IntegerField()
+    all_positions = serializers.SerializerMethodField()
     
-
-    def get_total_games(self, obj):
-        return FieldingStat.objects.filter(player_id=obj['player_id']).count()
+    def get_player_position(self, obj):
+        # Get all unique positions this player has played
+        positions = (
+            FieldingStat.objects
+            .filter(player_id=obj['player_id'])
+            .values_list('player_position', flat=True)
+            .distinct()
+        )
+        return list(positions)
+    
+    def get_all_positions(self, obj):
+        position_info = (
+            PlayerInfo.objects
+                .filter(player_id=obj['player_id'])
+                .values_list('player_position', flat=True)
+        )
+        if position_info.exists():
+            return list(position_info)
+        return ["--"]
             
 class GameInfoSerializer(serializers.ModelSerializer):
     result = serializers.SerializerMethodField()

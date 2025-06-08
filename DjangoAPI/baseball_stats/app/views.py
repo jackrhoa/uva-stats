@@ -4,7 +4,7 @@ from .serializers import BatterStatSerializer, \
 PitcherStatSerializer, PlayerInfoSerializer, \
 FieldingStatSerializer, GameInfoSerializer, \
 BatterStatSumSerializer, PitcherStatSumSerializer, \
-FieldingStatSumSerializer
+FieldingStatSumByPosSerializer
 from rest_framework import viewsets, status
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
@@ -217,7 +217,7 @@ class TeamFieldingStatsViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [AllowAny]
     filter_backends = [DjangoFilterBackend]
     filterset_fields = '__all__'
-    serializer_class = FieldingStatSumSerializer
+    serializer_class = FieldingStatSumByPosSerializer
     def get_queryset(self):
         return (
             FieldingStat.objects
@@ -233,6 +233,13 @@ class TeamFieldingStatsViewSet(viewsets.ReadOnlyModelViewSet):
                 total_tp=models.Sum('tp'),
                 total_games=models.Count('game_id'),
                 total_catchers_interference=models.Sum('catchers_interference'),
-                all_positions=models.F('player_position')
+                all_positions=models.F('player_position'),
+                games_at_position=models.Count(
+                    models.Case(
+                        models.When(player_position=models.F('all_positions'), then=1),
+                        default=0,
+                        output_field=models.IntegerField()
+                    )
             )
+        )
         )
