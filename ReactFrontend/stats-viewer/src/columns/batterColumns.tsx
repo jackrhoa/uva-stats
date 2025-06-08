@@ -1,8 +1,8 @@
-import { useMemo } from "react";
-import { type ColumnHelper, createColumnHelper } from "@tanstack/react-table";
+import { type ColumnHelper } from "@tanstack/react-table";
 import type { BattingStat, AllBattingStat } from "../types/statTypes.tsx";
 import { dashStatSortingFn } from "../helpers/sortingFns.ts";
 import { dot_and_three_decimals } from "../helpers/miscHelpers.tsx";
+import { getColumnSum } from "../helpers/miscHelpers.tsx";
 export const createBatterGameLogColumns = (
   helper: ColumnHelper<BattingStat>
 ) => [
@@ -233,6 +233,7 @@ export const createTotalBattingColumns = (
         {info.getValue()}
       </a>
     ),
+    footer: "SEASON TOTALS",
   }),
   {
     header: "POS",
@@ -243,17 +244,25 @@ export const createTotalBattingColumns = (
       for (const [key, value] of Object.entries(position_list)) {
         if (value > mostPlayedPos.count) {
           mostPlayedPos.pos = key;
-          mostPlayedPos.count = value; // Return the first position with a value greater than 0
+          mostPlayedPos.count = value;
         }
       }
-      return mostPlayedPos.pos.toUpperCase(); // Return "N/A" if no position has a value greater than 0
-      // row.player_position["SS"],
+      return mostPlayedPos.pos.toUpperCase();
     },
     cell: (info: any) => info.getValue(),
+    footer: "--",
   },
   helper.accessor("games", {
     header: "G",
     cell: (info) => info.getValue(),
+    footer: (info) => {
+      const rows = info.table.getFilteredRowModel().rows;
+      const totalGames = rows.reduce(
+        (sum, row) => sum + (Number(row.getValue("total_team_games")) ?? 0),
+        0
+      );
+      return totalGames / info.table.getRowCount() || "--";
+    },
   }),
   helper.accessor("total_team_games", {
     header: "Team G",
@@ -262,63 +271,80 @@ export const createTotalBattingColumns = (
   helper.accessor("total_pa", {
     header: "PA",
     cell: (info) => info.getValue(),
+    footer: (info) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("total_ab", {
     header: "AB",
     cell: (info) => info.getValue(),
+    footer: (info) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("total_runs", {
     header: "R",
     cell: (info) => info.getValue(),
+    footer: (info) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("total_hits", {
     header: "H",
     cell: (info) => info.getValue(),
+    footer: (info) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("total_rbi", {
     header: "RBI",
     cell: (info) => info.getValue(),
+    footer: (info) => getColumnSum(info, info.column.id),
   }),
 
   helper.accessor("avg", {
     header: "AVG",
     cell: (info) => dot_and_three_decimals(info.getValue()),
+    footer: (info) => {
+      const rows = info.table.getFilteredRowModel().rows;
+
+      const totalH = rows.reduce(
+        (sum, row) => sum + (Number(row.getValue("total_hits")) ?? 0),
+        0
+      );
+      const totalAB = rows.reduce(
+        (sum, row) => sum + (Number(row.getValue("total_ab")) ?? 0),
+        0
+      );
+      return totalAB > 0 ? dot_and_three_decimals(totalH / totalAB) : "--";
+    },
   }),
   helper.accessor("total_double", {
     header: "2B",
     cell: (info) => info.getValue(),
-  }),
-  helper.accessor("total_triple", {
-    header: "3B",
-    cell: (info) => info.getValue(),
+    footer: (info) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("total_hr", {
     header: "HR",
     cell: (info) => info.getValue(),
+    footer: (info) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("total_bb", {
     header: "BB",
     cell: (info) => info.getValue(),
+    footer: (info) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("total_strikeouts", {
     header: "SO",
     cell: (info) => info.getValue(),
+    footer: (info) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("total_sb", {
     header: "SB",
     cell: (info) => info.getValue(),
+    footer: (info) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("total_cs", {
     header: "CS",
     cell: (info) => info.getValue(),
+    footer: (info) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("total_hbp", {
     header: "HBP",
     cell: (info) => info.getValue(),
-  }),
-  helper.accessor("total_dp", {
-    header: "DP",
-    cell: (info) => info.getValue(),
+    footer: (info) => getColumnSum(info, info.column.id),
   }),
 ];
 
@@ -339,6 +365,95 @@ export const createTotalBattingAdvColumns = (
         {info.getValue()}
       </a>
     ),
+    footer: "SEASON TOTALS",
+  }),
+  {
+    header: "POS",
+    id: "player_position",
+    accessorFn: (row: any) => {
+      const position_list = row.player_position[0] as Record<string, number>;
+      const mostPlayedPos = { pos: "", count: 0 };
+      for (const [key, value] of Object.entries(position_list)) {
+        if (value > mostPlayedPos.count) {
+          mostPlayedPos.pos = key;
+          mostPlayedPos.count = value;
+        }
+      }
+      return mostPlayedPos.pos.toUpperCase();
+    },
+    cell: (info: any) => info.getValue(),
+    footer: "--",
+  },
+  helper.accessor("total_ab", {
+    header: "AB",
+    cell: (info) => info.getValue(),
+    footer: (info) => getColumnSum(info, info.column.id),
+  }),
+  helper.accessor("total_runs", {
+    header: "R",
+    cell: (info) => info.getValue(),
+    footer: (info) => getColumnSum(info, info.column.id),
+  }),
+  helper.accessor("total_hits", {
+    header: "H",
+    cell: (info) => info.getValue(),
+    footer: (info) => getColumnSum(info, info.column.id),
+  }),
+  helper.accessor("total_rbi", {
+    header: "RBI",
+    cell: (info) => info.getValue(),
+    footer: (info) => getColumnSum(info, info.column.id),
+  }),
+
+  helper.accessor("total_double", {
+    header: "2B",
+    cell: (info) => info.getValue(),
+    footer: (info) => getColumnSum(info, info.column.id),
+  }),
+  helper.accessor("total_hr", {
+    header: "HR",
+    cell: (info) => info.getValue(),
+    footer: (info) => getColumnSum(info, info.column.id),
+  }),
+  helper.accessor("total_bb", {
+    header: "BB",
+    cell: (info) => info.getValue(),
+    footer: (info) => getColumnSum(info, info.column.id),
+  }),
+  helper.accessor("total_strikeouts", {
+    header: "SO",
+    cell: (info) => info.getValue(),
+    footer: (info) => getColumnSum(info, info.column.id),
+  }),
+  helper.accessor("total_sb", {
+    header: "SB",
+    cell: (info) => info.getValue(),
+    footer: (info) => getColumnSum(info, info.column.id),
+  }),
+  helper.accessor("total_cs", {
+    header: "CS",
+    cell: (info) => info.getValue(),
+    footer: (info) => getColumnSum(info, info.column.id),
+  }),
+  helper.accessor("total_ibb", {
+    header: "IBB",
+    cell: (info) => info.getValue(),
+    footer: (info) => getColumnSum(info, info.column.id),
+  }),
+  helper.accessor("total_sf", {
+    header: "SF",
+    cell: (info) => info.getValue(),
+    footer: (info) => getColumnSum(info, info.column.id),
+  }),
+  helper.accessor("total_triple", {
+    header: "3B",
+    cell: (info) => info.getValue(),
+    footer: (info) => getColumnSum(info, info.column.id),
+  }),
+  helper.accessor("total_hbp", {
+    header: "HBP",
+    cell: (info) => info.getValue(),
+    footer: (info) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("games", {
     header: "G",
@@ -351,22 +466,135 @@ export const createTotalBattingAdvColumns = (
   helper.accessor("total_pa", {
     header: "PA",
     cell: (info) => info.getValue(),
+    footer: (info) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("avg", {
     header: "AVG",
     cell: (info) => dot_and_three_decimals(info.getValue()),
+    footer: (info) => {
+      const rows = info.table.getFilteredRowModel().rows;
+
+      const totalH = rows.reduce(
+        (sum, row) => sum + (Number(row.getValue("total_hits")) ?? 0),
+        0
+      );
+      const totalAB = rows.reduce(
+        (sum, row) => sum + (Number(row.getValue("total_ab")) ?? 0),
+        0
+      );
+      return totalAB > 0 ? dot_and_three_decimals(totalH / totalAB) : "--";
+    },
   }),
   helper.accessor("ops", {
     header: "OPS",
     cell: (info) => dot_and_three_decimals(info.getValue()),
+    footer: (info) => {
+      const rows = info.table.getFilteredRowModel().rows;
+
+      const totalOB = rows.reduce(
+        (sum, row) =>
+          sum +
+          (Number(row.getValue("total_hits")) ?? 0) +
+          (Number(row.getValue("total_bb")) ?? 0) +
+          (Number(row.getValue("total_hbp")) ?? 0),
+        0
+      );
+
+      const totalOBChances = rows.reduce(
+        (sum, row) =>
+          sum +
+          (Number(row.getValue("total_ab")) ?? 0) +
+          (Number(row.getValue("total_bb")) ?? 0) +
+          (Number(row.getValue("total_hbp")) ?? 0) +
+          (Number(row.getValue("total_sf")) ?? 0),
+        0
+      );
+
+      const obp = totalOBChances > 0 ? totalOB / totalOBChances : null;
+
+      const total_bases = rows.reduce(
+        (sum, row) =>
+          sum +
+          ((Number(row.getValue("total_hits")) ?? 0) -
+            (Number(row.getValue("total_double")) ?? 0) -
+            (Number(row.getValue("total_triple")) ?? 0) -
+            (Number(row.getValue("total_hr")) ?? 0)) +
+          (2 * (Number(row.getValue("total_double")) ?? 0) +
+            3 * (Number(row.getValue("total_triple")) ?? 0) +
+            4 * (Number(row.getValue("total_hr")) ?? 0)),
+
+        0
+      );
+      const totalAB = rows.reduce(
+        (sum, row) => sum + (Number(row.getValue("total_ab")) ?? 0),
+        0
+      );
+
+      const slg = totalAB > 0 ? total_bases / totalAB : null;
+      return obp != null && slg != null
+        ? dot_and_three_decimals(obp + slg)
+        : "--";
+    },
   }),
   helper.accessor("obp", {
     header: "OBP",
     cell: (info) => dot_and_three_decimals(info.getValue()),
+    footer: (info) => {
+      const rows = info.table.getFilteredRowModel().rows;
+
+      const totalOB = rows.reduce(
+        (sum, row) =>
+          sum +
+          (Number(row.getValue("total_hits")) ?? 0) +
+          (Number(row.getValue("total_bb")) ?? 0) +
+          (Number(row.getValue("total_hbp")) ?? 0),
+        // NOT INCLDING IBB because UVA official stats
+        // ignore it for OBP and baseball-reference.com
+        // does same thing (verified with Aaron Judge stats)
+        // on 06/07/2025
+
+        0
+      );
+      const totalOBChances = rows.reduce(
+        (sum, row) =>
+          sum +
+          (Number(row.getValue("total_ab")) ?? 0) +
+          (Number(row.getValue("total_bb")) ?? 0) +
+          (Number(row.getValue("total_hbp")) ?? 0) +
+          (Number(row.getValue("total_sf")) ?? 0),
+
+        0
+      );
+      return totalOBChances > 0
+        ? dot_and_three_decimals(totalOB / totalOBChances)
+        : "--";
+    },
   }),
   helper.accessor("slg", {
     header: "SLG",
     cell: (info) => dot_and_three_decimals(info.getValue()),
+    footer: (info) => {
+      const rows = info.table.getFilteredRowModel().rows;
+
+      const total_bases = rows.reduce(
+        (sum, row) =>
+          sum +
+          ((Number(row.getValue("total_hits")) ?? 0) -
+            (Number(row.getValue("total_double")) ?? 0) -
+            (Number(row.getValue("total_triple")) ?? 0) -
+            (Number(row.getValue("total_hr")) ?? 0)) +
+          (2 * (Number(row.getValue("total_double")) ?? 0) +
+            3 * (Number(row.getValue("total_triple")) ?? 0) +
+            4 * (Number(row.getValue("total_hr")) ?? 0)),
+
+        0
+      );
+      const totalAB = rows.reduce(
+        (sum, row) => sum + (Number(row.getValue("total_ab")) ?? 0),
+        0
+      );
+      return totalAB > 0 ? dot_and_three_decimals(total_bases / totalAB) : "--";
+    },
   }),
   {
     header: "HR%",
@@ -376,6 +604,21 @@ export const createTotalBattingAdvColumns = (
       const hr = info.row.original.total_hr;
       const pa = info.row.original.total_pa;
       return pa > 0 ? ((hr / pa) * 100).toFixed(2) + "%" : "--";
+    },
+    footer: (info: any) => {
+      const rows = info.table.getFilteredRowModel().rows;
+
+      const totalHR = rows.reduce(
+        (sum: number, row: any) =>
+          sum + (Number(row.getValue("total_hr")) ?? 0),
+        0
+      );
+      const totalPA = rows.reduce(
+        (sum: number, row: any) =>
+          sum + (Number(row.getValue("total_pa")) ?? 0),
+        0
+      );
+      return totalPA > 0 ? ((totalHR / totalPA) * 100).toFixed(1) + "%" : "--";
     },
   },
   {
@@ -387,6 +630,21 @@ export const createTotalBattingAdvColumns = (
       const pa = info.row.original.total_pa;
       return pa > 0 ? ((bb / pa) * 100).toFixed(2) + "%" : "--";
     },
+    footer: (info: any) => {
+      const rows = info.table.getFilteredRowModel().rows;
+
+      const totalBB = rows.reduce(
+        (sum: number, row: any) =>
+          sum + (Number(row.getValue("total_bb")) ?? 0),
+        0
+      );
+      const totalPA = rows.reduce(
+        (sum: number, row: any) =>
+          sum + (Number(row.getValue("total_pa")) ?? 0),
+        0
+      );
+      return totalPA > 0 ? ((totalBB / totalPA) * 100).toFixed(1) + "%" : "--";
+    },
   },
   {
     header: "K%",
@@ -396,6 +654,21 @@ export const createTotalBattingAdvColumns = (
       const k = info.row.original.total_strikeouts;
       const pa = info.row.original.total_pa;
       return pa > 0 ? ((k / pa) * 100).toFixed(2) + "%" : "--";
+    },
+    footer: (info: any) => {
+      const rows = info.table.getFilteredRowModel().rows;
+
+      const totalK = rows.reduce(
+        (sum: number, row: any) =>
+          sum + (Number(row.getValue("total_strikeouts")) ?? 0),
+        0
+      );
+      const totalPA = rows.reduce(
+        (sum: number, row: any) =>
+          sum + (Number(row.getValue("total_pa")) ?? 0),
+        0
+      );
+      return totalPA > 0 ? ((totalK / totalPA) * 100).toFixed(1) + "%" : "--";
     },
     sortDescFirst: false,
   },
@@ -415,6 +688,37 @@ export const createTotalBattingAdvColumns = (
       const iso = info.getValue();
       return iso != null ? dot_and_three_decimals(iso) : "--";
     },
+    footer: (info: any) => {
+      const rows = info.table.getFilteredRowModel().rows;
+
+      const total_bases = rows.reduce(
+        (sum: number, row: any) =>
+          sum +
+          ((Number(row.getValue("total_hits")) ?? 0) -
+            (Number(row.getValue("total_double")) ?? 0) -
+            (Number(row.getValue("total_triple")) ?? 0) -
+            (Number(row.getValue("total_hr")) ?? 0)) +
+          (2 * (Number(row.getValue("total_double")) ?? 0) +
+            3 * (Number(row.getValue("total_triple")) ?? 0) +
+            4 * (Number(row.getValue("total_hr")) ?? 0)),
+
+        0
+      );
+
+      const totalHits = rows.reduce(
+        (sum: number, row: any) =>
+          sum + (Number(row.getValue("total_hits")) ?? 0),
+        0
+      );
+      const totalAB = rows.reduce(
+        (sum: number, row: any) =>
+          sum + (Number(row.getValue("total_ab")) ?? 0),
+        0
+      );
+      return totalAB > 0
+        ? dot_and_three_decimals((total_bases - totalHits) / totalAB)
+        : "--";
+    },
   },
   {
     header: "BABIP",
@@ -433,6 +737,29 @@ export const createTotalBattingAdvColumns = (
     cell: (info: any) => {
       const babip = info.getValue();
       return babip != null ? dot_and_three_decimals(babip) : "--";
+    },
+    footer: (info: any) => {
+      const rows = info.table.getFilteredRowModel().rows;
+
+      const totalNumerator = rows.reduce(
+        (sum: number, row: any) =>
+          sum +
+          Number(row.getValue("total_hits")) -
+          Number(row.getValue("total_hr")),
+        0
+      );
+      const totalDenominator = rows.reduce(
+        (sum: number, row: any) =>
+          sum +
+          (Number(row.getValue("total_ab")) ?? -1000) -
+          (Number(row.getValue("total_hr")) ?? -1000) -
+          (Number(row.getValue("total_strikeouts")) ?? -1000) +
+          (Number(row.getValue("total_sf")) ?? -1000),
+        0
+      );
+      return totalDenominator > 0
+        ? dot_and_three_decimals(totalNumerator / totalDenominator)
+        : "--";
     },
   },
   // {
