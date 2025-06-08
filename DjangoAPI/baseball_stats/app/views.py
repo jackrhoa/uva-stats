@@ -266,4 +266,5 @@ class TeamFieldingStatsByPlayerViewSet(viewsets.ReadOnlyModelViewSet):
                 total_games=models.Count('game_id'),
                 total_catchers_interference=models.Sum('catchers_interference')
             )
+            .filter(~models.Q(player_position__exact='P') & models.Q(total_po__gt=0) & models.Q(total_a__gt=0))
         )

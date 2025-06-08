@@ -198,5 +198,6 @@ export type AllFieldingStatByPlayer = {
   total_cs: number;
   total_dp: number;
   total_tp: number;
+  total_pa: number;
   all_positions: JSON;
 };

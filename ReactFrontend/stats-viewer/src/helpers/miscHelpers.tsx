@@ -1,8 +1,12 @@
+export const min_plate_appearance = 3.0;
+
+export const min_innings_pitched = 1.0;
+
 export const batterSeasonTotalHeader = (
   <div className="flex flex-col gap-2">
     <div>
-      <span className="font-bold">Bold</span>: Qualified batter (3.1 PA per team
-      game)
+      <span className="font-bold">Bold</span>: Qualified batter (
+      {min_plate_appearance.toFixed(1)} PA per team game)
     </div>
   </div>
 );
@@ -10,8 +14,8 @@ export const batterSeasonTotalHeader = (
 export const pitcherSeasonTotalHeader = (
   <div className="flex flex-col gap-2">
     <div>
-      <span className="font-bold">Bold</span>: Qualified pitcher (1.0 IP per
-      team game)
+      <span className="font-bold">Bold</span>: Qualified pitcher (
+      {min_innings_pitched.toFixed(1)} IP per team game)
     </div>
   </div>
 );
