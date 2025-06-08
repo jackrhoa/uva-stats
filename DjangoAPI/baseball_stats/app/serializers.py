@@ -524,7 +524,9 @@ class FieldingStatSumByPlayerSerializer(serializers.Serializer):
     total_cs = serializers.IntegerField()
     total_dp = serializers.IntegerField()
     total_tp = serializers.IntegerField()
+    total_pa = serializers.SerializerMethodField()
     all_positions = serializers.SerializerMethodField()
+
     def get_total_team_games(self, obj):
         return GameInfo.objects.count()
     
@@ -540,3 +542,12 @@ class FieldingStatSumByPlayerSerializer(serializers.Serializer):
         if position_info.exists():
             return list(position_info)
         return ["--"]
+    def get_total_pa(self, obj):
+        total_pa = (
+            BatterStat.objects
+                .filter(player_id=obj['player_id'])
+                .aggregate(total_pa=Sum('ab') + Sum('bb')
+                 + Sum('hbp') + Sum('ibb') + Sum('sf') 
+                 + Sum('sh'))
+        )
+        return total_pa['total_pa'] if total_pa['total_pa'] else None

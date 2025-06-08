@@ -98,7 +98,7 @@ export const createTotalFieldingByPlayerColumns = (
       const position_list = row.all_positions[0] as Record<string, number>;
       const mostPlayedPos = { pos: "", count: 0 };
       for (const [key, value] of Object.entries(position_list)) {
-        if (value > mostPlayedPos.count) {
+        if (value > mostPlayedPos.count && !key.includes("DH")) {
           mostPlayedPos.pos = key;
           mostPlayedPos.count = value;
         }
@@ -123,6 +123,11 @@ export const createTotalFieldingByPlayerColumns = (
   helper.accessor("total_team_games", {
     header: "Team G",
     cell: (info) => info.getValue(),
+  }),
+  helper.accessor("total_pa", {
+    header: "PA",
+    cell: (info) => info.getValue(),
+    footer: (info) => getColumnSum(info, info.column.id),
   }),
   {
     header: "TC",
@@ -164,6 +169,10 @@ export const createTotalFieldingByPlayerColumns = (
       const totalTC = row.total_po + row.total_a + row.total_e;
       return totalTC > 0 ? (row.total_po + row.total_a) / totalTC : 0;
     },
+    cell: (info: any) => {
+      const value = info.getValue();
+      return value > 0 ? dot_and_three_decimals(value) : "--";
+    },
     footer: (info: HeaderContext<AllFieldingStatByPlayer, string>) => {
       const rows = info.table.getFilteredRowModel().rows;
       const totalTC = rows.reduce(
@@ -184,4 +193,14 @@ export const createTotalFieldingByPlayerColumns = (
       return totalTC > 0 ? dot_and_three_decimals(totalPOA / totalTC) : "--";
     },
   },
+  helper.accessor("total_dp", {
+    header: "DP",
+    cell: (info) => info.getValue(),
+    footer: (info) => getColumnSum(info, info.column.id),
+  }),
+  helper.accessor("total_tp", {
+    header: "TP",
+    cell: (info) => info.getValue(),
+    footer: (info) => getColumnSum(info, info.column.id),
+  }),
 ];

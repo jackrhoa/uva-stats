@@ -20,6 +20,8 @@ import { greaterThanOrEqualTo } from "../helpers/filterFns.ts";
 import {
   batterSeasonTotalHeader,
   pitcherSeasonTotalHeader,
+  min_innings_pitched,
+  min_plate_appearance,
 } from "../helpers/miscHelpers.tsx";
 import {
   createTotalBattingColumns,
@@ -151,8 +153,9 @@ const AllPlayerStats = () => {
     initialState: {
       columnVisibility: {
         total_team_games: false,
+        total_pa: false,
       },
-      sorting: [{ id: "total_po", desc: true }],
+      sorting: [{ id: "total_player_games", desc: true }],
     },
   });
 
@@ -194,7 +197,7 @@ const AllPlayerStats = () => {
           table={totalBatterAdvTable}
           isRowHighlighted={(row: Row<AllBattingStat>) => {
             return (
-              Number(row.getValue("total_pa")) / 3.1 >=
+              Number(row.getValue("total_pa")) / min_plate_appearance >=
               Number(row.getValue("total_team_games"))
             );
           }}
@@ -205,7 +208,7 @@ const AllPlayerStats = () => {
         <DisplayTable
           table={totalPitchingTable}
           isRowHighlighted={(row: Row<AllPitchingStat>) =>
-            Number(row.getValue("total_ip")) >=
+            Number(row.getValue("total_ip")) / min_innings_pitched >=
             Number(row.getValue("total_team_games"))
           }
           customHeaders={pitcherSeasonTotalHeader}
@@ -215,7 +218,7 @@ const AllPlayerStats = () => {
         <DisplayTable
           table={totalPitchingAdvTable}
           isRowHighlighted={(row: Row<AllPitchingStat>) =>
-            Number(row.getValue("total_ip")) >=
+            Number(row.getValue("total_ip")) / min_innings_pitched >=
             Number(row.getValue("total_team_games"))
           }
           customHeaders={pitcherSeasonTotalHeader}
@@ -225,10 +228,10 @@ const AllPlayerStats = () => {
         <DisplayTable
           table={totalFieldingByPlayerTable}
           isRowHighlighted={(row: Row<AllFieldingStatByPlayer>) =>
-            Number(row.getValue("total_po")) >=
+            Number(row.getValue("total_pa")) / min_plate_appearance >=
             Number(row.getValue("total_team_games"))
           }
-          customHeaders={pitcherSeasonTotalHeader}
+          customHeaders={batterSeasonTotalHeader}
         />
       </div>
     </div>
