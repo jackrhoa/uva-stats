@@ -59,7 +59,7 @@ export default function PlayerStats() {
       `fielding_stats?player_id=${id}`,
       `total_batting_stats?player_id=${id}`,
       `total_pitching_stats?player_id=${id}`,
-      `total_fielding_stats?player_id=${id}`,
+      `total_fielding_stats_by_pos?player_id=${id}`,
     ],
     [id]
   );
@@ -90,7 +90,7 @@ export default function PlayerStats() {
     [playerData.total_pitching_stats]
   );
 
-  const allFieldingStats = useMemo(
+  const allFieldingStatsByPos = useMemo(
     () => playerData.total_fielding_stats || [],
     [playerData.total_fielding_stats]
   );
