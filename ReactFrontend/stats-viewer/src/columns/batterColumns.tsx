@@ -34,6 +34,14 @@ export const createBatterGameLogColumns = (
         {info.getValue()}
       </a>
     ),
+    // footer: (info: any) => {
+    //   const rows = info.table.getFilteredRowModel().rows;
+    //   const totalGames = rows.length;
+    //   const wins = rows.filter((row: any) =>
+    //     row.getValue("game_result").includes("W")
+    //   ).length;
+    //   return `${wins}-${totalGames - wins}`;
+    // },
     sortDescFirst: true,
   }),
   helper.accessor("player_position", {
