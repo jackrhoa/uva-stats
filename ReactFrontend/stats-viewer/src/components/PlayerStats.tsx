@@ -23,7 +23,7 @@ import {
 } from "../columns/batterColumns.tsx";
 import {
   createPitcherColumns,
-  createAdvancedPitchingColumns,
+  createPitchingExtColumns,
 } from "../columns/pitcherColumns.tsx";
 import { createFieldingColumns } from "../columns/fieldingColumns.tsx";
 
@@ -107,7 +107,7 @@ export default function PlayerStats() {
 
   const advancedPitcherTable = useReactTable({
     data: pitcherStats,
-    columns: createAdvancedPitchingColumns(createColumnHelper()),
+    columns: createPitchingExtColumns(createColumnHelper()),
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     // initialState: {
@@ -295,6 +295,7 @@ export default function PlayerStats() {
             ["pa", "PA"],
             ["ab", "AB"],
             ["game_date", "Date"],
+            ["qualified", "Qualified"],
           ]}
           columnFilters={columnFilters}
           setColumnFilters={setColumnFilters}
