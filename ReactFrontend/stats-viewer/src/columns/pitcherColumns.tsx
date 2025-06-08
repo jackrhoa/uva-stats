@@ -198,6 +198,22 @@ export const createTotalPitchingColumns = (
     cell: (info) =>
       typeof info.getValue() === "number" ? info.getValue().toFixed(1) : "--",
     filterFn: greaterThanOrEqualTo,
+    footer: (info) => {
+      const totalOuts = info.table
+        .getSortedRowModel()
+        .rows.reduce((sum: number, row: any) => {
+          const ipValue = row.getValue("total_ip");
+          return (
+            sum +
+            (typeof ipValue === "number"
+              ? 10 * ipValue - 7 * Math.floor(ipValue)
+              : -1000)
+          );
+        }, 0);
+      return totalOuts > 0
+        ? (Math.floor(totalOuts / 3) + (totalOuts % 3) * 0.1).toFixed(1)
+        : "--";
+    },
   }),
   helper.accessor("total_wins", {
     header: "W",
@@ -223,6 +239,26 @@ export const createTotalPitchingColumns = (
     header: "ERA",
     cell: (info) =>
       info.getValue() != null ? info.getValue().toFixed(2) : "--",
+    footer: (info) => {
+      const totalOuts = info.table
+        .getSortedRowModel()
+        .rows.reduce((sum: number, row: any) => {
+          const ipValue = row.getValue("total_ip");
+          return (
+            sum +
+            (typeof ipValue === "number"
+              ? 10 * ipValue - 7 * Math.floor(ipValue)
+              : -1000)
+          );
+        }, 0);
+      const totalEr = info.table
+        .getSortedRowModel()
+        .rows.reduce((sum: number, row: any) => {
+          const erValue = row.getValue("total_er");
+          return sum + (typeof erValue === "number" ? erValue : 0);
+        }, 0);
+      return totalOuts > 0 ? ((totalEr * 27) / totalOuts).toFixed(2) : "--";
+    },
     sortDescFirst: true,
   }),
   helper.accessor("total_h", {
@@ -246,7 +282,7 @@ export const createTotalPitchingColumns = (
     footer: (info) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("total_so", {
-    header: "SO",
+    header: "K",
     cell: (info) => info.getValue(),
     footer: (info) => getColumnSum(info, info.column.id),
   }),
@@ -298,6 +334,22 @@ export const createTotalPitchingAdvColumns = (
     header: "IP",
     cell: (info) =>
       typeof info.getValue() === "number" ? info.getValue().toFixed(1) : "--",
+    footer: (info) => {
+      const totalOuts = info.table
+        .getSortedRowModel()
+        .rows.reduce((sum: number, row: any) => {
+          const ipValue = row.getValue("total_ip");
+          return (
+            sum +
+            (typeof ipValue === "number"
+              ? 10 * ipValue - 7 * Math.floor(ipValue)
+              : -1000)
+          );
+        }, 0);
+      return totalOuts > 0
+        ? (Math.floor(totalOuts / 3) + (totalOuts % 3) * 0.1).toFixed(1)
+        : "--";
+    },
     filterFn: greaterThanOrEqualTo,
   }),
   helper.accessor("total_h", {
@@ -317,7 +369,7 @@ export const createTotalPitchingAdvColumns = (
     cell: (info) => info.getValue(),
   }),
   helper.accessor("total_so", {
-    header: "SO",
+    header: "K",
     cell: (info) => info.getValue(),
   }),
   helper.accessor("total_bf", {
@@ -331,21 +383,71 @@ export const createTotalPitchingAdvColumns = (
   helper.accessor("total_games", {
     header: "G",
     cell: (info) => info.getValue(),
+    footer: "--",
   }),
   helper.accessor("total_starts", {
     header: "GS",
     cell: (info) => info.getValue(),
+    footer: (info) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("total_era", {
     header: "ERA",
     cell: (info) =>
       typeof info.getValue() === "number" ? info.getValue().toFixed(2) : "--",
+    footer: (info) => {
+      const totalOuts = info.table
+        .getSortedRowModel()
+        .rows.reduce((sum: number, row: any) => {
+          const ipValue = row.getValue("total_ip");
+          return (
+            sum +
+            (typeof ipValue === "number"
+              ? 10 * ipValue - 7 * Math.floor(ipValue)
+              : -1000)
+          );
+        }, 0);
+      const totalEr = info.table
+        .getSortedRowModel()
+        .rows.reduce((sum: number, row: any) => {
+          const erValue = row.getValue("total_er");
+          return sum + (typeof erValue === "number" ? erValue : 0);
+        }, 0);
+      return totalOuts > 0 ? ((totalEr * 27) / totalOuts).toFixed(2) : "--";
+    },
     sortDescFirst: false,
   }),
   helper.accessor("total_whip", {
     header: "WHIP",
     cell: (info) =>
       typeof info.getValue() === "number" ? info.getValue().toFixed(3) : "--",
+    footer: (info) => {
+      const totalOuts = info.table
+        .getSortedRowModel()
+        .rows.reduce((sum: number, row: any) => {
+          const ipValue = row.getValue("total_ip");
+          return (
+            sum +
+            (typeof ipValue === "number"
+              ? 10 * ipValue - 7 * Math.floor(ipValue)
+              : -1000)
+          );
+        }, 0);
+      const totalH = info.table
+        .getSortedRowModel()
+        .rows.reduce((sum: number, row: any) => {
+          const hValue = row.getValue("total_h");
+          return sum + (typeof hValue === "number" ? hValue : 0);
+        }, 0);
+      const totalBB = info.table
+        .getSortedRowModel()
+        .rows.reduce((sum: number, row: any) => {
+          const bbValue = row.getValue("total_bb");
+          return sum + (typeof bbValue === "number" ? bbValue : 0);
+        }, 0);
+      return totalOuts > 0
+        ? ((totalH + totalBB) / (totalOuts / 3)).toFixed(3)
+        : "--";
+    },
     sortDescFirst: false,
   }),
   {
@@ -358,6 +460,26 @@ export const createTotalPitchingAdvColumns = (
     },
     cell: (info: any) =>
       typeof info.getValue() === "number" ? info.getValue().toFixed(1) : "--",
+    footer: (info: any) => {
+      const totalOuts = info.table
+        .getSortedRowModel()
+        .rows.reduce((sum: number, row: any) => {
+          const ipValue = row.getValue("total_ip");
+          return (
+            sum +
+            (typeof ipValue === "number"
+              ? 10 * ipValue - 7 * Math.floor(ipValue)
+              : -1000)
+          );
+        }, 0);
+      const totalH = info.table
+        .getSortedRowModel()
+        .rows.reduce((sum: number, row: any) => {
+          const hValue = row.getValue("total_h");
+          return sum + (typeof hValue === "number" ? hValue : 0);
+        }, 0);
+      return totalOuts > 0 ? ((totalH * 27) / totalOuts).toFixed(1) : "--";
+    },
     sortDescFirst: false,
   },
   {
@@ -370,6 +492,26 @@ export const createTotalPitchingAdvColumns = (
     },
     cell: (info: any) =>
       typeof info.getValue() === "number" ? info.getValue().toFixed(1) : "--",
+    footer: (info: any) => {
+      const totalOuts = info.table
+        .getSortedRowModel()
+        .rows.reduce((sum: number, row: any) => {
+          const ipValue = row.getValue("total_ip");
+          return (
+            sum +
+            (typeof ipValue === "number"
+              ? 10 * ipValue - 7 * Math.floor(ipValue)
+              : -1000)
+          );
+        }, 0);
+      const totalBB = info.table
+        .getSortedRowModel()
+        .rows.reduce((sum: number, row: any) => {
+          const bbValue = row.getValue("total_bb");
+          return sum + (typeof bbValue === "number" ? bbValue : 0);
+        }, 0);
+      return totalOuts > 0 ? ((totalBB * 27) / totalOuts).toFixed(1) : "--";
+    },
     sortDescFirst: false,
   },
   {
@@ -382,6 +524,26 @@ export const createTotalPitchingAdvColumns = (
     },
     cell: (info: any) =>
       typeof info.getValue() === "number" ? info.getValue().toFixed(1) : "--",
+    footer: (info: any) => {
+      const totalOuts = info.table
+        .getSortedRowModel()
+        .rows.reduce((sum: number, row: any) => {
+          const ipValue = row.getValue("total_ip");
+          return (
+            sum +
+            (typeof ipValue === "number"
+              ? 10 * ipValue - 7 * Math.floor(ipValue)
+              : -1000)
+          );
+        }, 0);
+      const totalSO = info.table
+        .getSortedRowModel()
+        .rows.reduce((sum: number, row: any) => {
+          const soValue = row.getValue("total_so");
+          return sum + (typeof soValue === "number" ? soValue : 0);
+        }, 0);
+      return totalOuts > 0 ? ((totalSO * 27) / totalOuts).toFixed(1) : "--";
+    },
     sortDescFirst: false,
   },
   {
@@ -393,7 +555,27 @@ export const createTotalPitchingAdvColumns = (
       return outs > 0 ? (27 * parseInt(row.total_hr_allowed)) / outs : null;
     },
     cell: (info: any) =>
-      typeof info.getValue() === "number" ? info.getValue().toFixed(1) : "--",
+      typeof info.getValue() === "number" ? info.getValue().toFixed(2) : "--",
+    footer: (info: any) => {
+      const totalOuts = info.table
+        .getSortedRowModel()
+        .rows.reduce((sum: number, row: any) => {
+          const ipValue = row.getValue("total_ip");
+          return (
+            sum +
+            (typeof ipValue === "number"
+              ? 10 * ipValue - 7 * Math.floor(ipValue)
+              : -1000)
+          );
+        }, 0);
+      const totalHR = info.table
+        .getSortedRowModel()
+        .rows.reduce((sum: number, row: any) => {
+          const hrValue = row.getValue("total_hr_allowed");
+          return sum + (typeof hrValue === "number" ? hrValue : 0);
+        }, 0);
+      return totalOuts > 0 ? ((totalHR * 27) / totalOuts).toFixed(2) : "--";
+    },
     sortDescFirst: false,
   },
   {
@@ -403,7 +585,22 @@ export const createTotalPitchingAdvColumns = (
       return row.total_bb > 0 ? row.total_so / row.total_bb : null;
     },
     cell: (info: any) =>
-      typeof info.getValue() === "number" ? info.getValue().toFixed(1) : "--",
+      typeof info.getValue() === "number" ? info.getValue().toFixed(2) : "--",
+    footer: (info: any) => {
+      const totalBB = info.table
+        .getSortedRowModel()
+        .rows.reduce((sum: number, row: any) => {
+          const bbValue = row.getValue("total_bb");
+          return sum + (typeof bbValue === "number" ? bbValue : 0);
+        }, 0);
+      const totalSO = info.table
+        .getSortedRowModel()
+        .rows.reduce((sum: number, row: any) => {
+          const soValue = row.getValue("total_so");
+          return sum + (typeof soValue === "number" ? soValue : 0);
+        }, 0);
+      return totalBB > 0 ? (totalSO / totalBB).toFixed(1) : "--";
+    },
     sortDescFirst: true,
   },
 ];

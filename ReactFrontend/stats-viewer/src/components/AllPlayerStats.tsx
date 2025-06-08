@@ -118,6 +118,22 @@ const AllPlayerStats = () => {
     initialState: {
       columnVisibility: {
         total_team_games: false,
+        total_ab: false,
+        total_runs: false,
+        total_hits: false,
+        total_double: false,
+        total_triple: false,
+        total_hr: false,
+        total_rbi: false,
+        total_bb: false,
+        total_strikeouts: false,
+        total_sb: false,
+        total_cs: false,
+        total_hbp: false,
+        total_sh: false,
+        total_sf: false,
+        total_ibb: false,
+        games: false,
       },
       sorting: [
         {
