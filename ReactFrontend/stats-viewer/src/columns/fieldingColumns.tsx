@@ -1,5 +1,10 @@
-import type { FieldingStat } from "../types/statTypes";
-import { type ColumnHelper } from "@tanstack/table-core";
+import type { FieldingStat, AllFieldingStatByPlayer } from "../types/statTypes";
+import {
+  type ColumnHelper,
+  type HeaderContext,
+  type Row,
+} from "@tanstack/table-core";
+import { getColumnSum } from "../helpers/miscHelpers";
 
 const dot_and_three_decimals = (value: number) => {
   const rounded = value.toFixed(3);
@@ -65,4 +70,118 @@ export const createFieldingColumns = (helper: ColumnHelper<FieldingStat>) => [
     header: "TP",
     cell: (info: any) => info.getValue(),
   }),
+];
+
+export const createTotalFieldingByPlayerColumns = (
+  helper: ColumnHelper<AllFieldingStatByPlayer>
+) => [
+  helper.accessor("jersey_number", {
+    header: "#",
+    cell: (info) => info.getValue(),
+  }),
+  helper.accessor("player_name", {
+    header: "Player",
+    cell: (info) => (
+      <a
+        href={`player/${info.row.original.player_id}`}
+        className="text-blue-600 hover:underline"
+      >
+        {info.getValue()}
+      </a>
+    ),
+    footer: "SEASON TOTALS",
+  }),
+  {
+    header: "POS",
+    id: "player_position",
+    accessorFn: (row: any) => {
+      const position_list = row.all_positions[0] as Record<string, number>;
+      const mostPlayedPos = { pos: "", count: 0 };
+      for (const [key, value] of Object.entries(position_list)) {
+        if (value > mostPlayedPos.count) {
+          mostPlayedPos.pos = key;
+          mostPlayedPos.count = value;
+        }
+      }
+      return mostPlayedPos.pos.toUpperCase();
+    },
+    cell: (info: any) => info.getValue(),
+    footer: "--",
+  },
+  helper.accessor("total_player_games", {
+    header: "G",
+    cell: (info) => info.getValue(),
+    footer: (info) => {
+      const rows = info.table.getFilteredRowModel().rows;
+      const totalGames = rows.reduce(
+        (sum, row) => sum + (Number(row.getValue("total_team_games")) ?? 0),
+        0
+      );
+      return totalGames / info.table.getRowCount() || "--";
+    },
+  }),
+  helper.accessor("total_team_games", {
+    header: "Team G",
+    cell: (info) => info.getValue(),
+  }),
+  {
+    header: "TC",
+    id: "tc",
+    accessorFn: (row: any) => row.total_po + row.total_a + row.total_e,
+    cell: (info: any) => info.getValue(),
+    footer: (info: any) => {
+      const rows = info.table.getFilteredRowModel().rows;
+      const totalTC = rows.reduce(
+        (sum: number, row: Row<AllFieldingStatByPlayer>) =>
+          sum +
+          (Number(row.getValue("total_po")) ?? 0) +
+          (Number(row.getValue("total_a")) ?? 0) +
+          (Number(row.getValue("total_e")) ?? 0),
+        0
+      );
+      return totalTC || "--";
+    },
+  },
+  helper.accessor("total_po", {
+    header: "PO",
+    cell: (info) => info.getValue(),
+    footer: (info) => getColumnSum(info, info.column.id),
+  }),
+  helper.accessor("total_a", {
+    header: "A",
+    cell: (info) => info.getValue(),
+    footer: (info) => getColumnSum(info, info.column.id),
+  }),
+  helper.accessor("total_e", {
+    header: "E",
+    cell: (info) => info.getValue(),
+    footer: (info) => getColumnSum(info, info.column.id),
+  }),
+  {
+    header: "FPCT",
+    id: "fpct",
+    accessorFn: (row: any) => {
+      const totalTC = row.total_po + row.total_a + row.total_e;
+      return totalTC > 0 ? (row.total_po + row.total_a) / totalTC : 0;
+    },
+    footer: (info: HeaderContext<AllFieldingStatByPlayer, string>) => {
+      const rows = info.table.getFilteredRowModel().rows;
+      const totalTC = rows.reduce(
+        (sum: number, row: Row<AllFieldingStatByPlayer>) =>
+          sum +
+          (Number(row.getValue("total_po")) ?? 0) +
+          (Number(row.getValue("total_a")) ?? 0) +
+          (Number(row.getValue("total_e")) ?? 0),
+        0
+      );
+      const totalPOA = rows.reduce(
+        (sum: number, row: Row<AllFieldingStatByPlayer>) =>
+          sum +
+          (Number(row.getValue("total_po")) ?? 0) +
+          (Number(row.getValue("total_a")) ?? 0),
+        0
+      );
+      return totalTC > 0 ? dot_and_three_decimals(totalPOA / totalTC) : "--";
+    },
+  },
 ];
