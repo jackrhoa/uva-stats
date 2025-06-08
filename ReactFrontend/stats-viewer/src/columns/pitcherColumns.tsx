@@ -60,7 +60,7 @@ export const createPitcherColumns = (helper: ColumnHelper<PitchingStat>) => [
   }),
 ];
 
-export const createAdvancedPitchingColumns = (
+export const createPitchingExtColumns = (
   helper: ColumnHelper<PitchingStat>
 ) => [
   helper.accessor("game_date", {
@@ -82,6 +82,88 @@ export const createAdvancedPitchingColumns = (
       </a>
     ),
     sortDescFirst: true,
+  }),
+  helper.accessor("starter", {
+    header: "POS",
+    cell: (info: any) => (info.getValue() > 0 ? "SP" : "RP"),
+  }),
+  helper.accessor("decision", {
+    header: "DEC",
+    cell: (info: any) => info.getValue(),
+    sortDescFirst: true,
+  }),
+  helper.accessor("ip", {
+    header: "IP",
+    cell: (info: any) => info.getValue(),
+    sortDescFirst: true,
+  }),
+  helper.accessor("h", {
+    header: "H",
+    cell: (info: any) => info.getValue(),
+  }),
+  helper.accessor("r", {
+    header: "R",
+    cell: (info: any) => info.getValue(),
+  }),
+  helper.accessor("er", {
+    header: "ER",
+    cell: (info: any) => info.getValue(),
+  }),
+  helper.accessor("hr_allowed", {
+    header: "HR",
+    cell: (info: any) => info.getValue(),
+  }),
+  helper.accessor("bb", {
+    header: "BB",
+    cell: (info: any) => info.getValue(),
+  }),
+  helper.accessor("ibb", {
+    header: "IBB",
+    cell: (info: any) => info.getValue(),
+  }),
+  helper.accessor("so", {
+    header: "K",
+    cell: (info: any) => info.getValue(),
+  }),
+  helper.accessor("hb", {
+    header: "HBP",
+    cell: (info: any) => info.getValue(),
+  }),
+  helper.accessor("balk", {
+    header: "BK",
+    cell: (info: any) => info.getValue(),
+  }),
+  helper.accessor("wp", {
+    header: "WP",
+    cell: (info: any) => info.getValue(),
+  }),
+  helper.accessor("bf", {
+    header: "BF",
+    cell: (info: any) => info.getValue(),
+  }),
+  helper.accessor("doubles_allowed", {
+    header: "2B",
+    cell: (info: any) => info.getValue(),
+  }),
+  helper.accessor("triples_allowed", {
+    header: "3B",
+    cell: (info: any) => info.getValue(),
+  }),
+  helper.accessor("sh_allowed", {
+    header: "SH",
+    cell: (info: any) => info.getValue(),
+  }),
+  helper.accessor("sf_allowed", {
+    header: "SF",
+    cell: (info: any) => info.getValue(),
+  }),
+  helper.accessor("ir", {
+    header: "IR",
+    cell: (info: any) => info.getValue(),
+  }),
+  helper.accessor("irs", {
+    header: "IRS",
+    cell: (info: any) => info.getValue(),
   }),
 ];
 
