@@ -22,7 +22,19 @@ export const createBatterGameLogColumns = (
   }),
   helper.accessor("opponent", {
     header: "OPPONENT",
-    cell: (info: any) => info.getValue(),
+    cell: (info: any) => {
+      const home = info.row.original.home;
+      console.log("Home:", home);
+      // const home = false;
+      return home != null && !home
+        ? "@ " + info.getValue()
+        : "vs " + info.getValue();
+    },
+    footer: (info: any) => {
+      const rows = info.table.getFilteredRowModel().rows;
+      const totalGames = rows.length;
+      return `${totalGames} GP`;
+    },
   }),
   helper.accessor("game_result", {
     header: "RESULT",
@@ -168,7 +180,19 @@ export const createExtBattingColumns = (helper: ColumnHelper<BattingStat>) => [
   }),
   helper.accessor("opponent", {
     header: "OPPONENT",
-    cell: (info: any) => info.getValue(),
+    cell: (info: any) => {
+      const home = info.row.original.home;
+      console.log("Home:", home);
+      // const home = false;
+      return home != null && !home
+        ? "@ " + info.getValue()
+        : "vs " + info.getValue();
+    },
+    footer: (info: any) => {
+      const rows = info.table.getFilteredRowModel().rows;
+      const totalGames = rows.length;
+      return `${totalGames} GP`;
+    },
   }),
   helper.accessor("game_result", {
     header: "RESULT",
