@@ -34,11 +34,20 @@ export const createBatterGameLogColumns = (
         {info.getValue()}
       </a>
     ),
+    footer: (info: any) => {
+      const rows = info.table.getFilteredRowModel().rows;
+      const totalGames = rows.length;
+      const wins = rows.filter((row: any) =>
+        row.getValue("game_result").includes("W")
+      ).length;
+      return `${wins}-${totalGames - wins}`;
+    },
     sortDescFirst: true,
   }),
   helper.accessor("player_position", {
     header: "POS",
     cell: (info: any) => info.getValue(),
+    footer: "--",
   }),
   {
     header: "H-AB",
@@ -48,52 +57,75 @@ export const createBatterGameLogColumns = (
         ? `${row.hits}-${row.ab}`
         : null,
     cell: (info: any) => info.getValue(),
+    footer: (info: any) => {
+      const rows = info.table.getFilteredRowModel().rows;
+      const totalHits = rows.reduce(
+        (sum: number, row: any) => sum + (Number(row.getValue("hits")) ?? 0),
+        0
+      );
+      const totalAB = rows.reduce(
+        (sum: number, row: any) => sum + (Number(row.getValue("ab")) ?? 0),
+        0
+      );
+      return totalAB > 0 ? `${totalHits}-${totalAB}` : "--";
+    },
     sortingFn: dashStatSortingFn,
     sortDescFirst: true,
   },
   helper.accessor("ab", {
     header: "AB",
     cell: (info: any) => info.getValue(),
+    footer: (info: any) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("hits", {
     header: "H",
     cell: (info: any) => info.getValue(),
+    footer: (info: any) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("runs", {
     header: "R",
     cell: (info: any) => info.getValue(),
+    footer: (info: any) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("rbi", {
     header: "RBI",
     cell: (info: any) => info.getValue(),
+    footer: (info: any) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("double", {
     header: "2B",
     cell: (info: any) => info.getValue(),
+    footer: (info: any) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("hr", {
     header: "HR",
     cell: (info: any) => info.getValue(),
+    footer: (info: any) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("bb", {
     header: "BB",
     cell: (info: any) => info.getValue(),
+    footer: (info: any) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("so", {
     header: "K",
     cell: (info: any) => info.getValue(),
+    footer: (info: any) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("hbp", {
     header: "HBP",
     cell: (info: any) => info.getValue(),
+    footer: (info: any) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("sb", {
     header: "SB",
     cell: (info: any) => info.getValue(),
+    footer: (info: any) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("cs", {
     header: "CS",
     cell: (info: any) => info.getValue(),
+    footer: (info: any) => getColumnSum(info, info.column.id),
   }),
   {
     header: "SB-ATT",
@@ -102,6 +134,18 @@ export const createBatterGameLogColumns = (
       row.sb != null && row.cs != null ? `${row.sb}-${row.sb + row.cs}` : null,
     cell: (info: any) =>
       `${info.row.original.sb}-${info.row.original.sb + info.row.original.cs}`,
+    footer: (info: any) => {
+      const rows = info.table.getFilteredRowModel().rows;
+      const totalSB = rows.reduce(
+        (sum: number, row: any) => sum + (Number(row.getValue("sb")) ?? 0),
+        0
+      );
+      const totalCS = rows.reduce(
+        (sum: number, row: any) => sum + (Number(row.getValue("cs")) ?? 0),
+        0
+      );
+      return totalCS > 0 ? `${totalSB}-${totalSB + totalCS}` : "--";
+    },
     sortingFn: dashStatSortingFn,
     sortDescFirst: true,
   },
@@ -136,83 +180,110 @@ export const createExtBattingColumns = (helper: ColumnHelper<BattingStat>) => [
         {info.getValue()}
       </a>
     ),
+    footer: (info: any) => {
+      const rows = info.table.getFilteredRowModel().rows;
+      const totalGames = rows.length;
+      const wins = rows.filter((row: any) =>
+        row.getValue("game_result").includes("W")
+      ).length;
+      return `${wins}-${totalGames - wins}`;
+    },
     sortDescFirst: true,
   }),
   helper.accessor("player_position", {
     header: "POS",
     cell: (info: any) => info.getValue(),
+    footer: "--",
   }),
   helper.accessor("pa", {
     header: "PA",
     cell: (info: any) => info.getValue(),
+    footer: (info: any) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("ab", {
     header: "AB",
     cell: (info: any) => info.getValue(),
+    footer: (info: any) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("runs", {
     header: "R",
     cell: (info: any) => info.getValue(),
+    footer: (info: any) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("hits", {
     header: "H",
     cell: (info: any) => info.getValue(),
+    footer: (info: any) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("double", {
     header: "2B",
     cell: (info: any) => info.getValue(),
+    footer: (info: any) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("triple", {
     header: "3B",
     cell: (info: any) => info.getValue(),
+    footer: (info: any) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("hr", {
     header: "HR",
     cell: (info: any) => info.getValue(),
+    footer: (info: any) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("rbi", {
     header: "RBI",
     cell: (info: any) => info.getValue(),
+    footer: (info: any) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("sb", {
     header: "SB",
     cell: (info: any) => info.getValue(),
+    footer: (info: any) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("cs", {
     header: "CS",
     cell: (info: any) => info.getValue(),
+    footer: (info: any) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("bb", {
     header: "BB",
     cell: (info: any) => info.getValue(),
+    footer: (info: any) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("so", {
     header: "K",
     cell: (info: any) => info.getValue(),
+    footer: (info: any) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("tb", {
     header: "TB",
     cell: (info: any) => info.getValue(),
+    footer: (info: any) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("dp", {
     header: "DP",
     cell: (info: any) => info.getValue(),
+    footer: (info: any) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("hbp", {
     header: "HBP",
     cell: (info: any) => info.getValue(),
+    footer: (info: any) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("sh", {
     header: "SH",
     cell: (info: any) => info.getValue(),
+    footer: (info: any) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("sf", {
     header: "SF",
     cell: (info: any) => info.getValue(),
+    footer: (info: any) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("ibb", {
     header: "IBB",
     cell: (info: any) => info.getValue(),
+    footer: (info: any) => getColumnSum(info, info.column.id),
   }),
 ];
 
