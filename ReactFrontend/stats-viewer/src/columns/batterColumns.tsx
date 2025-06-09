@@ -236,6 +236,14 @@ export const createTotalBattingColumns = (
     footer: "SEASON TOTALS",
   }),
   {
+    id: "qualified",
+    accessorFn: (row: any) => row.total_pa / 3.1 > row.total_team_games,
+    header: () => null,
+    cell: () => null,
+    enableColumnFilter: true,
+    enableSorting: false,
+  },
+  {
     header: "POS",
     id: "player_position",
     accessorFn: (row: any) => {
@@ -367,6 +375,7 @@ export const createTotalBattingAdvColumns = (
     ),
     footer: "SEASON TOTALS",
   }),
+
   {
     header: "POS",
     id: "player_position",
