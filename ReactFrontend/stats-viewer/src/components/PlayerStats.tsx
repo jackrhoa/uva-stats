@@ -193,7 +193,7 @@ export default function PlayerStats() {
 
   return (
     <div className="flex flex-col items-center justify-center p-4">
-      <h1 className="m-3 text-2xl font-bold text-black">
+      <h1 className="m-10 text-2xl font-bold text-black">
         {batterStats.length > 0
           ? batterStats[0].player_name
           : pitcherStats.length > 0

@@ -10,7 +10,7 @@ const ToggleTabs: React.FC<ToggleTabProps> = ({
   setToggle,
 }) => {
   return (
-    <ul className="flex justify-center items-center space-x-4 mb-6 text-white font-medium">
+    <ul className="flex justify-center items-center space-x-4 mb-6 text-white font-medium mt-18">
       {options.map((label, index) => (
         <li
           key={index}

@@ -333,8 +333,11 @@ export const createTotalBattingColumns = (
   {
     id: "qualified",
     accessorFn: (row: any) => row.total_pa / 3.1 > row.total_team_games,
-    header: () => null,
-    cell: () => null,
+    header: "Qualified?",
+    cell: (info: any) => {
+      const qualified = info.getValue();
+      return qualified ? "Qualified" : "Not Qualified";
+    },
     enableColumnFilter: true,
     enableSorting: false,
   },
@@ -470,7 +473,17 @@ export const createTotalBattingAdvColumns = (
     ),
     footer: "SEASON TOTALS",
   }),
-
+  {
+    id: "qualified",
+    accessorFn: (row: any) => row.total_pa / 3.1 > row.total_team_games,
+    header: "Qualified?",
+    cell: (info: any) => {
+      const qualified = info.getValue();
+      return qualified ? "Qualified" : "Not Qualified";
+    },
+    enableColumnFilter: true,
+    enableSorting: false,
+  },
   {
     header: "POS",
     id: "player_position",
