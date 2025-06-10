@@ -74,6 +74,46 @@ const AllPlayerStats = () => {
     initialState: {
       columnVisibility: {
         total_team_games: false,
+        qualified: false,
+      },
+      sorting: [
+        {
+          id: "total_pa",
+          desc: true,
+        },
+      ],
+    },
+    state: {
+      columnFilters,
+    },
+  });
+
+  const totalBatterAdvTable = useReactTable<AllBattingStat>({
+    columns: createTotalBattingAdvColumns(createColumnHelper()),
+    data: totalBattingStats,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    initialState: {
+      columnVisibility: {
+        total_team_games: false,
+        total_ab: false,
+        total_runs: false,
+        total_hits: false,
+        total_double: false,
+        total_triple: false,
+        total_hr: false,
+        total_rbi: false,
+        total_bb: false,
+        total_strikeouts: false,
+        total_sb: false,
+        total_cs: false,
+        total_hbp: false,
+        total_sh: false,
+        total_sf: false,
+        total_ibb: false,
+        qualified: false,
+        games: false,
       },
       sorting: [
         {
@@ -106,40 +146,6 @@ const AllPlayerStats = () => {
           desc: true,
         },
         { id: "total_era", desc: false },
-      ],
-    },
-  });
-
-  const totalBatterAdvTable = useReactTable<AllBattingStat>({
-    columns: createTotalBattingAdvColumns(createColumnHelper()),
-    data: totalBattingStats,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    initialState: {
-      columnVisibility: {
-        total_team_games: false,
-        total_ab: false,
-        total_runs: false,
-        total_hits: false,
-        total_double: false,
-        total_triple: false,
-        total_hr: false,
-        total_rbi: false,
-        total_bb: false,
-        total_strikeouts: false,
-        total_sb: false,
-        total_cs: false,
-        total_hbp: false,
-        total_sh: false,
-        total_sf: false,
-        total_ibb: false,
-        games: false,
-      },
-      sorting: [
-        {
-          id: "total_pa",
-          desc: true,
-        },
       ],
     },
   });
@@ -190,7 +196,7 @@ const AllPlayerStats = () => {
   }
 
   return (
-    <div className="w-full min-h-screen px-4 py-6">
+    <div className="w-full min-h-screen px-3">
       <ToggleTabs
         options={[
           "Batting",
@@ -202,8 +208,7 @@ const AllPlayerStats = () => {
         toggle={toggle}
         setToggle={setToggle}
       />
-
-      <div className="flex flex-row gap-2 border-red-500 border-2 rounded-lg p-4">
+      <div className="flex flex-row gap-2 border-red-500 border-2 rounded-lg p-1">
         <div className="flex flex-shrink-0">
           <FilterGUI
             options={[["qualified", "Qualified"]]}
