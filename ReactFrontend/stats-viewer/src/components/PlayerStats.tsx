@@ -289,19 +289,21 @@ export default function PlayerStats() {
           </li>
         </div>
       </ul>
-      <div>
-        <FilterGUI
-          options={[
-            ["pa", "PA"],
-            ["ab", "AB"],
-            ["game_date", "Date"],
-            ["qualified", "Qualified"],
-          ]}
-          columnFilters={columnFilters}
-          setColumnFilters={setColumnFilters}
-        />
-      </div>
-      {/* <div
+      <div className="flex w-full gap-2 border-red-500 border-2 rounded-lg p-1">
+        <div className="w-64 bg-gray-100 p-4">
+          <FilterGUI
+            options={[
+              ["pa", "PA"],
+              ["ab", "AB"],
+              ["hits", "H"],
+              // ["game_date", "Date"],
+              // ["qualified", "Qualified"],
+            ]}
+            columnFilters={columnFilters}
+            setColumnFilters={setColumnFilters}
+          />
+        </div>
+        {/* <div
         className={toggle === 0 && batterStats.length > 0 ? "block" : "hidden"}
       >
         <DisplayTable table={battingSeasonSummary} />
@@ -318,22 +320,23 @@ export default function PlayerStats() {
       >
         <DisplayTable table={fieldingSeasonSummary} />
       </div> */}
-      <div className={toggle === 1 ? "block" : "hidden"}>
-        <DisplayTable table={batterTable} />
-      </div>
-      <div className={toggle === 2 ? "block" : "hidden"}>
-        {batterStats.length > 0 && <DisplayTable table={batterExtTable} />}
-      </div>
-      <div className={toggle === 3 ? "block" : "hidden"}>
-        {pitcherStats.length > 0 && <DisplayTable table={pitcherTable} />}
-      </div>
-      <div className={toggle === 4 ? "block" : "hidden"}>
-        {pitcherStats.length > 0 && (
-          <DisplayTable table={advancedPitcherTable} />
-        )}
-      </div>
-      <div className={toggle === 5 ? "block" : "hidden"}>
-        {fieldingStats.length > 0 && <DisplayTable table={fieldingTable} />}
+        <div className={toggle === 1 ? "block" : "hidden"}>
+          <DisplayTable table={batterTable} />
+        </div>
+        <div className={toggle === 2 ? "block" : "hidden"}>
+          {batterStats.length > 0 && <DisplayTable table={batterExtTable} />}
+        </div>
+        <div className={toggle === 3 ? "block" : "hidden"}>
+          {pitcherStats.length > 0 && <DisplayTable table={pitcherTable} />}
+        </div>
+        <div className={toggle === 4 ? "block" : "hidden"}>
+          {pitcherStats.length > 0 && (
+            <DisplayTable table={advancedPitcherTable} />
+          )}
+        </div>
+        <div className={toggle === 5 ? "block" : "hidden"}>
+          {fieldingStats.length > 0 && <DisplayTable table={fieldingTable} />}
+        </div>
       </div>
     </div>
   );

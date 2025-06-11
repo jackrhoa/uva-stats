@@ -14,11 +14,13 @@ const ToggleTabs: React.FC<ToggleTabProps> = ({
       {options.map((label, index) => (
         <li
           key={index}
-          className={`border-1 px-2 py-1 rounded-full cursor-pointer ${
-            toggle === index
-              ? "bg-blue-600 text-white text-semibold border-transparent"
-              : "border-gray text-gray-500 hover:bg-blue-300"
-          }`}
+          className={`border-1 px-2 py-1 rounded-full cursor-pointer
+            ${
+              toggle === index
+                ? "bg-blue-600 text-white text-semibold border-transparent"
+                : "border-gray text-gray-500 hover:bg-blue-300"
+            }
+            `}
           onClick={() => setToggle(index)}
         >
           {label}

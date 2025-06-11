@@ -22,7 +22,7 @@ const DislayTable = <T extends object>({
   // Track columns needed for calculating averages
 
   return (
-    <div className="m-5 flex flex-col gap-5">
+    <div className="mb-5 flex flex-col gap-5">
       {customHeaders && <div>{customHeaders}</div>}
 
       <div

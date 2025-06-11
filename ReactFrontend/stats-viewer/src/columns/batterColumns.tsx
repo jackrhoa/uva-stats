@@ -24,7 +24,7 @@ export const createBatterGameLogColumns = (
     header: "OPPONENT",
     cell: (info: any) => {
       const home = info.row.original.home;
-      console.log("Home:", home);
+      // console.log("Home:", home);
       // const home = false;
       return home != null && !home
         ? "@ " + info.getValue()
@@ -182,7 +182,7 @@ export const createExtBattingColumns = (helper: ColumnHelper<BattingStat>) => [
     header: "OPPONENT",
     cell: (info: any) => {
       const home = info.row.original.home;
-      console.log("Home:", home);
+      // console.log("Home:", home);
       // const home = false;
       return home != null && !home
         ? "@ " + info.getValue()

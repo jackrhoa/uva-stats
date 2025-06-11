@@ -208,67 +208,69 @@ const AllPlayerStats = () => {
         toggle={toggle}
         setToggle={setToggle}
       />
-      <div className="flex flex-row gap-2 border-red-500 border-2 rounded-lg p-1">
-        <div className="flex flex-shrink-0">
+      <div className="flex w-full gap-2 border-red-500 border-2 rounded-lg p-1">
+        <div className="w-64 bg-gray-100 p-4">
           <FilterGUI
             options={[["qualified", "Qualified"]]}
             columnFilters={columnFilters}
             setColumnFilters={setColumnFilters}
           />
         </div>
-        <div className={toggle === 0 ? "block" : "hidden"}>
-          <DisplayTable
-            table={totalBattingTable}
-            isRowHighlighted={(row: Row<AllBattingStat>) => {
-              return (
-                Number(row.getValue("total_pa")) / 3.1 >=
+        <div className="flex-1 bg-orange-100 p-2">
+          <div className={toggle === 0 ? "block" : "hidden"}>
+            <DisplayTable
+              table={totalBattingTable}
+              isRowHighlighted={(row: Row<AllBattingStat>) => {
+                return (
+                  Number(row.getValue("total_pa")) / 3.1 >=
+                  Number(row.getValue("total_team_games"))
+                );
+              }}
+              customHeaders={batterSeasonTotalHeader}
+            />
+          </div>
+          <div className={toggle === 1 ? "block" : "hidden"}>
+            <DisplayTable
+              table={totalBatterAdvTable}
+              isRowHighlighted={(row: Row<AllBattingStat>) => {
+                return (
+                  Number(row.getValue("total_pa")) / min_plate_appearance >=
+                  Number(row.getValue("total_team_games"))
+                );
+              }}
+              customHeaders={batterSeasonTotalHeader}
+            />
+          </div>
+          <div className={toggle === 2 ? "block" : "hidden"}>
+            <DisplayTable
+              table={totalPitchingTable}
+              isRowHighlighted={(row: Row<AllPitchingStat>) =>
+                Number(row.getValue("total_ip")) / min_innings_pitched >=
                 Number(row.getValue("total_team_games"))
-              );
-            }}
-            customHeaders={batterSeasonTotalHeader}
-          />
-        </div>
-        <div className={toggle === 1 ? "block" : "hidden"}>
-          <DisplayTable
-            table={totalBatterAdvTable}
-            isRowHighlighted={(row: Row<AllBattingStat>) => {
-              return (
+              }
+              customHeaders={pitcherSeasonTotalHeader}
+            />
+          </div>
+          <div className={toggle === 3 ? "block" : "hidden"}>
+            <DisplayTable
+              table={totalPitchingAdvTable}
+              isRowHighlighted={(row: Row<AllPitchingStat>) =>
+                Number(row.getValue("total_ip")) / min_innings_pitched >=
+                Number(row.getValue("total_team_games"))
+              }
+              customHeaders={pitcherSeasonTotalHeader}
+            />
+          </div>
+          <div className={toggle === 4 ? "block" : "hidden"}>
+            <DisplayTable
+              table={totalFieldingByPlayerTable}
+              isRowHighlighted={(row: Row<AllFieldingStatByPlayer>) =>
                 Number(row.getValue("total_pa")) / min_plate_appearance >=
                 Number(row.getValue("total_team_games"))
-              );
-            }}
-            customHeaders={batterSeasonTotalHeader}
-          />
-        </div>
-        <div className={toggle === 2 ? "block" : "hidden"}>
-          <DisplayTable
-            table={totalPitchingTable}
-            isRowHighlighted={(row: Row<AllPitchingStat>) =>
-              Number(row.getValue("total_ip")) / min_innings_pitched >=
-              Number(row.getValue("total_team_games"))
-            }
-            customHeaders={pitcherSeasonTotalHeader}
-          />
-        </div>
-        <div className={toggle === 3 ? "block" : "hidden"}>
-          <DisplayTable
-            table={totalPitchingAdvTable}
-            isRowHighlighted={(row: Row<AllPitchingStat>) =>
-              Number(row.getValue("total_ip")) / min_innings_pitched >=
-              Number(row.getValue("total_team_games"))
-            }
-            customHeaders={pitcherSeasonTotalHeader}
-          />
-        </div>
-        <div className={toggle === 4 ? "block" : "hidden"}>
-          <DisplayTable
-            table={totalFieldingByPlayerTable}
-            isRowHighlighted={(row: Row<AllFieldingStatByPlayer>) =>
-              Number(row.getValue("total_pa")) / min_plate_appearance >=
-              Number(row.getValue("total_team_games"))
-            }
-            customHeaders={batterSeasonTotalHeader}
-          />
+              }
+              customHeaders={batterSeasonTotalHeader}
+            />
+          </div>
         </div>
       </div>
     </div>
