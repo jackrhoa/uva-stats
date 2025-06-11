@@ -102,7 +102,7 @@ const FilterGUI: React.FC<ColumnFiltersProps> = ({
             </div>
           )}
 
-          {label[0] !== "qualified" && (
+          {/* {label[0] !== "qualified" && (
             <li
               className="border-1 px-2 py-1 rounded-full cursor-pointer bg-blue-500 text-white text-center"
               onClick={() => {
@@ -142,7 +142,7 @@ const FilterGUI: React.FC<ColumnFiltersProps> = ({
             >
               {label[1]}
             </li>
-          )}
+          )} */}
         </div>
       ))}
       <li
@@ -156,7 +156,7 @@ const FilterGUI: React.FC<ColumnFiltersProps> = ({
         Set Filters
       </li>
       <li
-        className="px-5 w-50 rounded-full bg-red-800 cursor-pointer text-center"
+        className="px-5 mt-1 w-50 rounded-full bg-red-700 cursor-pointer text-center"
         onClick={() => {
           setColumnFilters([]);
           setInputValue(Array(options.length).fill(""));
