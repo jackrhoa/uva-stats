@@ -19,7 +19,9 @@ const FilterGUI: React.FC<ColumnFiltersProps> = ({
     "",
     "2025-06-01",
   ]);
-  const [qualifiedOnly, setQualifiedOnly] = useState<boolean>(false); // ✅ NEW
+  const [qualifiedOnly, setQualifiedOnly] = useState<boolean>(false);
+  const [cachedColumnFilters, setCachedColumnFilters] =
+    useState<ColumnFiltersState>(columnFilters);
 
   const handleQualifiedToggle = () => {
     const newValue = !qualifiedOnly;
@@ -34,7 +36,7 @@ const FilterGUI: React.FC<ColumnFiltersProps> = ({
   };
 
   return (
-    <ul className="flex justify-center items-center space-x-4 mb-6 text-white font-medium">
+    <ul className="justify-center items-center space-x-4 mb-6 text-white font-medium">
       {options.map((label, index) => (
         <div key={index}>
           {label[0] === "game_date" ? (
@@ -59,7 +61,6 @@ const FilterGUI: React.FC<ColumnFiltersProps> = ({
               </div>
             </div>
           ) : label[0] === "qualified" ? (
-            // ✅ QUALIFIED CHECKBOX
             <div className="flex items-center space-x-2 bg-green-600 px-3 py-2 rounded-full mb-2">
               <input
                 type="checkbox"
@@ -79,14 +80,31 @@ const FilterGUI: React.FC<ColumnFiltersProps> = ({
                   const updated = [...inputValue];
                   updated[index] = e.target.value;
                   setInputValue(updated);
+                  const filtersWithoutCurrent = columnFilters.filter(
+                    (f) => f.id !== label[0]
+                  );
+                  const value = e.target.value;
+                  const newFilters = [...filtersWithoutCurrent];
+                  if (value.trim() !== "") {
+                    newFilters.push({
+                      id: label[0],
+                      value: [value],
+                    });
+                  }
+
+                  setCachedColumnFilters(newFilters);
+                  console.log("Label:", label[0]);
+                  console.log("Input Value:", inputValue);
+                  console.log("ON CHANGE: CACHED:", cachedColumnFilters);
                 }}
+                className="w-10 text-center"
               />
             </div>
           )}
 
           {label[0] !== "qualified" && (
             <li
-              className="border-1 px-2 py-1 rounded-full cursor-pointer bg-blue-500 text-white"
+              className="border-1 px-2 py-1 rounded-full cursor-pointer bg-blue-500 text-white text-center"
               onClick={() => {
                 const filtersWithoutCurrent = columnFilters.filter(
                   (f) => f.id !== label[0]
@@ -103,6 +121,14 @@ const FilterGUI: React.FC<ColumnFiltersProps> = ({
                     },
                   ]);
                 } else {
+                  // cachedColumnFilters = [
+                  //   ...filtersWithoutCurrent,
+                  //   {
+                  //     id: label[0],
+                  //     value: inputValue[index] ? [inputValue[index]] : "",
+                  //   },
+                  // ];
+                  // console.log("CACHED:", cachedColumnFilters);
                   setColumnFilters([
                     ...filtersWithoutCurrent,
                     {
@@ -110,6 +136,7 @@ const FilterGUI: React.FC<ColumnFiltersProps> = ({
                       value: inputValue[index] ? [inputValue[index]] : "",
                     },
                   ]);
+                  console.log("REAL:", columnFilters);
                 }
               }}
             >
@@ -118,6 +145,28 @@ const FilterGUI: React.FC<ColumnFiltersProps> = ({
           )}
         </div>
       ))}
+      <li
+        className="px-5 w-50 rounded-full bg-green-500 cursor-pointer text-center"
+        onClick={() => {
+          setColumnFilters(cachedColumnFilters);
+          console.log("Filters set:", cachedColumnFilters);
+          console.log("Column Filters:", columnFilters);
+        }}
+      >
+        Set Filters
+      </li>
+      <li
+        className="px-5 w-50 rounded-full bg-red-800 cursor-pointer text-center"
+        onClick={() => {
+          setColumnFilters([]);
+          setInputValue(Array(options.length).fill(""));
+          setDateRange(["", "2025-06-01"]);
+          setQualifiedOnly(false);
+          console.log("Filters cleared");
+        }}
+      >
+        Clear Filters
+      </li>
     </ul>
   );
 };
