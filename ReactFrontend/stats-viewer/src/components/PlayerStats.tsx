@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { variables } from "../Variables.tsx";
 import {
@@ -26,6 +26,7 @@ import {
   createPitchingExtColumns,
 } from "../columns/pitcherColumns.tsx";
 import { createFieldingColumns } from "../columns/fieldingColumns.tsx";
+import { loadState, saveState } from "../helpers/saveState.ts";
 
 function createTableConfig<T>(
   data: T[],
@@ -94,6 +95,14 @@ export default function PlayerStats() {
     () => playerData.total_fielding_stats || [],
     [playerData.total_fielding_stats]
   );
+
+  useEffect(() => {
+    const savedToggle = loadState(id + "Toggle");
+    if (savedToggle !== null && savedToggle !== undefined) {
+      setToggle(parseInt(savedToggle, 10));
+    }
+    console.log(" toggle state:", toggle);
+  }, [id]);
 
   const pitcherTable = createTableConfig<PitchingStat>(
     pitcherStats,
@@ -193,7 +202,7 @@ export default function PlayerStats() {
 
   return (
     <div className="flex flex-col items-center justify-center p-4">
-      <h1 className="m-10 text-2xl font-bold text-black">
+      <h1 className="mt-10 mb-4 text-2xl font-bold text-black">
         {batterStats.length > 0
           ? batterStats[0].player_name
           : pitcherStats.length > 0
@@ -202,7 +211,7 @@ export default function PlayerStats() {
           ? fieldingStats[0].player_name
           : "Player Stats"}
       </h1>
-      <ul className="flex justify-center items-center space-x-4 mb-6 text-white font-medium">
+      <ul className="flex justify-center items-center space-x-3 mb-6 text-white font-medium">
         <div
           className={
             batterStats.length > 0 || pitcherStats.length > 0
@@ -211,13 +220,14 @@ export default function PlayerStats() {
           }
         >
           <li
-            className={`border-1 px-2 py-1 rounded-full cursor-pointer ${
+            className={`border-2 px-2 py-1 rounded-full cursor-pointer ${
               toggle === 0
                 ? "bg-blue-600 text-white text-semibold border-transparent"
                 : "border-gray text-gray-500 hover:bg-blue-300"
             }`}
             onClick={() => {
               setToggle(0);
+              saveState(id + "Toggle", 0);
             }}
           >
             Season Totals
@@ -225,13 +235,14 @@ export default function PlayerStats() {
         </div>
         <div className={batterStats.length > 0 ? "block" : "hidden"}>
           <li
-            className={`border-1 px-2 py-1 rounded-full cursor-pointer ${
+            className={`border-2 px-2 py-1 rounded-full cursor-pointer ${
               toggle === 1
                 ? "bg-blue-600 text-white text-semibold border-transparent"
                 : "border-gray text-gray-500 hover:bg-blue-300"
             }`}
             onClick={() => {
               setToggle(1);
+              saveState(id + "Toggle", 1);
             }}
           >
             Batting Game Log
@@ -240,25 +251,29 @@ export default function PlayerStats() {
 
         <div className={batterStats.length > 0 ? "block" : "hidden"}>
           <li
-            className={`border-1 px-2 py-1 rounded-full cursor-pointer ${
+            className={`border-2 px-2 py-1 rounded-full cursor-pointer ${
               toggle === 2
                 ? "bg-blue-600 text-white text-semibold border-transparent"
                 : "border-gray text-gray-500 hover:bg-blue-300"
             }`}
-            onClick={() => setToggle(2)}
+            onClick={() => {
+              setToggle(2);
+              saveState(id + "Toggle", 2);
+            }}
           >
             Extended Batting Game Log
           </li>
         </div>
         <div className={pitcherStats.length > 0 ? "block" : "hidden"}>
           <li
-            className={`border-1 px-2 py-1 rounded-full cursor-pointer ${
+            className={`border-2 px-2 py-1 rounded-full cursor-pointer ${
               toggle === 3
                 ? "bg-blue-600 text-white text-semibold border-transparent"
                 : "border-gray text-gray-500 hover:bg-blue-300"
             }`}
             onClick={() => {
               setToggle(3);
+              saveState(id + "Toggle", 3);
             }}
           >
             Pitching Game Log
@@ -266,12 +281,15 @@ export default function PlayerStats() {
         </div>
         <div className={pitcherStats.length > 0 ? "block" : "hidden"}>
           <li
-            className={`border-1 px-2 py-1 rounded-full cursor-pointer ${
+            className={`border-2 px-2 py-1 rounded-full cursor-pointer ${
               toggle === 4
                 ? "bg-blue-600 text-white text-semibold border-transparent"
                 : "border-gray text-gray-500 hover:bg-blue-300"
             }`}
-            onClick={() => setToggle(4)}
+            onClick={() => {
+              setToggle(4);
+              saveState(id + "Toggle", 4);
+            }}
           >
             Extended Pitching Game Log
           </li>
@@ -283,7 +301,10 @@ export default function PlayerStats() {
                 ? "bg-blue-600 text-white text-semibold border-transparent"
                 : "border-gray text-gray-500 hover:bg-blue-300"
             }`}
-            onClick={() => setToggle(5)}
+            onClick={() => {
+              setToggle(5);
+              saveState(batterStats[0].player_id + "Toggle", 5);
+            }}
           >
             Fielding
           </li>
@@ -303,39 +324,24 @@ export default function PlayerStats() {
             setColumnFilters={setColumnFilters}
           />
         </div>
-        {/* <div
-        className={toggle === 0 && batterStats.length > 0 ? "block" : "hidden"}
-      >
-        <DisplayTable table={battingSeasonSummary} />
-      </div>
-      <div
-        className={toggle === 0 && pitcherStats.length > 0 ? "block" : "hidden"}
-      >
-        <DisplayTable table={pitchingSeasonSummary} />
-      </div>
-      <div
-        className={
-          toggle === 0 && fieldingStats.length > 0 ? "block" : "hidden"
-        }
-      >
-        <DisplayTable table={fieldingSeasonSummary} />
-      </div> */}
-        <div className={toggle === 1 ? "block" : "hidden"}>
-          <DisplayTable table={batterTable} />
-        </div>
-        <div className={toggle === 2 ? "block" : "hidden"}>
-          {batterStats.length > 0 && <DisplayTable table={batterExtTable} />}
-        </div>
-        <div className={toggle === 3 ? "block" : "hidden"}>
-          {pitcherStats.length > 0 && <DisplayTable table={pitcherTable} />}
-        </div>
-        <div className={toggle === 4 ? "block" : "hidden"}>
-          {pitcherStats.length > 0 && (
-            <DisplayTable table={advancedPitcherTable} />
-          )}
-        </div>
-        <div className={toggle === 5 ? "block" : "hidden"}>
-          {fieldingStats.length > 0 && <DisplayTable table={fieldingTable} />}
+        <div className="flex-1 bg-orange-100 p-4">
+          <div className={toggle === 1 ? "block" : "hidden"}>
+            <DisplayTable table={batterTable} />
+          </div>
+          <div className={toggle === 2 ? "block" : "hidden"}>
+            {batterStats.length > 0 && <DisplayTable table={batterExtTable} />}
+          </div>
+          <div className={toggle === 3 ? "block" : "hidden"}>
+            {pitcherStats.length > 0 && <DisplayTable table={pitcherTable} />}
+          </div>
+          <div className={toggle === 4 ? "block" : "hidden"}>
+            {pitcherStats.length > 0 && (
+              <DisplayTable table={advancedPitcherTable} />
+            )}
+          </div>
+          <div className={toggle === 5 ? "block" : "hidden"}>
+            {fieldingStats.length > 0 && <DisplayTable table={fieldingTable} />}
+          </div>
         </div>
       </div>
     </div>

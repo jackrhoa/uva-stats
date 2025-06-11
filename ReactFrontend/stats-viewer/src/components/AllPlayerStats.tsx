@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { variables } from "../Variables.tsx";
 import usePlayerStats from "../hooks/usePlayerStats.ts";
 import {
@@ -34,10 +34,18 @@ import {
 } from "../columns/pitcherColumns.tsx";
 import { createTotalFieldingByPlayerColumns } from "../columns/fieldingColumns.tsx";
 import FilterGUI from "./FilterGUI.tsx";
+import { loadState } from "../helpers/saveState.ts";
 // this can be the Batter specific main page
 const AllPlayerStats = () => {
   const [toggle, setToggle] = useState(0);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+
+  useEffect(() => {
+    const savedToggle = loadState("mainToggle");
+    if (savedToggle !== undefined) {
+      setToggle(savedToggle);
+    }
+  }, []);
 
   const statsToReceive = useMemo(
     () => [
