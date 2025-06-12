@@ -3,7 +3,7 @@ import type { BattingStat, AllBattingStat } from "../types/statTypes.tsx";
 import { dashStatSortingFn } from "../helpers/sortingFns.ts";
 import { dot_and_three_decimals } from "../helpers/miscHelpers.tsx";
 import { getColumnSum, min_plate_appearance } from "../helpers/miscHelpers.tsx";
-import { compareOperatorFilterFn } from "../helpers/filterFns.ts";
+import { compareOperatorFilterFn, dateFilterFn } from "../helpers/filterFns.ts";
 
 export const createBatterGameLogColumns = (
   helper: ColumnHelper<BattingStat>
@@ -11,16 +11,7 @@ export const createBatterGameLogColumns = (
   helper.accessor("game_date", {
     header: "DATE",
     cell: (info: any) => info.getValue(),
-    filterFn: (row, columnId, filterValue: Array<Date>) => {
-      if (!filterValue || filterValue.length !== 2) {
-        return true;
-      }
-      const [filterStart, filterEnd] = filterValue;
-      const date = new Date(row.getValue(columnId));
-      const startDate = new Date(filterStart);
-      const endDate = new Date(filterEnd);
-      return date >= startDate && date <= endDate;
-    },
+    filterFn: dateFilterFn,
   }),
   helper.accessor("opponent", {
     header: "OPPONENT",
@@ -222,16 +213,7 @@ export const createExtBattingColumns = (helper: ColumnHelper<BattingStat>) => [
   helper.accessor("game_date", {
     header: "DATE",
     cell: (info: any) => info.getValue(),
-    filterFn: (row, columnId, filterValue: Array<Date>) => {
-      if (!filterValue || filterValue.length !== 2) {
-        return true;
-      }
-      const [filterStart, filterEnd] = filterValue;
-      const date = new Date(row.getValue(columnId));
-      const startDate = new Date(filterStart);
-      const endDate = new Date(filterEnd);
-      return date >= startDate && date <= endDate;
-    },
+    filterFn: dateFilterFn,
   }),
   helper.accessor("opponent", {
     header: "OPPONENT",

@@ -1,15 +1,13 @@
 import type { PitchingStat, AllPitchingStat } from "../types/statTypes.tsx";
 import type { ColumnHelper } from "@tanstack/react-table";
-import {
-  greaterThanOrEqualTo,
-  compareOperatorFilterFn,
-} from "../helpers/filterFns.ts";
+import { compareOperatorFilterFn, dateFilterFn } from "../helpers/filterFns.ts";
 import { getColumnSum, min_innings_pitched } from "../helpers/miscHelpers.tsx";
 
 export const createPitcherColumns = (helper: ColumnHelper<PitchingStat>) => [
   helper.accessor("game_date", {
     header: "Game Date",
     cell: (info: any) => info.getValue(),
+    filterFn: dateFilterFn,
   }),
   helper.accessor("opponent", {
     header: "Opponent",
@@ -43,10 +41,31 @@ export const createPitcherColumns = (helper: ColumnHelper<PitchingStat>) => [
   helper.accessor("starter", {
     header: "POS",
     cell: (info: any) => (info.getValue() > 0 ? "SP" : "RP"),
+    footer: (info: any) => {
+      const rows = info.table.getFilteredRowModel().rows;
+      const starters = rows.filter(
+        (row: any) => row.getValue("starter") > 0
+      ).length;
+      return `${starters} GS`;
+    },
   }),
   helper.accessor("decision", {
     header: "DEC",
     cell: (info: any) => info.getValue(),
+    footer: (info: any) => {
+      const rows = info.table.getFilteredRowModel().rows;
+      const wins = rows.filter((row: any) =>
+        row.getValue("decision").includes("W")
+      ).length;
+      const losses = rows.filter((row: any) =>
+        row.getValue("decision").includes("L")
+      ).length;
+      const saves = rows.filter((row: any) =>
+        row.getValue("decision").includes("S")
+      ).length;
+      const save_count = saves > 0 ? `, ${saves} SV` : "";
+      return `${wins}-${losses}${save_count}`;
+    },
     sortDescFirst: true,
   }),
   {
@@ -114,6 +133,7 @@ export const createPitchingExtColumns = (
   helper.accessor("game_date", {
     header: "DATE",
     cell: (info: any) => info.getValue(),
+    filterFn: dateFilterFn,
   }),
   helper.accessor("opponent", {
     header: "OPPONENT",
@@ -147,10 +167,31 @@ export const createPitchingExtColumns = (
   helper.accessor("starter", {
     header: "POS",
     cell: (info: any) => (info.getValue() > 0 ? "SP" : "RP"),
+    footer: (info: any) => {
+      const rows = info.table.getFilteredRowModel().rows;
+      const starters = rows.filter(
+        (row: any) => row.getValue("starter") > 0
+      ).length;
+      return `${starters} GS`;
+    },
   }),
   helper.accessor("decision", {
     header: "DEC",
     cell: (info: any) => info.getValue(),
+    footer: (info: any) => {
+      const rows = info.table.getFilteredRowModel().rows;
+      const wins = rows.filter((row: any) =>
+        row.getValue("decision").includes("W")
+      ).length;
+      const losses = rows.filter((row: any) =>
+        row.getValue("decision").includes("L")
+      ).length;
+      const saves = rows.filter((row: any) =>
+        row.getValue("decision").includes("S")
+      ).length;
+      const save_count = saves > 0 ? `, ${saves} SV` : "";
+      return `${wins}-${losses}${save_count}`;
+    },
     sortDescFirst: true,
   }),
   {

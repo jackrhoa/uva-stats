@@ -29,3 +29,18 @@ export const compareOperatorFilterFn: FilterFn<any> = (
       return rowValue === value;
   }
 };
+
+export const dateFilterFn: FilterFn<any> = (
+  row,
+  columnId,
+  filterValue: Array<Date>
+) => {
+  if (!filterValue || filterValue.length !== 2) {
+    return true;
+  }
+  const [filterStart, filterEnd] = filterValue;
+  const date = new Date(row.getValue(columnId));
+  const startDate = new Date(filterStart);
+  const endDate = new Date(filterEnd);
+  return date >= startDate && date <= endDate;
+};

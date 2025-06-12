@@ -5,6 +5,7 @@ import {
   type Row,
 } from "@tanstack/table-core";
 import { getColumnSum } from "../helpers/miscHelpers";
+import { dateFilterFn } from "../helpers/filterFns";
 
 const dot_and_three_decimals = (value: number) => {
   const rounded = value.toFixed(3);
@@ -15,6 +16,7 @@ export const createFieldingColumns = (helper: ColumnHelper<FieldingStat>) => [
   helper.accessor("game_date", {
     header: "DATE",
     cell: (info: any) => info.getValue(),
+    filterFn: dateFilterFn,
   }),
   helper.accessor("opponent", {
     header: "Opponent",
