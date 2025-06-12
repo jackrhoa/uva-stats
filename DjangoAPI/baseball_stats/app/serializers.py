@@ -12,7 +12,7 @@ class BatterStatSerializer(serializers.ModelSerializer):
     tb = serializers.SerializerMethodField()
     box_score_link = serializers.CharField(source='game_id.box_score_link', read_only=True)
     player_position = serializers.SerializerMethodField()
-
+    home = serializers.BooleanField(source='game_id.selected_team_home', read_only=True)
     
 
     def get_pa(self, obj: BatterStat):
@@ -289,6 +289,7 @@ class PitcherStatSerializer(serializers.ModelSerializer):
     era = serializers.SerializerMethodField()
     outs = serializers.SerializerMethodField()
     decision = serializers.SerializerMethodField()
+    home = serializers.BooleanField(source='game_id.selected_team_home', read_only=True)
 
     def get_outs(self, obj):
         innings_pitched = (
