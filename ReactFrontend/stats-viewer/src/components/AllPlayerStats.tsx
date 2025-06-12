@@ -38,7 +38,10 @@ import { loadState } from "../helpers/saveState.ts";
 // this can be the Batter specific main page
 const AllPlayerStats = () => {
   const [toggle, setToggle] = useState(0);
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [batterColumnFilters, setBatterColumnFilters] =
+    useState<ColumnFiltersState>([]);
+  const [pitchingColumnFilters, setPitchingColumnFilters] =
+    useState<ColumnFiltersState>([]);
 
   useEffect(() => {
     const savedToggle = loadState("mainToggle");
@@ -92,7 +95,7 @@ const AllPlayerStats = () => {
       ],
     },
     state: {
-      columnFilters,
+      columnFilters: batterColumnFilters,
     },
   });
 
@@ -131,7 +134,7 @@ const AllPlayerStats = () => {
       ],
     },
     state: {
-      columnFilters,
+      columnFilters: batterColumnFilters,
     },
   });
 
@@ -147,6 +150,7 @@ const AllPlayerStats = () => {
     initialState: {
       columnVisibility: {
         total_team_games: false,
+        qualified: false,
       },
       sorting: [
         {
@@ -156,6 +160,9 @@ const AllPlayerStats = () => {
         { id: "total_era", desc: false },
       ],
     },
+    state: {
+      columnFilters: pitchingColumnFilters,
+    },
   });
 
   const totalPitchingAdvTable = useReactTable<AllPitchingStat>({
@@ -163,6 +170,7 @@ const AllPlayerStats = () => {
     data: totalPitchingStats,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
     initialState: {
       columnVisibility: {
         total_h: false,
@@ -173,11 +181,15 @@ const AllPlayerStats = () => {
         total_bf: false,
         total_hr_allowed: false,
         total_team_games: false,
+        qualified: false,
       },
       sorting: [
         { id: "total_ip", desc: true },
         { id: "total_era", desc: false },
       ],
+    },
+    state: {
+      columnFilters: pitchingColumnFilters,
     },
   });
 
@@ -186,6 +198,7 @@ const AllPlayerStats = () => {
     data: totalFieldingStatsByPlayer,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
     initialState: {
       columnVisibility: {
         total_team_games: false,
@@ -216,13 +229,49 @@ const AllPlayerStats = () => {
         toggle={toggle}
         setToggle={setToggle}
       />
-      <div className="flex w-full gap-2 border-red-500 border-2 rounded-lg p-1">
+      <div className="flex w-full gap-2 border-red-500 border6-2 rounded-lg p-1">
         <div className="w-64 bg-gray-100 p-4">
-          <FilterGUI
-            options={[["qualified", "Qualified"]]}
-            columnFilters={columnFilters}
-            setColumnFilters={setColumnFilters}
-          />
+          {(toggle === 1 || toggle === 0) && (
+            <FilterGUI
+              options={[
+                ["qualified", "Qualified"],
+                ["total_hr", "Home Runs"],
+                ["total_hits", "Hits"],
+                ["total_hr", "HR"],
+                ["total_rbi", "RBI"],
+                ["total_bb", "BB"],
+                ["total_strikeouts", "SO"],
+                ["total_double", "2B"],
+              ]}
+              columnFilters={batterColumnFilters}
+              setColumnFilters={setBatterColumnFilters}
+            />
+          )}
+          {(toggle === 2 || toggle === 3) && (
+            <FilterGUI
+              options={[
+                ["qualified", "Qualified"],
+                ["total_ip", "Innings Pitched"],
+                ["total_starts", "Starts"],
+                // ["total_h", "Hits Allowed"],
+                // ["total_r", "Runs Allowed"],
+                // ["total_er", "Earned Runs"],
+                // ["total_bb", "Walks Allowed"],
+                // ["total_so", "Strikeouts"],
+                // ["total_bf", "Batters Faced"],
+                // ["total_hr_allowed", "Home Runs Allowed"],
+                // ["total_hr", "Home Runs"],
+                // ["total_hits", "Hits"],
+                // ["total_hr", "HR"],
+                // ["total_rbi", "RBI"],
+                // ["total_bb", "BB"],
+                // ["total_strikeouts", "SO"],
+                // ["total_double", "2B"],
+              ]}
+              columnFilters={pitchingColumnFilters}
+              setColumnFilters={setPitchingColumnFilters}
+            />
+          )}
         </div>
         <div className="flex-1 bg-orange-100 p-2">
           <div className={toggle === 0 ? "block" : "hidden"}>

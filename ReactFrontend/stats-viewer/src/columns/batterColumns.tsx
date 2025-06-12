@@ -2,7 +2,9 @@ import { type ColumnHelper } from "@tanstack/react-table";
 import type { BattingStat, AllBattingStat } from "../types/statTypes.tsx";
 import { dashStatSortingFn } from "../helpers/sortingFns.ts";
 import { dot_and_three_decimals } from "../helpers/miscHelpers.tsx";
-import { getColumnSum } from "../helpers/miscHelpers.tsx";
+import { getColumnSum, min_plate_appearance } from "../helpers/miscHelpers.tsx";
+import { compareOperatorFilterFn } from "../helpers/filterFns.ts";
+
 export const createBatterGameLogColumns = (
   helper: ColumnHelper<BattingStat>
 ) => [
@@ -35,6 +37,48 @@ export const createBatterGameLogColumns = (
       const totalGames = rows.length;
       return `${totalGames} GP`;
     },
+  }),
+  helper.accessor("pa", {
+    header: "PA",
+    filterFn: compareOperatorFilterFn,
+    cell: (info: any) => info.getValue(),
+    footer: (info: any) => getColumnSum(info, info.column.id),
+  }),
+  helper.accessor("tb", {
+    header: "TB",
+    filterFn: compareOperatorFilterFn,
+    cell: (info: any) => info.getValue(),
+    footer: (info: any) => getColumnSum(info, info.column.id),
+  }),
+  helper.accessor("dp", {
+    header: "DP",
+    filterFn: compareOperatorFilterFn,
+    cell: (info: any) => info.getValue(),
+    footer: (info: any) => getColumnSum(info, info.column.id),
+  }),
+  helper.accessor("hbp", {
+    header: "HBP",
+    filterFn: compareOperatorFilterFn,
+    cell: (info: any) => info.getValue(),
+    footer: (info: any) => getColumnSum(info, info.column.id),
+  }),
+  helper.accessor("sh", {
+    header: "SH",
+    filterFn: compareOperatorFilterFn,
+    cell: (info: any) => info.getValue(),
+    footer: (info: any) => getColumnSum(info, info.column.id),
+  }),
+  helper.accessor("sf", {
+    header: "SF",
+    filterFn: compareOperatorFilterFn,
+    cell: (info: any) => info.getValue(),
+    footer: (info: any) => getColumnSum(info, info.column.id),
+  }),
+  helper.accessor("ibb", {
+    header: "IBB",
+    filterFn: compareOperatorFilterFn,
+    cell: (info: any) => info.getValue(),
+    footer: (info: any) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("game_result", {
     header: "RESULT",
@@ -86,56 +130,67 @@ export const createBatterGameLogColumns = (
   },
   helper.accessor("ab", {
     header: "AB",
+    filterFn: compareOperatorFilterFn,
     cell: (info: any) => info.getValue(),
     footer: (info: any) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("hits", {
     header: "H",
+    filterFn: compareOperatorFilterFn,
     cell: (info: any) => info.getValue(),
     footer: (info: any) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("runs", {
     header: "R",
+    filterFn: compareOperatorFilterFn,
     cell: (info: any) => info.getValue(),
     footer: (info: any) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("rbi", {
     header: "RBI",
+    filterFn: compareOperatorFilterFn,
     cell: (info: any) => info.getValue(),
     footer: (info: any) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("double", {
     header: "2B",
+    filterFn: compareOperatorFilterFn,
     cell: (info: any) => info.getValue(),
     footer: (info: any) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("hr", {
     header: "HR",
+    filterFn: compareOperatorFilterFn,
     cell: (info: any) => info.getValue(),
     footer: (info: any) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("bb", {
     header: "BB",
+    filterFn: compareOperatorFilterFn,
     cell: (info: any) => info.getValue(),
     footer: (info: any) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("so", {
     header: "K",
+    filterFn: compareOperatorFilterFn,
     cell: (info: any) => info.getValue(),
     footer: (info: any) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("hbp", {
     header: "HBP",
+    filterFn: compareOperatorFilterFn,
     cell: (info: any) => info.getValue(),
     footer: (info: any) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("sb", {
     header: "SB",
+    filterFn: compareOperatorFilterFn,
     cell: (info: any) => info.getValue(),
     footer: (info: any) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("cs", {
     header: "CS",
+    filterFn: compareOperatorFilterFn,
     cell: (info: any) => info.getValue(),
     footer: (info: any) => getColumnSum(info, info.column.id),
   }),
@@ -221,91 +276,109 @@ export const createExtBattingColumns = (helper: ColumnHelper<BattingStat>) => [
   }),
   helper.accessor("pa", {
     header: "PA",
+    filterFn: compareOperatorFilterFn,
     cell: (info: any) => info.getValue(),
     footer: (info: any) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("ab", {
     header: "AB",
+    filterFn: compareOperatorFilterFn,
     cell: (info: any) => info.getValue(),
     footer: (info: any) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("runs", {
     header: "R",
+    filterFn: compareOperatorFilterFn,
     cell: (info: any) => info.getValue(),
     footer: (info: any) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("hits", {
     header: "H",
+    filterFn: compareOperatorFilterFn,
     cell: (info: any) => info.getValue(),
     footer: (info: any) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("double", {
     header: "2B",
+    filterFn: compareOperatorFilterFn,
     cell: (info: any) => info.getValue(),
     footer: (info: any) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("triple", {
     header: "3B",
+    filterFn: compareOperatorFilterFn,
     cell: (info: any) => info.getValue(),
     footer: (info: any) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("hr", {
     header: "HR",
+    filterFn: compareOperatorFilterFn,
     cell: (info: any) => info.getValue(),
     footer: (info: any) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("rbi", {
     header: "RBI",
+    filterFn: compareOperatorFilterFn,
     cell: (info: any) => info.getValue(),
     footer: (info: any) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("sb", {
     header: "SB",
+    filterFn: compareOperatorFilterFn,
     cell: (info: any) => info.getValue(),
     footer: (info: any) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("cs", {
     header: "CS",
+    filterFn: compareOperatorFilterFn,
     cell: (info: any) => info.getValue(),
     footer: (info: any) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("bb", {
     header: "BB",
+    filterFn: compareOperatorFilterFn,
     cell: (info: any) => info.getValue(),
     footer: (info: any) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("so", {
     header: "K",
+    filterFn: compareOperatorFilterFn,
     cell: (info: any) => info.getValue(),
     footer: (info: any) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("tb", {
     header: "TB",
+    filterFn: compareOperatorFilterFn,
     cell: (info: any) => info.getValue(),
     footer: (info: any) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("dp", {
     header: "DP",
+    filterFn: compareOperatorFilterFn,
     cell: (info: any) => info.getValue(),
     footer: (info: any) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("hbp", {
     header: "HBP",
+    filterFn: compareOperatorFilterFn,
     cell: (info: any) => info.getValue(),
     footer: (info: any) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("sh", {
     header: "SH",
+    filterFn: compareOperatorFilterFn,
     cell: (info: any) => info.getValue(),
     footer: (info: any) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("sf", {
     header: "SF",
+    filterFn: compareOperatorFilterFn,
     cell: (info: any) => info.getValue(),
     footer: (info: any) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("ibb", {
     header: "IBB",
+    filterFn: compareOperatorFilterFn,
     cell: (info: any) => info.getValue(),
     footer: (info: any) => getColumnSum(info, info.column.id),
   }),
@@ -332,7 +405,8 @@ export const createTotalBattingColumns = (
   }),
   {
     id: "qualified",
-    accessorFn: (row: any) => row.total_pa / 3.1 > row.total_team_games,
+    accessorFn: (row: any) =>
+      row.total_pa / min_plate_appearance > row.total_team_games,
     header: "Qualified?",
     cell: (info: any) => {
       const qualified = info.getValue();
@@ -376,32 +450,38 @@ export const createTotalBattingColumns = (
   }),
   helper.accessor("total_pa", {
     header: "PA",
+    filterFn: compareOperatorFilterFn,
     cell: (info) => info.getValue(),
     footer: (info) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("total_ab", {
     header: "AB",
+    filterFn: compareOperatorFilterFn,
     cell: (info) => info.getValue(),
     footer: (info) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("total_runs", {
     header: "R",
+    filterFn: compareOperatorFilterFn,
     cell: (info) => info.getValue(),
     footer: (info) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("total_hits", {
     header: "H",
+    filterFn: compareOperatorFilterFn,
     cell: (info) => info.getValue(),
     footer: (info) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("total_rbi", {
     header: "RBI",
+    filterFn: compareOperatorFilterFn,
     cell: (info) => info.getValue(),
     footer: (info) => getColumnSum(info, info.column.id),
   }),
 
   helper.accessor("avg", {
     header: "AVG",
+    filterFn: compareOperatorFilterFn,
     cell: (info) => dot_and_three_decimals(info.getValue()),
     footer: (info) => {
       const rows = info.table.getFilteredRowModel().rows;
@@ -419,36 +499,43 @@ export const createTotalBattingColumns = (
   }),
   helper.accessor("total_double", {
     header: "2B",
+    filterFn: compareOperatorFilterFn,
     cell: (info) => info.getValue(),
     footer: (info) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("total_hr", {
     header: "HR",
+    filterFn: compareOperatorFilterFn,
     cell: (info) => info.getValue(),
     footer: (info) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("total_bb", {
     header: "BB",
+    filterFn: compareOperatorFilterFn,
     cell: (info) => info.getValue(),
     footer: (info) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("total_strikeouts", {
     header: "SO",
+    filterFn: compareOperatorFilterFn,
     cell: (info) => info.getValue(),
     footer: (info) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("total_sb", {
     header: "SB",
+    filterFn: compareOperatorFilterFn,
     cell: (info) => info.getValue(),
     footer: (info) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("total_cs", {
     header: "CS",
+    filterFn: compareOperatorFilterFn,
     cell: (info) => info.getValue(),
     footer: (info) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("total_hbp", {
     header: "HBP",
+    filterFn: compareOperatorFilterFn,
     cell: (info) => info.getValue(),
     footer: (info) => getColumnSum(info, info.column.id),
   }),
@@ -475,7 +562,8 @@ export const createTotalBattingAdvColumns = (
   }),
   {
     id: "qualified",
-    accessorFn: (row: any) => row.total_pa / 3.1 > row.total_team_games,
+    accessorFn: (row: any) =>
+      row.total_pa / min_plate_appearance > row.total_team_games,
     header: "Qualified?",
     cell: (info: any) => {
       const qualified = info.getValue();
@@ -503,77 +591,92 @@ export const createTotalBattingAdvColumns = (
   },
   helper.accessor("total_ab", {
     header: "AB",
+    filterFn: compareOperatorFilterFn,
     cell: (info) => info.getValue(),
     footer: (info) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("total_runs", {
     header: "R",
+    filterFn: compareOperatorFilterFn,
     cell: (info) => info.getValue(),
     footer: (info) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("total_hits", {
     header: "H",
+    filterFn: compareOperatorFilterFn,
     cell: (info) => info.getValue(),
     footer: (info) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("total_rbi", {
     header: "RBI",
+    filterFn: compareOperatorFilterFn,
     cell: (info) => info.getValue(),
     footer: (info) => getColumnSum(info, info.column.id),
   }),
 
   helper.accessor("total_double", {
     header: "2B",
+    filterFn: compareOperatorFilterFn,
     cell: (info) => info.getValue(),
     footer: (info) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("total_hr", {
     header: "HR",
+    filterFn: compareOperatorFilterFn,
     cell: (info) => info.getValue(),
     footer: (info) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("total_bb", {
     header: "BB",
+    filterFn: compareOperatorFilterFn,
     cell: (info) => info.getValue(),
     footer: (info) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("total_strikeouts", {
     header: "SO",
+    filterFn: compareOperatorFilterFn,
     cell: (info) => info.getValue(),
     footer: (info) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("total_sb", {
     header: "SB",
+    filterFn: compareOperatorFilterFn,
     cell: (info) => info.getValue(),
     footer: (info) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("total_cs", {
     header: "CS",
+    filterFn: compareOperatorFilterFn,
     cell: (info) => info.getValue(),
     footer: (info) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("total_ibb", {
     header: "IBB",
+    filterFn: compareOperatorFilterFn,
     cell: (info) => info.getValue(),
     footer: (info) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("total_sf", {
     header: "SF",
+    filterFn: compareOperatorFilterFn,
     cell: (info) => info.getValue(),
     footer: (info) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("total_triple", {
     header: "3B",
+    filterFn: compareOperatorFilterFn,
     cell: (info) => info.getValue(),
     footer: (info) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("total_hbp", {
     header: "HBP",
+    filterFn: compareOperatorFilterFn,
     cell: (info) => info.getValue(),
     footer: (info) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("games", {
     header: "G",
+    filterFn: compareOperatorFilterFn,
     cell: (info) => info.getValue(),
   }),
   helper.accessor("total_team_games", {
@@ -582,11 +685,13 @@ export const createTotalBattingAdvColumns = (
   }),
   helper.accessor("total_pa", {
     header: "PA",
+    filterFn: compareOperatorFilterFn,
     cell: (info) => info.getValue(),
     footer: (info) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("avg", {
     header: "AVG",
+    filterFn: compareOperatorFilterFn,
     cell: (info) => dot_and_three_decimals(info.getValue()),
     footer: (info) => {
       const rows = info.table.getFilteredRowModel().rows;
@@ -604,6 +709,7 @@ export const createTotalBattingAdvColumns = (
   }),
   helper.accessor("ops", {
     header: "OPS",
+    filterFn: compareOperatorFilterFn,
     cell: (info) => dot_and_three_decimals(info.getValue()),
     footer: (info) => {
       const rows = info.table.getFilteredRowModel().rows;
@@ -655,6 +761,7 @@ export const createTotalBattingAdvColumns = (
   }),
   helper.accessor("obp", {
     header: "OBP",
+    filterFn: compareOperatorFilterFn,
     cell: (info) => dot_and_three_decimals(info.getValue()),
     footer: (info) => {
       const rows = info.table.getFilteredRowModel().rows;
@@ -689,6 +796,7 @@ export const createTotalBattingAdvColumns = (
   }),
   helper.accessor("slg", {
     header: "SLG",
+    filterFn: compareOperatorFilterFn,
     cell: (info) => dot_and_three_decimals(info.getValue()),
     footer: (info) => {
       const rows = info.table.getFilteredRowModel().rows;
@@ -716,6 +824,7 @@ export const createTotalBattingAdvColumns = (
   {
     header: "HR%",
     id: "hr_pct",
+    filterFn: compareOperatorFilterFn,
     accessorFn: (row: any) => row.total_hr / row.total_ab,
     cell: (info: any) => {
       const hr = info.row.original.total_hr;
@@ -741,6 +850,7 @@ export const createTotalBattingAdvColumns = (
   {
     header: "BB%",
     id: "bb_pct",
+    filterFn: compareOperatorFilterFn,
     accessorFn: (row: any) => row.total_bb / row.total_pa,
     cell: (info: any) => {
       const bb = info.row.original.total_bb;
@@ -766,6 +876,7 @@ export const createTotalBattingAdvColumns = (
   {
     header: "K%",
     id: "k_pct",
+    filterFn: compareOperatorFilterFn,
     accessorFn: (row: any) => row.total_strikeouts / row.total_pa,
     cell: (info: any) => {
       const k = info.row.original.total_strikeouts;
@@ -792,6 +903,7 @@ export const createTotalBattingAdvColumns = (
   {
     header: "ISO",
     id: "iso",
+    filterFn: compareOperatorFilterFn,
     accessorFn: (row: any) => {
       const totalDoubles = row.total_double;
       const totalTriples = row.total_triple;
@@ -840,6 +952,7 @@ export const createTotalBattingAdvColumns = (
   {
     header: "BABIP",
     id: "babip",
+    filterFn: compareOperatorFilterFn,
     accessorFn: (row: any) => {
       const totalHits = row.total_hits;
       const totalAtBats = row.total_ab;

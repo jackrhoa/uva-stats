@@ -28,30 +28,17 @@ import {
 import { createFieldingColumns } from "../columns/fieldingColumns.tsx";
 import { loadState, saveState } from "../helpers/saveState.ts";
 
-function createTableConfig<T>(
-  data: T[],
-  columnsDef: (helper: ColumnHelper<T>) => any
-) {
-  const columns = useMemo(() => columnsDef(createColumnHelper()), [columnsDef]);
-
-  const table = useReactTable({
-    data,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    initialState: {
-      columnVisibility: {},
-    },
-  });
-  return table;
-}
-
 export default function PlayerStats() {
   const [toggle, setToggle] = useState(0);
 
   const { id } = useParams<{ id: string }>();
 
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [battingColumnFilters, setBattingColumnFilters] =
+    useState<ColumnFiltersState>([]);
+  const [pitchingColumnFilters, setPitchingColumnFilters] =
+    useState<ColumnFiltersState>([]);
+  const [fieldingColumnFilters, setFieldingColumnFilters] =
+    useState<ColumnFiltersState>([]);
 
   const statsToReceive = useMemo(
     () => [
@@ -104,21 +91,37 @@ export default function PlayerStats() {
     console.log(" toggle state:", toggle);
   }, [id]);
 
-  const pitcherTable = createTableConfig<PitchingStat>(
-    pitcherStats,
-    createPitcherColumns
-  );
+  const pitcherTable = useReactTable<PitchingStat>({
+    data: pitcherStats,
+    columns: createPitcherColumns(createColumnHelper()),
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    state: {
+      columnFilters: pitchingColumnFilters,
+    },
+  });
 
-  const fieldingTable = createTableConfig<FieldingStat>(
-    fieldingStats,
-    createFieldingColumns
-  );
+  const fieldingTable = useReactTable<FieldingStat>({
+    data: fieldingStats,
+    columns: createFieldingColumns(createColumnHelper()),
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    state: {
+      columnFilters: fieldingColumnFilters,
+    },
+  });
 
-  const advancedPitcherTable = useReactTable({
+  const advancedPitcherTable = useReactTable<PitchingStat>({
     data: pitcherStats,
     columns: createPitchingExtColumns(createColumnHelper()),
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    state: {
+      columnFilters: pitchingColumnFilters,
+    },
     // initialState: {
     //   columnVisibility: {},
     // },
@@ -135,14 +138,13 @@ export default function PlayerStats() {
     getFilteredRowModel: getFilteredRowModel(),
     initialState: {
       columnVisibility: {
-        //     hr: false,
-        //     bb: false,
-        //     so: false,
-        //     ab: false,
-        //     tb: false,
-        //     hits: false,
-        //     pa: false,
-        //     sf: false,
+        pa: false,
+        tb: false,
+        dp: false,
+        hbp: false,
+        sh: false,
+        sf: false,
+        ibb: false,
         ab: false,
         hits: false,
         sb: false,
@@ -157,9 +159,9 @@ export default function PlayerStats() {
       //   // ],
     },
     state: {
-      columnFilters,
+      columnFilters: battingColumnFilters,
     },
-    onColumnFiltersChange: setColumnFilters,
+    // onColumnFiltersChange: setColumnFilters,
   });
 
   const batterExtTable = useReactTable({
@@ -179,9 +181,9 @@ export default function PlayerStats() {
       // ],
     },
     state: {
-      columnFilters,
+      columnFilters: battingColumnFilters,
     },
-    onColumnFiltersChange: setColumnFilters,
+    // onColumnFiltersChange: setColumnFilters,
   });
 
   if (loading) {
@@ -312,17 +314,34 @@ export default function PlayerStats() {
       </ul>
       <div className="flex w-full gap-2 border-red-500 border-2 rounded-lg p-1">
         <div className="w-64 bg-gray-100 p-4">
-          <FilterGUI
-            options={[
-              ["pa", "PA"],
-              ["ab", "AB"],
-              ["hits", "H"],
-              // ["game_date", "Date"],
-              // ["qualified", "Qualified"],
-            ]}
-            columnFilters={columnFilters}
-            setColumnFilters={setColumnFilters}
-          />
+          {(toggle === 1 || toggle === 2) && (
+            <FilterGUI
+              options={[
+                ["pa", "PA"],
+                ["ab", "AB"],
+                ["hits", "H"],
+                ["game_date", "Date"],
+
+                // ["qualified", "Qualified"],
+              ]}
+              columnFilters={battingColumnFilters}
+              setColumnFilters={setBattingColumnFilters}
+            />
+          )}
+          {(toggle === 3 || toggle === 4) && (
+            <FilterGUI
+              options={[
+                ["ip", "Innings Pitched"],
+                // ["ab", "AB"],
+                // ["hits", "H"],
+                ["game_date", "Date"],
+
+                // ["qualified", "Qualified"],
+              ]}
+              columnFilters={pitchingColumnFilters}
+              setColumnFilters={setPitchingColumnFilters}
+            />
+          )}
         </div>
         <div className="flex-1 bg-orange-100 p-4">
           <div className={toggle === 1 ? "block" : "hidden"}>
