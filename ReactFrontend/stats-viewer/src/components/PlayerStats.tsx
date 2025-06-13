@@ -20,6 +20,7 @@ import type {
 import {
   createBatterGameLogColumns,
   createExtBattingColumns,
+  createTotalIndivBattingColumns,
 } from "../columns/batterColumns.tsx";
 import {
   createPitcherColumns,
@@ -27,6 +28,9 @@ import {
 } from "../columns/pitcherColumns.tsx";
 import { createFieldingColumns } from "../columns/fieldingColumns.tsx";
 import { loadState, saveState } from "../helpers/saveState.ts";
+import getSeasonStats, {
+  getGroupedSeasonStats,
+} from "../helpers/aggregateStats.ts";
 
 export default function PlayerStats() {
   const [toggle, setToggle] = useState(0);
@@ -167,6 +171,36 @@ export default function PlayerStats() {
   const batterExtTable = useReactTable({
     data: batterStats,
     columns: createExtBattingColumns(createColumnHelper()),
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    initialState: {
+      columnVisibility: {},
+
+      // columnFilters: [
+      //   {
+      //     id: "game_date",
+      //     value: "2025-04",
+      //   },
+      // ],
+    },
+    state: {
+      columnFilters: battingColumnFilters,
+    },
+    // onColumnFiltersChange: setColumnFilters,
+  });
+
+  // const playerSeasonRow = getSeasonStats(batterStats);
+  // const seasonStatsData = [playerSeasonRow];
+
+  const groupedByPosition = useMemo(
+    () => getGroupedSeasonStats(batterStats, (stat) => stat.player_position),
+    [id, batterStats]
+  );
+
+  const seasonTotalBattingTable = useReactTable({
+    data: groupedByPosition,
+    columns: createTotalIndivBattingColumns(createColumnHelper()),
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
@@ -343,7 +377,11 @@ export default function PlayerStats() {
             />
           )}
         </div>
+
         <div className="flex-1 bg-orange-100 p-4">
+          <div className={toggle === 0 ? "block" : "hidden"}>
+            <DisplayTable table={seasonTotalBattingTable} />
+          </div>
           <div className={toggle === 1 ? "block" : "hidden"}>
             <DisplayTable table={batterTable} />
           </div>
