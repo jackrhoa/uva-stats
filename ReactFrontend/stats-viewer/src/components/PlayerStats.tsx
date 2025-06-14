@@ -320,6 +320,9 @@ export default function PlayerStats() {
                 ["pa", "PA"],
                 ["ab", "AB"],
                 ["hits", "H"],
+                ["so", "K"],
+                ["bb", "BB"],
+                ["hr", "HR"],
                 ["game_date", "Date"],
 
                 // ["qualified", "Qualified"],

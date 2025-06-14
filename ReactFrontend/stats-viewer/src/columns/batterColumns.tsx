@@ -13,6 +13,12 @@ export const createBatterGameLogColumns = (
     cell: (info: any) => info.getValue(),
     filterFn: dateFilterFn,
   }),
+  {
+    header: "H/A",
+    id: "home_away",
+    accessorFn: (row: any) => (row.home ? "H" : "A"),
+    cell: (info: any) => info.getValue(),
+  },
   helper.accessor("opponent", {
     header: "OPPONENT",
     cell: (info: any) => {
