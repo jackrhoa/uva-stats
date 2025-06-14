@@ -5,6 +5,8 @@ import { dot_and_three_decimals } from "../helpers/miscHelpers.tsx";
 import { getColumnSum, min_plate_appearance } from "../helpers/miscHelpers.tsx";
 import { compareOperatorFilterFn, dateFilterFn } from "../helpers/filterFns.ts";
 
+import { type BattingSeasonStat } from "../helpers/aggregateStats.ts";
+
 export const createBatterGameLogColumns = (
   helper: ColumnHelper<BattingStat>
 ) => [
@@ -1003,4 +1005,25 @@ export const createTotalBattingAdvColumns = (
   //     return abPerHrB - abPerHrA; // Ascending order
   //   },
   // },
+];
+
+export const createTotalIndivBattingColumns = (
+  helper: ColumnHelper<BattingSeasonStat>
+) => [
+  helper.accessor("player_name", {
+    header: "#",
+    cell: (info: any) => info.getValue(),
+  }),
+  helper.accessor("hr", {
+    header: "HR",
+    cell: (info: any) => info.getValue(),
+  }),
+  helper.accessor("player_position", {
+    header: "POS",
+    cell: (info: any) => info.getValue(),
+  }),
+  helper.accessor("games_played", {
+    header: "G",
+    cell: (info: any) => info.getValue(),
+  }),
 ];
