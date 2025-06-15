@@ -5,6 +5,8 @@ PitcherStatSerializer, PlayerInfoSerializer, \
 FieldingStatSerializer, GameInfoSerializer, \
 BatterStatSumSerializer, PitcherStatSumSerializer, \
 FieldingStatSumByPosSerializer, FieldingStatSumByPlayerSerializer
+
+
 from rest_framework import viewsets, status
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
@@ -73,12 +75,13 @@ class BatterStatCreateView(APIView):
     
 class PitcherStatCreateView(APIView):
     permission_classes = [AllowAny]
-
+    print("PitcherStatCreateView called")
     def post(self, request):
         api_key = request.headers.get('X-API-Key')
         expected_key = settings.SCRAPER_API_KEY
+        
         if api_key != expected_key:
-            return Response({"error": "Unauthorized"}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({"error": "Unauthorized (incorrect API key)"}, status=status.HTTP_401_UNAUTHORIZED)
         serializer = PitcherStatSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -172,13 +175,13 @@ class TeamPitchingStatsViewSet(viewsets.ReadOnlyModelViewSet):
                 total_hr_allowed=models.Sum('hr_allowed'),
                 total_wp=models.Sum('wp'),
                 total_hb=models.Sum('hb'),
-                total_starts=models.Sum(
-                    models.Case(
-                        models.When(starter=True, then=1),
-                        default=0,
-                        output_field=models.IntegerField()
-                    )
-                ),
+                total_starts=models.Sum("starter"),
+                #     models.Case(
+                #         models.When(starter=True, then=1),
+                #         default=0,
+                #         output_field=models.IntegerField()
+                #     )
+                # ),
                 total_ibb=models.Sum('ibb'),
                 total_balk=models.Sum('balk'),
                 total_ir=models.Sum('ir'),
@@ -187,27 +190,27 @@ class TeamPitchingStatsViewSet(viewsets.ReadOnlyModelViewSet):
                 total_sf_allowed=models.Sum('sf_allowed'),
                 total_kl=models.Sum('kl'),
                 total_pickoffs=models.Sum('pickoffs'),
-                total_wins=models.Sum(
-                    models.Case(
-                        models.When(win=True, then=1),
-                        default=0,
-                        output_field=models.IntegerField()
-                    )
-                ),
-                total_losses=models.Sum(
-                    models.Case(
-                        models.When(loss=True, then=1),
-                        default=0,
-                        output_field=models.IntegerField()
-                    )
-                ),
-                total_saves=models.Sum(
-                    models.Case(
-                        models.When(sv=True, then=1),
-                        default=0,
-                        output_field=models.IntegerField()
-                    )
-                ),
+                total_wins=models.Sum("win"),
+                #     models.Case(
+                #         models.When(win=True, then=1),
+                #         default=0,
+                #         output_field=models.IntegerField()
+                #     )
+                # ),
+                total_losses=models.Sum("loss"),
+                #     models.Case(
+                #         models.When(loss=True, then=1),
+                #         default=0,
+                #         output_field=models.IntegerField()
+                #     )
+                # ),
+                total_saves=models.Sum("sv"),
+                #     models.Case(
+                #         models.When(sv=True, then=1),
+                #         default=0,
+                #         output_field=models.IntegerField()
+                #     )
+                # ),
                 total_games=models.Count('game_id'),
             )
         )

@@ -18,6 +18,11 @@ def post_stats(endpoint, data):
     }
     response = requests.post(f'{API_BASE_URL}{endpoint}/', json=data, headers=headers)
     if response.status_code != 201:
-        print(f'Error posting to {endpoint}: {response.status_code}')
+        print(f'Error posting to {endpoint}: STATUS CODE {response.status_code}')
+        with open('error_log.txt', 'a') as f:
+            f.write(f'Error posting to {endpoint}: STATUS CODE {response.status_code}\n')
+            f.write(f'Response text: {response.text}\n')
+        # print("Response text (truncated):", response.text)
+        # print("RESPONSE:", response)
         print(response.json())
     return response

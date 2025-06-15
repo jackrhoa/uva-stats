@@ -61,7 +61,7 @@ class PitcherStat(models.Model):
     # If a game is deleted from GameInfo, the corresponding
     #   pitching stats from that game will be deleted as well
     game_id = models.ForeignKey('GameInfo', on_delete=models.CASCADE, null=True)
-    starter = models.BooleanField()
+    starter = models.IntegerField(default=0)
     ip = models.DecimalField(max_digits=4, decimal_places=1)
     h = models.IntegerField()
     r = models.IntegerField()
@@ -82,9 +82,9 @@ class PitcherStat(models.Model):
     sf_allowed = models.IntegerField()
     kl = models.IntegerField()
     pickoffs = models.IntegerField()
-    win = models.BooleanField()
-    loss = models.BooleanField()
-    sv = models.BooleanField()
+    win = models.IntegerField(default=0)
+    loss = models.IntegerField(default=0)
+    sv = models.IntegerField(default=0)
 
     def __str__(self):
         return f"{self.player_id.player_name} - Game #{self.game_id} | {self.ip} IP | {self.h} Hits | {self.r} Runs | {self.er} Earned Runs"

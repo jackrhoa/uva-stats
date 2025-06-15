@@ -67,6 +67,8 @@ class GameStats:
         else:
 
             raise ValueError('Please provide either a file name or a url')
+        # print(f'Game {self.ncaa_game_id} box score and individual stats retrieved')
+        # print(box_score_source)
         self.date = None
         self.set_date()
         self.opponent = None
@@ -147,7 +149,9 @@ class GameStats:
         '''Sets the date of the game
         '''
         try:
-            str_date = self.box_score_df_list[1].loc[3][0]
+            str_date = self.box_score_df_list[1].loc[3][0].split(' ')[0]
+            print("DATE INFO", str_date)
+
             self.date = datetime.strptime(str_date.strip(), '%m/%d/%Y').date()
         except:
             raise ValueError('Unable to find game date')
@@ -319,7 +323,7 @@ class GameStats:
             
             player_info, created = PlayerInfo.objects.get_or_create(
                 player_name=player_name,
-                defaults={"player_position": 'P', 'jersey_number': number}
+                defaults={"player_position": {'P': 1}, 'jersey_number': number}
             )
 
             if created:
@@ -331,7 +335,7 @@ class GameStats:
             data = {
                 'player_id': player_info.player_id,
                 'game_id': game.game_id,
-                'starter': bool(i == 0),
+                'starter': int(i == 0),
                 'ip': float(selected_team_pitching['IP'].loc[i]),
                 'h': int(selected_team_pitching['H'].loc[i]),
                 'r': int(selected_team_pitching['R'].loc[i]),
@@ -352,10 +356,12 @@ class GameStats:
                 'sf_allowed': int(selected_team_pitching['SFA'].loc[i]),
                 'kl': int(selected_team_pitching['KL'].loc[i]),
                 'pickoffs': int(selected_team_pitching['pickoffs'].loc[i]),
-                'win': self.winning_pitcher == player_name,
-                'loss': self.losing_pitcher == player_name,
-                'sv': self.saving_pitcher == player_name,
+                'win': int(self.winning_pitcher == player_name),
+                'loss': int(self.losing_pitcher == player_name),
+                'sv': int(self.saving_pitcher == player_name),
             }
+            # print("data", data)
+            # print("type of data:", type(data))
 
             post_stats(
                 endpoint='pitcher_stats/create',
@@ -448,7 +454,6 @@ class GameStats:
                 'dp': int(selected_team_fielding['IDP'].loc[i]),
                 'tp': int(selected_team_fielding['TP'].loc[i]),
             }
-
             post_stats(
                 endpoint='fielding_stats/create',
                 data=data

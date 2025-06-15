@@ -10,7 +10,7 @@ import {
 } from "@tanstack/react-table";
 import DisplayTable from "./DisplayTable.tsx";
 import FilterGUI from "./FilterGUI.tsx";
-import type { ColumnHelper, ColumnFiltersState } from "@tanstack/react-table";
+import type { ColumnFiltersState } from "@tanstack/react-table";
 import usePlayerStats from "../hooks/usePlayerStats.ts";
 import type {
   BattingStat,
@@ -20,7 +20,7 @@ import type {
 import {
   createBatterGameLogColumns,
   createExtBattingColumns,
-  createTotalIndivBattingColumns,
+  // createTotalIndivBattingColumns,
 } from "../columns/batterColumns.tsx";
 import {
   createPitcherColumns,
@@ -28,9 +28,9 @@ import {
 } from "../columns/pitcherColumns.tsx";
 import { createFieldingColumns } from "../columns/fieldingColumns.tsx";
 import { loadState, saveState } from "../helpers/saveState.ts";
-import getSeasonStats, {
-  getGroupedSeasonStats,
-} from "../helpers/aggregateStats.ts";
+// import getSeasonStats, {
+//   getGroupedSeasonStats,
+// } from "../helpers/aggregateStats.ts";
 
 export default function PlayerStats() {
   const [toggle, setToggle] = useState(0);
@@ -72,20 +72,20 @@ export default function PlayerStats() {
     () => playerData.fielding_stats || [],
     [playerData.fielding_stats]
   );
-  const allBattingStats = useMemo(
-    () => playerData.total_batting_stats || [],
-    [playerData.total_batting_stats]
-  );
+  // const allBattingStats = useMemo(
+  //   () => playerData.total_batting_stats || [],
+  //   [playerData.total_batting_stats]
+  // );
 
-  const allPitchingStats = useMemo(
-    () => playerData.total_pitching_stats || [],
-    [playerData.total_pitching_stats]
-  );
+  // const allPitchingStats = useMemo(
+  //   () => playerData.total_pitching_stats || [],
+  //   [playerData.total_pitching_stats]
+  // );
 
-  const allFieldingStatsByPos = useMemo(
-    () => playerData.total_fielding_stats || [],
-    [playerData.total_fielding_stats]
-  );
+  // const allFieldingStatsByPos = useMemo(
+  //   () => playerData.total_fielding_stats || [],
+  //   [playerData.total_fielding_stats]
+  // );
 
   useEffect(() => {
     const savedToggle = loadState(id + "Toggle");
@@ -193,32 +193,32 @@ export default function PlayerStats() {
   // const playerSeasonRow = getSeasonStats(batterStats);
   // const seasonStatsData = [playerSeasonRow];
 
-  const groupedByPosition = useMemo(
-    () => getGroupedSeasonStats(batterStats, (stat) => stat.player_position),
-    [id, batterStats]
-  );
+  // const groupedByPosition = useMemo(
+  //   () => getGroupedSeasonStats(batterStats, (stat) => stat.player_position),
+  //   [id, batterStats]
+  // );
 
-  const seasonTotalBattingTable = useReactTable({
-    data: groupedByPosition,
-    columns: createTotalIndivBattingColumns(createColumnHelper()),
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    initialState: {
-      columnVisibility: {},
+  // const seasonTotalBattingTable = useReactTable({
+  //   data: groupedByPosition,
+  //   columns: createTotalIndivBattingColumns(createColumnHelper()),
+  //   getCoreRowModel: getCoreRowModel(),
+  //   getSortedRowModel: getSortedRowModel(),
+  //   getFilteredRowModel: getFilteredRowModel(),
+  //   initialState: {
+  //     columnVisibility: {},
 
-      // columnFilters: [
-      //   {
-      //     id: "game_date",
-      //     value: "2025-04",
-      //   },
-      // ],
-    },
-    state: {
-      columnFilters: battingColumnFilters,
-    },
-    // onColumnFiltersChange: setColumnFilters,
-  });
+  //     // columnFilters: [
+  //     //   {
+  //     //     id: "game_date",
+  //     //     value: "2025-04",
+  //     //   },
+  //     // ],
+  //   },
+  //   state: {
+  //     columnFilters: battingColumnFilters,
+  //   },
+  //   // onColumnFiltersChange: setColumnFilters,
+  // });
 
   if (loading) {
     return <div>Loading...</div>;
@@ -379,12 +379,26 @@ export default function PlayerStats() {
               setColumnFilters={setPitchingColumnFilters}
             />
           )}
+          {toggle === 5 && (
+            <FilterGUI
+              options={[
+                // ["ip", "Innings Pitched"],
+                // ["ab", "AB"],
+                // ["hits", "H"],
+                ["game_date", "Date"],
+
+                // ["qualified", "Qualified"],
+              ]}
+              columnFilters={fieldingColumnFilters}
+              setColumnFilters={setFieldingColumnFilters}
+            />
+          )}
         </div>
 
         <div className="flex-1 bg-orange-100 p-4">
-          <div className={toggle === 0 ? "block" : "hidden"}>
+          {/* <div className={toggle === 0 ? "block" : "hidden"}>
             <DisplayTable table={seasonTotalBattingTable} />
-          </div>
+          </div> */}
           <div className={toggle === 1 ? "block" : "hidden"}>
             <DisplayTable table={batterTable} />
           </div>

@@ -1,0 +1,38 @@
+Error posting to game_info/create: STATUS CODE 400
+Response text: {"game_id":["game info with this game id already exists."]}
+Error posting to game_info/create: STATUS CODE 400
+Response text: {"game_id":["game info with this game id already exists."]}
+Error posting to game_info/create: STATUS CODE 400
+Response text: {"game_id":["game info with this game id already exists."]}
+Error posting to game_info/create: STATUS CODE 400
+Response text: {"game_id":["game info with this game id already exists."]}
+Error posting to pitcher_stats/create: STATUS CODE 400
+Response text: {"starter":["A valid integer is required."],"win":["A valid integer is required."],"loss":["A valid integer is required."],"sv":["A valid integer is required."]}
+Error posting to pitcher_stats/create: STATUS CODE 400
+Response text: {"starter":["A valid integer is required."],"win":["A valid integer is required."],"loss":["A valid integer is required."],"sv":["A valid integer is required."]}
+Error posting to pitcher_stats/create: STATUS CODE 400
+Response text: {"starter":["A valid integer is required."],"win":["A valid integer is required."],"loss":["A valid integer is required."],"sv":["A valid integer is required."]}
+Error posting to pitcher_stats/create: STATUS CODE 400
+Response text: {"starter":["A valid integer is required."],"win":["A valid integer is required."],"loss":["A valid integer is required."],"sv":["A valid integer is required."]}
+Error posting to pitcher_stats/create: STATUS CODE 400
+Response text: {"starter":["A valid integer is required."],"win":["A valid integer is required."],"loss":["A valid integer is required."],"sv":["A valid integer is required."]}
+Error posting to pitcher_stats/create: STATUS CODE 400
+Response text: {"starter":["A valid integer is required."],"win":["A valid integer is required."],"loss":["A valid integer is required."],"sv":["A valid integer is required."]}
+Error posting to pitcher_stats/create: STATUS CODE 400
+Response text: {"starter":["A valid integer is required."],"win":["A valid integer is required."],"loss":["A valid integer is required."],"sv":["A valid integer is required."]}
+Error posting to pitcher_stats/create: STATUS CODE 400
+Response text: {"starter":["A valid integer is required."],"win":["A valid integer is required."],"loss":["A valid integer is required."],"sv":["A valid integer is required."]}
+Error posting to pitcher_stats/create: STATUS CODE 400
+Response text: {"starter":["A valid integer is required."],"win":["A valid integer is required."],"loss":["A valid integer is required."],"sv":["A valid integer is required."]}
+Error posting to pitcher_stats/create: STATUS CODE 400
+Response text: {"starter":["A valid integer is required."],"win":["A valid integer is required."],"loss":["A valid integer is required."],"sv":["A valid integer is required."]}
+Error posting to pitcher_stats/create: STATUS CODE 400
+Response text: {"starter":["A valid integer is required."],"win":["A valid integer is required."],"loss":["A valid integer is required."],"sv":["A valid integer is required."]}
+Error posting to pitcher_stats/create: STATUS CODE 400
+Response text: {"starter":["A valid integer is required."],"win":["A valid integer is required."],"loss":["A valid integer is required."],"sv":["A valid integer is required."]}
+Error posting to pitcher_stats/create: STATUS CODE 400
+Response text: {"starter":["A valid integer is required."],"win":["A valid integer is required."],"loss":["A valid integer is required."],"sv":["A valid integer is required."]}
+Error posting to pitcher_stats/create: STATUS CODE 400
+Response text: {"starter":["A valid integer is required."],"win":["A valid integer is required."],"loss":["A valid integer is required."],"sv":["A valid integer is required."]}
+Error posting to pitcher_stats/create: STATUS CODE 400
+Response text: {"starter":["A valid integer is required."],"win":["A valid integer is required."],"loss":["A valid integer is required."],"sv":["A valid integer is required."]}
