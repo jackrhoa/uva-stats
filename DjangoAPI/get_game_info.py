@@ -2,6 +2,7 @@ import os
 import django
 from collections import defaultdict
 import time
+from bs4 import BeautifulSoup
 from selenium.webdriver.common.by import By
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'baseball_stats.settings')  # change if your settings module is elsewhere
 django.setup()
@@ -11,7 +12,7 @@ from datetime import datetime
 import math
 import re
 from io import StringIO
-from app.models import PlayerInfo, BatterStat, GameInfo
+from app.models import PlayerInfo, BatterStat, GameInfo, BattingSituational
 # from .models import BatterStat, PitcherStat, FieldingStat, Game, Session
 
 from selenium import webdriver
@@ -47,7 +48,6 @@ class GameStats:
 
         driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
         
-        
         self.ncaa_game_id = ncaa_game_id
         self.selected_team = selected_team
         if from_web:
@@ -63,10 +63,18 @@ class GameStats:
                 self.individual_stats_df_list = pd.read_html(StringIO(individual_stats_source))
             except:
                 raise ValueError('Unable to get individual stats from web')
+            try:
+                driver.get(f'https://stats.ncaa.org/contests/{self.ncaa_game_id}/situational_stats')
+                self.situational_stats_source = driver.page_source
+                self.situational_stats_df_list = pd.read_html(StringIO(self.situational_stats_source))
+                self.situational_stats_soup = BeautifulSoup(driver.page_source, "lxml")
+                
+            except:
+                raise ValueError('Unable to get situational stats from web')
             ## still need to get situational stats, and umpires
         else:
-
             raise ValueError('Please provide either a file name or a url')
+        driver.quit()
         # print(f'Game {self.ncaa_game_id} box score and individual stats retrieved')
         # print(box_score_source)
         self.date = None
@@ -94,7 +102,10 @@ class GameStats:
         self.add_selected_team_batting()
         self.add_selected_team_pitching()
         self.add_selected_team_fielding()
-        driver.quit()
+
+        
+        self.add_situational_batting()
+        self.get_hidden_text()
     def set_home_and_opponent(self) -> None:
         '''Sets selected_team_home and opponent variables in GameStats object
         \n
@@ -150,7 +161,6 @@ class GameStats:
         '''
         try:
             str_date = self.box_score_df_list[1].loc[3][0].split(' ')[0]
-            print("DATE INFO", str_date)
 
             self.date = datetime.strptime(str_date.strip(), '%m/%d/%Y').date()
         except:
@@ -579,6 +589,166 @@ class GameStats:
             else:
                 raise ValueError(f'Unable to find {self.selected_team} record')
 
+    def add_situational_batting(self) -> None:
+        '''Adds the selected team's situational batting stats to the database
+        \n\
+        '''
+
+        try:
+            game = GameInfo.objects.get(
+                game_id=int(f'{self.date.strftime("%Y")}{self.game_number}')
+            )
+        except BattingSituational.DoesNotExist:
+            raise ValueError(f'Game not found in database for game {self.date.strftime("%Y")}{self.game_number}')
+        except BattingSituational.MultipleObjectsReturned:
+            raise ValueError(f'Multiple games found in database for game {self.date.strftime("%Y")}{self.game_number}')
+        except:
+            raise ValueError(f'Unable to find game {self.date.strftime("%Y")}{self.game_number} in database')
+        
+        # iterate through list generated from hidden text locator
+        situational_stats_df = self.get_hidden_text()
+        for index, row in situational_stats_df.iterrows():
+            with_runners = {}
+            hits_with_risp = {}
+            vs_lhp = {}
+            vs_rhp = {}
+            leadoff_pct = {}
+            rbi_runner_on_3rd = {}
+            h_pinchhit = {}
+            runners_advanced = {}
+            with_two_outs = {}
+            with_two_runners = {}
+            with_two_in_scoring = {}
+            bases_empty = {}
+            bases_loaded = {}
+            print('Raw player:', row['Player'])
+            if row['Player'] == 'Virginia':
+                print('Reached Virginia row, stopping')
+                return
+            p_name_parts = str(row['Player']).strip().split(',')
+            player_name = p_name_parts[1].strip() + ' ' + p_name_parts[0].strip()
+            pos = str(row['Position']).strip().capitalize()
+            situational_columns = {
+                2: with_runners,
+                3: hits_with_risp,
+                4: vs_lhp,
+                5: vs_rhp,
+                6: leadoff_pct,
+                7: rbi_runner_on_3rd,
+                8: h_pinchhit,
+                9: runners_advanced,
+                10: with_two_outs,
+                11: with_two_runners,
+                12: with_two_in_scoring,
+                13: bases_empty,
+                14: bases_loaded,
+            }
+            for i in range(len(situational_stats_df.columns)):
+                if i < 2:
+                    continue
+                stat_column: dict = situational_columns[i]
+                print(f'Column {i} for player {player_name} ({pos}):', self.columns[i])
+                stats = str(row[self.columns[i]]).split('\n')
+                if len(stats) == 0:
+                    raise ValueError(f'Invalid stats for {player_name} in situational stats (length = 0)')
+                if (len(stats) == 1 and stats[0] == ''):
+                    print(f'No stats found for player {player_name} in situational stats for {self.columns[i]}')
+                    print('Stats:', stats)
+                    continue
+                for stat in stats:
+                    stat = stat.strip()
+                    if '-' in stat:
+                        stat_column['succ_opp'] = str(stat)
+                    else:
+                        stat_info = stat.split(' = ')
+                        if stat.strip() == '' or len(stat_info) != 2:
+                            raise ValueError(f'Invalid stat format for {player_name} in situational stats: {stat}')
+                        stat_column[stat_info[0]] = int(stat_info[1])
+                print(stat_column)
+
+            if not with_runners and not hits_with_risp and not vs_lhp and not vs_rhp and not leadoff_pct and not rbi_runner_on_3rd and not h_pinchhit and not runners_advanced and not with_two_outs and not with_two_runners and not with_two_in_scoring and not bases_empty and not bases_loaded:
+                print(f'No stats found for player {player_name} in situational stats AT ALL (testing)')
+                continue
+            player_info, created = PlayerInfo.objects.get_or_create(
+                player_name=player_name,
+                defaults={"player_position": {pos: 1}, 'jersey_number': None}
+            )
+
+
+            if created:
+                raise ValueError("Created a new player:", player_info.player_name)
+            else:
+                print(f'Found existing player for situational stats: {player_info.player_name}')
+                print(f'Player ID: {player_info.player_id}')
+                print(f'Game ID: {game.game_id}')
+            # only add stats if player has at least one non-Nan value
+            data = {
+                'player_id': player_info.player_id,
+                'game_id': game.game_id,
+                'with_runners': with_runners,
+                'hits_with_risp': hits_with_risp,
+                'vs_lhp': vs_lhp,
+                'vs_rhp': vs_rhp,
+                'leadoff_pct': leadoff_pct,
+                'rbi_runner_on_3rd': rbi_runner_on_3rd,
+                'h_pinchhit': h_pinchhit,
+                'runners_advanced': runners_advanced,
+                'with_two_outs': with_two_outs,
+                'with_two_runners': with_two_runners,
+                'with_two_in_scoring': with_two_in_scoring,
+                'bases_empty': bases_empty,
+                'bases_loaded': bases_loaded,
+            }
+
+            post_stats(
+                endpoint='situational_batting/create',
+                data=data
+            )
+
+    def get_hidden_text(self) -> pd.DataFrame:
+        '''Gets the hidden text from the box score page
+        \n
+        '''
+        data = []
+        tables_with_thead = [t for t in self.situational_stats_soup.find_all("table") if t.find("thead")]
+        if self.selected_team_home:
+            soup = tables_with_thead[1]
+        else:
+            soup = tables_with_thead[0]
+        for row in soup.select("tbody > tr"):
+            cells = row.find_all("td")
+            # print(cells)
+            if not cells or not cells[0].get_text(strip=True):
+                continue
+            
+            player = cells[0].get_text(strip=True)
+            # print("'Player':", player)
+            pos = cells[1].get_text(strip=True)
+            stats = []
+
+            for cell in cells[2:]:
+                a = cell.find("a")
+                if a and a.has_attr("title") and a["title"].strip():
+                    stats.append(a["title"].strip())
+                else:
+                    stats.append("")
+
+            data.append([player, pos] + stats)
+
+        # Convert to DataFrame
+        self.columns = ["Player", "Position", "with runners", 
+                    "hits scorepos", "vs LHP", "vs RHP",
+                    "leadoff pct", "RBI3rd", "H-pinchit", 
+                    "adv-ops", "with 2 outs", "with runrs2", 
+                    "with scorepos2", "bases empty", "bases loaded"]
+        df = pd.DataFrame(data, columns=self.columns)
+        return df
+        # print(f'{df.loc[0, 'Player']} With Runners:', df.loc[0, 'with runners'])
+        # df.to_csv("situational_stats.csv", index=False)
+
+        # print(df.head())
+            
+
     def __str__(self) -> str:
         '''Returns a string representation of the game stats
         \n
@@ -596,19 +766,19 @@ class GameStats:
             f'Saving pitcher: {self.saving_pitcher}\n' \
             f'Opponent team hits: {self.opponent_team_hits}\n' \
             f'Opponent team errors: {self.opponent_team_errors}\n'
-    
+
 
 if __name__ == "__main__":
 
     
     VT1 = GameStats(
         ncaa_game_id=6317487)
-    VT2 = GameStats(
-        ncaa_game_id=6317490)
-    VT3 = GameStats(
-        ncaa_game_id=6317491)
-    BC = GameStats(
-        ncaa_game_id=6385130)
+    # VT2 = GameStats(
+    #     ncaa_game_id=6317490)
+    # VT3 = GameStats(
+    #     ncaa_game_id=6317491)
+    # BC = GameStats(
+    #     ncaa_game_id=6385130)
     
     # options = webdriver.ChromeOptions()
 

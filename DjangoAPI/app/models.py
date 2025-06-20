@@ -6,7 +6,7 @@ class PlayerInfo(models.Model):
     player_id = models.AutoField(primary_key=True)
     player_name = models.CharField(max_length=100, unique=True)
     player_position = models.JSONField(default=dict, null=False, blank=True)
-    jersey_number = models.IntegerField()
+    jersey_number = models.IntegerField(null=True)
     # team_id = models.IntegerField(max_length=4, null=True)
     img=models.CharField(max_length=200, null=True)
     height = models.CharField(max_length=10, null=True)
@@ -49,6 +49,25 @@ class BatterStat(models.Model):
 
     # def __str__(self):
     #     return f"{self.player_id.player_name} ({self.game_id} - {self.ab} AB - {self.hits} Hits - {self.runs} Runs"
+
+class BattingSituational(models.Model):
+    player_id = models.ForeignKey(PlayerInfo, on_delete=models.PROTECT, null=True)
+    game_id = models.ForeignKey('GameInfo', on_delete=models.CASCADE, null=True)
+    with_runners = models.JSONField(default={})
+    hits_with_risp = models.JSONField(default={})
+    vs_lhp = models.JSONField(default={})
+    vs_rhp = models.JSONField(default={})
+    leadoff_pct = models.JSONField(default={})
+    rbi_runner_on_3rd = models.JSONField(default={})
+    h_pinchhit = models.JSONField(default={})
+    runners_advanced = models.JSONField(default={})
+    with_two_outs = models.JSONField(default={})
+    with_two_runners = models.JSONField(default={})
+    with_two_in_scoring = models.JSONField(default={})
+    bases_empty = models.JSONField(default={})
+    bases_loaded = models.JSONField(default={})
+    # with_runners_on = models.JSONField(default=dict, null=False, blank=True)
+
 
 class PitcherStat(models.Model):
     # nevermind, the id is automatically created
@@ -99,7 +118,10 @@ class FieldingStat(models.Model):
     player_id = models.ForeignKey(PlayerInfo, on_delete=models.PROTECT, null=True)
     # If a game is deleted from GameInfo, the corresponding
     #   fielding stats from that game will be deleted as well
+    # game_number = models.IntegerField()
+    # year = models.IntegerField()
     game_id = models.ForeignKey('GameInfo', on_delete=models.CASCADE, null=True)
+
     player_position = models.CharField(max_length=7)
     po = models.IntegerField()
     a = models.IntegerField()
@@ -118,7 +140,10 @@ class GameInfo(models.Model):
     # nevermind, the id is automatically created
     # not including automatically created ID field 
     #   because the order in which data is input is not useful
+    # year = models.IntegerField()
+    # game_number = models.IntegerField()
     game_id = models.IntegerField(primary_key=True)
+
     game_date = models.CharField(max_length=15)
     selected_team = models.CharField(max_length=20)
     opponent = models.CharField(max_length=20)
