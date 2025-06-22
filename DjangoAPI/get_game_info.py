@@ -12,7 +12,7 @@ from datetime import datetime
 import math
 import re
 from io import StringIO
-from app.models import PlayerInfo, BatterStat, GameInfo, BattingSituational
+from app.models import PlayerInfo, BatterStat, GameInfo, BattingSituational, SchoolInfo
 # from .models import BatterStat, PitcherStat, FieldingStat, Game, Session
 
 from selenium import webdriver
@@ -22,6 +22,21 @@ import random
 from io import StringIO
 from scrape_and_post import post_stats
 
+def convert_ip_to_outs(ip: str | float) -> int:
+    '''Converts an IP string to the number of outs
+    \n
+    '''
+    if isinstance(ip, float):
+        if math.isnan(ip):
+            raise ValueError('IP is NaN')
+        ip = str(ip)
+    if isinstance(ip, str):
+        ip = ip.strip()
+    parts = ip.split('.')
+    outs = int(parts[0]) * 3
+    if len(parts) > 1:
+        outs += int(parts[1])
+    return outs
 
 
 class GameStats:
@@ -44,8 +59,7 @@ class GameStats:
         options.add_argument(f'user-agent={ua}')
         options.add_argument('--no-sandbox')
         options.add_argument('--disable-dev-shm-usage')
-        options.add_argument('--headless')
-
+        options.add_argument('--headless=new')
         driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
         
         self.ncaa_game_id = ncaa_game_id
@@ -55,6 +69,7 @@ class GameStats:
                 driver.get(f'https://stats.ncaa.org/contests/{self.ncaa_game_id}/box_score')
                 box_score_source = driver.page_source
                 self.box_score_df_list = pd.read_html(StringIO(box_score_source))
+                self.box_score_soup = BeautifulSoup(driver.page_source, "lxml")
             except:
                 raise ValueError('Unable to get box score from web')
             try:
@@ -102,8 +117,6 @@ class GameStats:
         self.add_selected_team_batting()
         self.add_selected_team_pitching()
         self.add_selected_team_fielding()
-
-        
         self.add_situational_batting()
         self.get_hidden_text()
     def set_home_and_opponent(self) -> None:
@@ -204,13 +217,11 @@ class GameStats:
             self.attendance = attendance
         else:
             raise ValueError('Unable to find attendance')
-   
+    
     def add_selected_team_batting(self) -> None:
         '''Adds the selected team batting stats to the batting table in database
         \n
         '''
-        # session = Session()
-
         try:
             game = GameInfo.objects.get(
                 game_id=int(f'{self.date.strftime("%Y")}{self.game_number}')
@@ -235,8 +246,6 @@ class GameStats:
                 player_name=player_name,
                 defaults={"player_position": {pos: 1}, 'jersey_number': number}
             )
-            # if the player already exists, update their position
-            # why or {}
             print(player_info.player_position)
             if not created:
                 positions = player_info.player_position
@@ -276,40 +285,11 @@ class GameStats:
                 endpoint='batter_stats/create',
                 data=data
             )
-
-
-            # stat = BatterStat(
-            #     # id=int(f'{self.date.strftime("%Y")}{self.game_number}{99}{number}'),
-            #     # player_name=player_name,
-            #     player_position=pos,
-            #     game_date=self.date,
-            #     runs=int(selected_team_batting['R'].loc[i]),
-            #     ab=int(selected_team_batting['AB'].loc[i]),
-            #     hits=int(selected_team_batting['H'].loc[i]),
-            #     double=int(selected_team_batting['2B'].loc[i]),
-            #     triple=int(selected_team_batting['3B'].loc[i]),
-            #     hr=int(selected_team_batting['HR'].loc[i]),
-            #     rbi=int(selected_team_batting['RBI'].loc[i]),
-            #     bb=int(selected_team_batting['BB'].loc[i]),
-            #     hbp=int(selected_team_batting['HBP'].loc[i]),
-            #     sf=int(selected_team_batting['SF'].loc[i]),
-            #     sh=int(selected_team_batting['SH'].loc[i]),
-            #     k=int(selected_team_batting['K'].loc[i]),
-            #     # just add OPP DP here to account for DP
-            #     cs=int(selected_team_batting['CS'].loc[i]),
-            #     sb=int(selected_team_batting['SB'].loc[i]),
-            #     picked_off=int(selected_team_batting['Picked'].loc[i]),
-            #     ibb=int(selected_team_batting['IBB'].loc[i]),
-            # )
-        #     session.add(stat)
-        # session.commit()
-        # session.close()
     
     def add_selected_team_pitching(self) -> None:
         '''Adds the selected team pitching stats to the pitching table in database
         \n
         '''
-        # session = Session()
         
 
         try:
@@ -346,7 +326,7 @@ class GameStats:
                 'player_id': player_info.player_id,
                 'game_id': game.game_id,
                 'starter': int(i == 0),
-                'ip': float(selected_team_pitching['IP'].loc[i]),
+                'outs': convert_ip_to_outs(selected_team_pitching['IP'].loc[i]),
                 'h': int(selected_team_pitching['H'].loc[i]),
                 'r': int(selected_team_pitching['R'].loc[i]),
                 'er': int(selected_team_pitching['ER'].loc[i]),
@@ -370,7 +350,7 @@ class GameStats:
                 'loss': int(self.losing_pitcher == player_name),
                 'sv': int(self.saving_pitcher == player_name),
             }
-            # print("data", data)
+            print("data", data)
             # print("type of data:", type(data))
 
             post_stats(
@@ -492,16 +472,21 @@ class GameStats:
         '''Adds the game to the database
         \n
         '''
-
+        
         selected_team_dpt, selected_team_tpt = self.get_dpt_tpt()[0]
         opponent_dp, opponent_tpt = self.get_dpt_tpt()[1]
         # session = Session()
         
+        self.get_school_ids()
+
+        self.set_school(school_id=self.selected_team_id, school_name=self.selected_team)
+        self.set_school(school_id=self.opponent_team_id, school_name=self.opponent)
+
         game = {
             'game_id': int(f'{self.date.strftime("%Y")}{self.game_number}'),
             'game_date': str(self.date),
-            'selected_team': self.selected_team,
-            'opponent': self.opponent,
+            'selected_team': self.selected_team_id,
+            'opponent': self.opponent_team_id,
             'selected_team_home': bool(self.selected_team_home),
             'total_innings': int(self.total_innings),
             'selected_team_runs': int(self.selected_team_runs),
@@ -520,39 +505,16 @@ class GameStats:
             'box_score_link': f'https://stats.ncaa.org/contests/{self.ncaa_game_id}/box_score',
             'attendance': int(self.attendance),
         }
+        print(f'Adding {self.selected_team}\'s game {self.game_number} to database...')
+        try:
+            post_stats(
+                endpoint='game_info/create',
+                data=game
+            )
+        except:
+            raise ValueError(f'Unable to add game {self.game_number} to database')
 
-        post_stats(
-            endpoint='game_info/create',
-            data=game
-        )
-
-        print(f'Game {self.game_number} added to database')
-
-        # game = Game(
-        #     id=int(f'{self.date.strftime("%Y")}{self.game_number}'),
-        #     game_date=self.date,
-        #     selected_team=self.selected_team,
-        #     opponent=self.opponent,
-        #     selected_team_home=bool(self.selected_team_home),
-        #     total_innings=int(self.total_innings),
-        #     selected_team_won=bool(self.selected_team_won),
-        #     selected_team_runs=int(self.selected_team_runs),
-        #     opp_runs=int(self.opponent_runs),
-        #     opp_e=int(self.opponent_team_errors),
-        #     opp_h=int(self.opponent_team_hits),
-        #     selected_team_dpt=int(selected_team_dpt),
-        #     opp_dpt=int(opponent_dp),
-        #     selected_team_tpt=int(selected_team_tpt),
-        #     opp_tpt=int(opponent_tpt),
-        #     win=self.winning_pitcher,
-        #     loss=self.losing_pitcher,
-        #     sv=self.saving_pitcher,
-        #     box_score_link=f'https://stats.ncaa.org/contests/{self.ncaa_game_id}/box_score',
-        #     attendance=int(self.attendance),
-        #     )   
-        # session.add(game)
-        # session.commit()
-        # session.close()
+        
     
     def get_dpt_tpt(self) -> tuple[tuple[int, int], tuple[int, int]]:
         '''Returns the double plays and triple plays turned by both teams
@@ -622,8 +584,8 @@ class GameStats:
             bases_empty = {}
             bases_loaded = {}
             print('Raw player:', row['Player'])
-            if row['Player'] == 'Virginia':
-                print('Reached Virginia row, stopping')
+            if row['Player'] == self.selected_team:
+                print(f'Reached {self.selected_team} row, stopping')
                 return
             p_name_parts = str(row['Player']).strip().split(',')
             player_name = p_name_parts[1].strip() + ' ' + p_name_parts[0].strip()
@@ -745,9 +707,38 @@ class GameStats:
         return df
         # print(f'{df.loc[0, 'Player']} With Runners:', df.loc[0, 'with runners'])
         # df.to_csv("situational_stats.csv", index=False)
-
         # print(df.head())
-            
+
+    def get_school_ids(self) -> dict:
+        '''Returns the school IDs for the selected team and opponent
+        \n
+        '''
+        selected_team_img = self.box_score_soup.find('img', class_='logo_image', alt=self.selected_team).get('src')
+        self.selected_team_id = selected_team_img.split('//')[-1].split('.')[0]
+
+        opponent_team_img = self.box_score_soup.find('img', class_='logo_image', alt=self.opponent).get('src')
+        self.opponent_team_id = opponent_team_img.split('//')[-1].split('.')[0]
+
+    def set_school(self, school_id, school_name) -> None:
+        '''Creates school profile if it doesn't exist
+        \n
+        '''
+        school_info, new_school_created = SchoolInfo.objects.get_or_create(
+                school_id=school_id,
+            )
+        
+        if new_school_created:
+            school_info.school_name = school_name
+            school_info.save()
+
+        
+        if new_school_created:
+            print(f"Created new school: {school_info.school_name}")
+
+        else:
+            print(f"Found existing school: {school_info.school_name}")
+
+        
 
     def __str__(self) -> str:
         '''Returns a string representation of the game stats
@@ -772,7 +763,7 @@ if __name__ == "__main__":
 
     
     VT1 = GameStats(
-        ncaa_game_id=6317487)
+        ncaa_game_id=6303762, selected_team='Virginia Tech')
     # VT2 = GameStats(
     #     ncaa_game_id=6317490)
     # VT3 = GameStats(
