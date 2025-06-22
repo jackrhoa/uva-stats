@@ -36,3 +36,751 @@ Error posting to pitcher_stats/create: STATUS CODE 400
 Response text: {"starter":["A valid integer is required."],"win":["A valid integer is required."],"loss":["A valid integer is required."],"sv":["A valid integer is required."]}
 Error posting to pitcher_stats/create: STATUS CODE 400
 Response text: {"starter":["A valid integer is required."],"win":["A valid integer is required."],"loss":["A valid integer is required."],"sv":["A valid integer is required."]}
+Error posting to game_info/create: STATUS CODE 400
+Response text: {"game_id":["game info with this game id already exists."]}
+Error posting to game_info/create: STATUS CODE 400
+Response text: {"game_id":["game info with this game id already exists."]}
+Error posting to game_info/create: STATUS CODE 400
+Response text: {"game_id":["game info with this game id already exists."]}
+Error posting to game_info/create: STATUS CODE 400
+Response text: {"game_id":["game info with this game id already exists."]}
+Error posting to game_info/create: STATUS CODE 400
+Response text: {"game_id":["game info with this game id already exists."]}
+Error posting to game_info/create: STATUS CODE 400
+Response text: {"game_id":["game info with this game id already exists."]}
+Error posting to game_info/create: STATUS CODE 400
+Response text: {"game_id":["game info with this game id already exists."]}
+Error posting to game_info/create: STATUS CODE 400
+Response text: {"game_id":["game info with this game id already exists."]}
+Error posting to game_info/create: STATUS CODE 400
+Response text: {"game_id":["game info with this game id already exists."]}
+Error posting to game_info/create: STATUS CODE 400
+Response text: {"game_id":["game info with this game id already exists."]}
+Error posting to game_info/create: STATUS CODE 400
+Response text: {"game_id":["game info with this game id already exists."]}
+Error posting to game_info/create: STATUS CODE 400
+Response text: {"game_id":["game info with this game id already exists."]}
+Error posting to game_info/create: STATUS CODE 400
+Response text: {"game_id":["game info with this game id already exists."]}
+Error posting to game_info/create: STATUS CODE 400
+Response text: {"game_id":["game info with this game id already exists."]}
+Error posting to game_info/create: STATUS CODE 400
+Response text: {"game_id":["game info with this game id already exists."]}
+Error posting to game_info/create: STATUS CODE 400
+Response text: {"game_id":["game info with this game id already exists."]}
+Error posting to game_info/create: STATUS CODE 400
+Response text: {"game_id":["game info with this game id already exists."]}
+Error posting to game_info/create: STATUS CODE 400
+Response text: {"game_id":["game info with this game id already exists."]}
+Error posting to game_info/create: STATUS CODE 400
+Response text: {"game_id":["game info with this game id already exists."]}
+Error posting to game_info/create: STATUS CODE 400
+Response text: {"game_id":["game info with this game id already exists."]}
+Error posting to game_info/create: STATUS CODE 400
+Response text: {"game_id":["game info with this game id already exists."]}
+Error posting to situational_batting/create: STATUS CODE 404
+Response text: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/situational_batting/create/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bottom:.4em; }
+    h1 small { font-size:60%; color:#666; font-weight:normal; }
+    table { border:none; border-collapse: collapse; width:100%; }
+    td, th { vertical-align:top; padding:2px 3px; }
+    th { width:12em; text-align:right; color:#666; padding-right:.5em; }
+    #info { background:#f6f6f6; }
+    #info ol { margin: 0.5em 4em; }
+    #info ol li { font-family: monospace; }
+    #summary { background: #ffc; }
+    #explanation { background:#eee; border-bottom: 0px none; }
+    pre.exception_value { font-family: sans-serif; color: #575757; font-size: 1.5em; margin: 10px 0 10px 0; }
+  </style>
+</head>
+<body>
+  <header id="summary">
+    <h1>Page not found <small>(404)</small></h1>
+    
+    <table class="meta">
+      <tr>
+        <th scope="row">Request Method:</th>
+        <td>POST</td>
+      </tr>
+      <tr>
+        <th scope="row">Request URL:</th>
+        <td>http://127.0.0.1:8000/api/situational_batting/create/</td>
+      </tr>
+      
+    </table>
+  </header>
+
+  <main id="info">
+    
+      <p>
+      Using the URLconf defined in <code>baseball_stats.urls</code>,
+      Django tried these URL patterns, in this order:
+      </p>
+      <ol>
+        
+          <li>
+            
+              <code>
+                api/batter_stats/create/
+                [name='batter_stat_create']
+              </code>
+            
+          </li>
+        
+          <li>
+            
+              <code>
+                api/situational_stats/create/
+                [name='batter_situational_create']
+              </code>
+            
+          </li>
+        
+          <li>
+            
+              <code>
+                api/pitcher_stats/create/
+                [name='pitcher_stat_create']
+              </code>
+            
+          </li>
+        
+          <li>
+            
+              <code>
+                api/fielding_stats/create/
+                [name='fielding_stat_create']
+              </code>
+            
+          </li>
+        
+          <li>
+            
+              <code>
+                api/game_info/create/
+                [name='game_info_create']
+              </code>
+            
+          </li>
+        
+          <li>
+            
+              <code>
+                api/
+                
+              </code>
+            
+              <code>
+                ^batter_stats/$
+                [name='batter_stats-list']
+              </code>
+            
+          </li>
+        
+          <li>
+            
+              <code>
+                api/
+                
+              </code>
+            
+              <code>
+                ^batter_stats\.(?P&lt;format&gt;[a-z0-9]+)/?$
+                [name='batter_stats-list']
+              </code>
+            
+          </li>
+        
+          <li>
+            
+              <code>
+                api/
+                
+              </code>
+            
+              <code>
+                ^batter_stats/(?P&lt;pk&gt;[^/.]+)/$
+                [name='batter_stats-detail']
+              </code>
+            
+          </li>
+        
+          <li>
+            
+              <code>
+                api/
+                
+              </code>
+            
+              <code>
+                ^batter_stats/(?P&lt;pk&gt;[^/.]+)\.(?P&lt;format&gt;[a-z0-9]+)/?$
+                [name='batter_stats-detail']
+              </code>
+            
+          </li>
+        
+          <li>
+            
+              <code>
+                api/
+                
+              </code>
+            
+              <code>
+                ^batter_situational_stats/$
+                [name='batter_situational_stats-list']
+              </code>
+            
+          </li>
+        
+          <li>
+            
+              <code>
+                api/
+                
+              </code>
+            
+              <code>
+                ^batter_situational_stats\.(?P&lt;format&gt;[a-z0-9]+)/?$
+                [name='batter_situational_stats-list']
+              </code>
+            
+          </li>
+        
+          <li>
+            
+              <code>
+                api/
+                
+              </code>
+            
+              <code>
+                ^batter_situational_stats/(?P&lt;pk&gt;[^/.]+)/$
+                [name='batter_situational_stats-detail']
+              </code>
+            
+          </li>
+        
+          <li>
+            
+              <code>
+                api/
+                
+              </code>
+            
+              <code>
+                ^batter_situational_stats/(?P&lt;pk&gt;[^/.]+)\.(?P&lt;format&gt;[a-z0-9]+)/?$
+                [name='batter_situational_stats-detail']
+              </code>
+            
+          </li>
+        
+          <li>
+            
+              <code>
+                api/
+                
+              </code>
+            
+              <code>
+                ^pitcher_stats/$
+                [name='pitcher_stats-list']
+              </code>
+            
+          </li>
+        
+          <li>
+            
+              <code>
+                api/
+                
+              </code>
+            
+              <code>
+                ^pitcher_stats\.(?P&lt;format&gt;[a-z0-9]+)/?$
+                [name='pitcher_stats-list']
+              </code>
+            
+          </li>
+        
+          <li>
+            
+              <code>
+                api/
+                
+              </code>
+            
+              <code>
+                ^pitcher_stats/(?P&lt;pk&gt;[^/.]+)/$
+                [name='pitcher_stats-detail']
+              </code>
+            
+          </li>
+        
+          <li>
+            
+              <code>
+                api/
+                
+              </code>
+            
+              <code>
+                ^pitcher_stats/(?P&lt;pk&gt;[^/.]+)\.(?P&lt;format&gt;[a-z0-9]+)/?$
+                [name='pitcher_stats-detail']
+              </code>
+            
+          </li>
+        
+          <li>
+            
+              <code>
+                api/
+                
+              </code>
+            
+              <code>
+                ^player_info/$
+                [name='player_info-list']
+              </code>
+            
+          </li>
+        
+          <li>
+            
+              <code>
+                api/
+                
+              </code>
+            
+              <code>
+                ^player_info\.(?P&lt;format&gt;[a-z0-9]+)/?$
+                [name='player_info-list']
+              </code>
+            
+          </li>
+        
+          <li>
+            
+              <code>
+                api/
+                
+              </code>
+            
+              <code>
+                ^player_info/(?P&lt;pk&gt;[^/.]+)/$
+                [name='player_info-detail']
+              </code>
+            
+          </li>
+        
+          <li>
+            
+              <code>
+                api/
+                
+              </code>
+            
+              <code>
+                ^player_info/(?P&lt;pk&gt;[^/.]+)\.(?P&lt;format&gt;[a-z0-9]+)/?$
+                [name='player_info-detail']
+              </code>
+            
+          </li>
+        
+          <li>
+            
+              <code>
+                api/
+                
+              </code>
+            
+              <code>
+                ^fielding_stats/$
+                [name='fielding_stats-list']
+              </code>
+            
+          </li>
+        
+          <li>
+            
+              <code>
+                api/
+                
+              </code>
+            
+              <code>
+                ^fielding_stats\.(?P&lt;format&gt;[a-z0-9]+)/?$
+                [name='fielding_stats-list']
+              </code>
+            
+          </li>
+        
+          <li>
+            
+              <code>
+                api/
+                
+              </code>
+            
+              <code>
+                ^fielding_stats/(?P&lt;pk&gt;[^/.]+)/$
+                [name='fielding_stats-detail']
+              </code>
+            
+          </li>
+        
+          <li>
+            
+              <code>
+                api/
+                
+              </code>
+            
+              <code>
+                ^fielding_stats/(?P&lt;pk&gt;[^/.]+)\.(?P&lt;format&gt;[a-z0-9]+)/?$
+                [name='fielding_stats-detail']
+              </code>
+            
+          </li>
+        
+          <li>
+            
+              <code>
+                api/
+                
+              </code>
+            
+              <code>
+                ^total_batting_stats/$
+                [name='team_batting_stats-list']
+              </code>
+            
+          </li>
+        
+          <li>
+            
+              <code>
+                api/
+                
+              </code>
+            
+              <code>
+                ^total_batting_stats\.(?P&lt;format&gt;[a-z0-9]+)/?$
+                [name='team_batting_stats-list']
+              </code>
+            
+          </li>
+        
+          <li>
+            
+              <code>
+                api/
+                
+              </code>
+            
+              <code>
+                ^total_batting_stats/(?P&lt;pk&gt;[^/.]+)/$
+                [name='team_batting_stats-detail']
+              </code>
+            
+          </li>
+        
+          <li>
+            
+              <code>
+                api/
+                
+              </code>
+            
+              <code>
+                ^total_batting_stats/(?P&lt;pk&gt;[^/.]+)\.(?P&lt;format&gt;[a-z0-9]+)/?$
+                [name='team_batting_stats-detail']
+              </code>
+            
+          </li>
+        
+          <li>
+            
+              <code>
+                api/
+                
+              </code>
+            
+              <code>
+                ^total_pitching_stats/$
+                [name='team_pitching_stats-list']
+              </code>
+            
+          </li>
+        
+          <li>
+            
+              <code>
+                api/
+                
+              </code>
+            
+              <code>
+                ^total_pitching_stats\.(?P&lt;format&gt;[a-z0-9]+)/?$
+                [name='team_pitching_stats-list']
+              </code>
+            
+          </li>
+        
+          <li>
+            
+              <code>
+                api/
+                
+              </code>
+            
+              <code>
+                ^total_pitching_stats/(?P&lt;pk&gt;[^/.]+)/$
+                [name='team_pitching_stats-detail']
+              </code>
+            
+          </li>
+        
+          <li>
+            
+              <code>
+                api/
+                
+              </code>
+            
+              <code>
+                ^total_pitching_stats/(?P&lt;pk&gt;[^/.]+)\.(?P&lt;format&gt;[a-z0-9]+)/?$
+                [name='team_pitching_stats-detail']
+              </code>
+            
+          </li>
+        
+          <li>
+            
+              <code>
+                api/
+                
+              </code>
+            
+              <code>
+                ^total_fielding_stats_by_pos/$
+                [name='team_fielding_stats-list']
+              </code>
+            
+          </li>
+        
+          <li>
+            
+              <code>
+                api/
+                
+              </code>
+            
+              <code>
+                ^total_fielding_stats_by_pos\.(?P&lt;format&gt;[a-z0-9]+)/?$
+                [name='team_fielding_stats-list']
+              </code>
+            
+          </li>
+        
+          <li>
+            
+              <code>
+                api/
+                
+              </code>
+            
+              <code>
+                ^total_fielding_stats_by_pos/(?P&lt;pk&gt;[^/.]+)/$
+                [name='team_fielding_stats-detail']
+              </code>
+            
+          </li>
+        
+          <li>
+            
+              <code>
+                api/
+                
+              </code>
+            
+              <code>
+                ^total_fielding_stats_by_pos/(?P&lt;pk&gt;[^/.]+)\.(?P&lt;format&gt;[a-z0-9]+)/?$
+                [name='team_fielding_stats-detail']
+              </code>
+            
+          </li>
+        
+          <li>
+            
+              <code>
+                api/
+                
+              </code>
+            
+              <code>
+                ^total_fielding_stats_by_player/$
+                [name='team_fielding_stats_by_player-list']
+              </code>
+            
+          </li>
+        
+          <li>
+            
+              <code>
+                api/
+                
+              </code>
+            
+              <code>
+                ^total_fielding_stats_by_player\.(?P&lt;format&gt;[a-z0-9]+)/?$
+                [name='team_fielding_stats_by_player-list']
+              </code>
+            
+          </li>
+        
+          <li>
+            
+              <code>
+                api/
+                
+              </code>
+            
+              <code>
+                ^total_fielding_stats_by_player/(?P&lt;pk&gt;[^/.]+)/$
+                [name='team_fielding_stats_by_player-detail']
+              </code>
+            
+          </li>
+        
+          <li>
+            
+              <code>
+                api/
+                
+              </code>
+            
+              <code>
+                ^total_fielding_stats_by_player/(?P&lt;pk&gt;[^/.]+)\.(?P&lt;format&gt;[a-z0-9]+)/?$
+                [name='team_fielding_stats_by_player-detail']
+              </code>
+            
+          </li>
+        
+          <li>
+            
+              <code>
+                api/
+                
+              </code>
+            
+              <code>
+                ^game_info/$
+                [name='game_info-list']
+              </code>
+            
+          </li>
+        
+          <li>
+            
+              <code>
+                api/
+                
+              </code>
+            
+              <code>
+                ^game_info\.(?P&lt;format&gt;[a-z0-9]+)/?$
+                [name='game_info-list']
+              </code>
+            
+          </li>
+        
+          <li>
+            
+              <code>
+                api/
+                
+              </code>
+            
+              <code>
+                ^game_info/(?P&lt;pk&gt;[^/.]+)/$
+                [name='game_info-detail']
+              </code>
+            
+          </li>
+        
+          <li>
+            
+              <code>
+                api/
+                
+              </code>
+            
+              <code>
+                ^game_info/(?P&lt;pk&gt;[^/.]+)\.(?P&lt;format&gt;[a-z0-9]+)/?$
+                [name='game_info-detail']
+              </code>
+            
+          </li>
+        
+          <li>
+            
+              <code>
+                api/
+                
+              </code>
+            
+              <code>
+                
+                [name='api-root']
+              </code>
+            
+          </li>
+        
+          <li>
+            
+              <code>
+                api/
+                
+              </code>
+            
+              <code>
+                &lt;drf_format_suffix:format&gt;
+                [name='api-root']
+              </code>
+            
+          </li>
+        
+      </ol>
+      <p>
+        
+          The current path, <code>api/situational_batting/create/</code>,
+        
+        didn’t match any of these.
+      </p>
+    
+  </main>
+
+  <footer id="explanation">
+    <p>
+      You’re seeing this error because you have <code>DEBUG = True</code> in
+      your Django settings file. Change that to <code>False</code>, and Django
+      will display a standard 404 page.
+    </p>
+  </footer>
+</body>
+</html>
+
+Error posting to game_info/create: STATUS CODE 400
+Response text: {"game_id":["game info with this game id already exists."]}
