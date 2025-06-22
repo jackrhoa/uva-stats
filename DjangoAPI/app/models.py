@@ -81,7 +81,8 @@ class PitcherStat(models.Model):
     #   pitching stats from that game will be deleted as well
     game_id = models.ForeignKey('GameInfo', on_delete=models.CASCADE, null=True)
     starter = models.IntegerField(default=0)
-    ip = models.DecimalField(max_digits=4, decimal_places=1)
+    # ip = models.DecimalField(max_digits=4, decimal_places=1)
+    outs = models.IntegerField()
     h = models.IntegerField()
     r = models.IntegerField()
     er = models.IntegerField()
@@ -131,11 +132,27 @@ class FieldingStat(models.Model):
     sba = models.IntegerField()
     cs = models.IntegerField()    
     dp = models.IntegerField()
-    tp = models.IntegerField()  
+    tp = models.IntegerField()
 
     def __str__(self):
         return f"{self.player_id.player_name} - Game #{self.game_id} | {self.player_position} | {self.po} PO | {self.a} A | {self.e} E"
 
+class SchoolInfo(models.Model):
+    school_id = models.IntegerField(primary_key=True)
+    school_name = models.CharField(max_length=100, unique=True)
+    school_tricode = models.CharField(max_length=6, unique=True, null=True)
+    school_conference = models.CharField(max_length=5, null=True)
+    total_wins = models.IntegerField(null=True)
+    total_losses = models.IntegerField(null=True)
+    conference_wins = models.IntegerField(null=True)
+    conference_losses = models.IntegerField(null=True)
+
+    def __str__(self):
+        if [a is not None for a in [self.total_wins, self.total_losses, self.conference_wins, self.conference_losses, self.school_conference]].count(True) >= 4:
+            return f"{self.school_name} - {self.total_wins}-{self.total_losses} ({self.conference_wins}-{self.conference_losses} {self.school_conference})"
+        else:
+            return f'{self.school_name}'
+    
 class GameInfo(models.Model):
     # nevermind, the id is automatically created
     # not including automatically created ID field 
@@ -143,10 +160,9 @@ class GameInfo(models.Model):
     # year = models.IntegerField()
     # game_number = models.IntegerField()
     game_id = models.IntegerField(primary_key=True)
-
     game_date = models.CharField(max_length=15)
-    selected_team = models.CharField(max_length=20)
-    opponent = models.CharField(max_length=20)
+    selected_team = models.ForeignKey(SchoolInfo, on_delete=models.CASCADE, related_name='selected_team', null=True)
+    opponent = models.ForeignKey(SchoolInfo, on_delete=models.CASCADE, related_name='opponent', null=True)
     selected_team_home = models.BooleanField()
     total_innings = models.IntegerField()
     selected_team_runs = models.IntegerField()
@@ -167,4 +183,3 @@ class GameInfo(models.Model):
 
     def __str__(self):
         return f"Game #{self.game_id} - {self.selected_team} vs {self.opponent} on {self.game_date}"
-

@@ -22,7 +22,8 @@ PitcherStatViewSet, PitcherStatCreateView, PlayerInfoViewSet, \
 FieldingStatViewSet, GameInfoViewSet, FieldingStatCreateView, \
 GameInfoCreateView, TeamBattingStatsViewSet, TeamPitchingStatsViewSet, \
 TeamFieldingStatsByPosViewSet, TeamFieldingStatsByPlayerViewSet, \
-BatterSituationalCreateView, BatterSituationalViewSet
+BatterSituationalCreateView, BatterSituationalViewSet, \
+SchoolInfoCreateView, SchoolInfoViewSet
 
 router = DefaultRouter()
 router.register(r'batter_stats', BatterStatViewSet, basename='batter_stats')
@@ -35,6 +36,7 @@ router.register(r'total_pitching_stats', TeamPitchingStatsViewSet, basename='tea
 router.register(r'total_fielding_stats_by_pos', TeamFieldingStatsByPosViewSet, basename='team_fielding_stats')
 router.register(r'total_fielding_stats_by_player', TeamFieldingStatsByPlayerViewSet, basename='team_fielding_stats_by_player')
 router.register(r'game_info', GameInfoViewSet, basename='game_info')
+router.register(r'school_info', SchoolInfoViewSet, basename='school_info')
 
 urlpatterns = [
     # the path for the batter_stats page is still https://localhost:port/batter_stats/
@@ -43,5 +45,8 @@ urlpatterns = [
     path('api/pitcher_stats/create/', PitcherStatCreateView.as_view(), name='pitcher_stat_create'),
     path('api/fielding_stats/create/', FieldingStatCreateView.as_view(), name='fielding_stat_create'),
     path('api/game_info/create/', GameInfoCreateView.as_view(), name='game_info_create'),
+    path('api/school_info/create/', SchoolInfoCreateView.as_view(), name='school_info_create'),
+    path('admin/', admin.site.urls),
+    # Include the router's URLs
     path('api/', include(router.urls)),
 ]

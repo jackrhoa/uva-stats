@@ -1,20 +1,22 @@
 from rest_framework import serializers
 from django.db.models import Sum
 from .models import BatterStat, PitcherStat, \
-PlayerInfo, FieldingStat, GameInfo, BattingSituational
+PlayerInfo, FieldingStat, GameInfo, BattingSituational, \
+SchoolInfo
 
 class BatterStatSerializer(serializers.ModelSerializer):
     player_name = serializers.CharField(source='player_id.player_name', read_only=True)
     game_date = serializers.DateField(source='game_id.game_date', read_only=True)
     game_result = serializers.SerializerMethodField()
-    opponent = serializers.CharField(source='game_id.opponent', read_only=True)
+    opponent_name = serializers.CharField(source='game_id.opponent', read_only=True)
+    opponent_id = serializers.CharField(source='game_id.opponent.school_id', read_only=True)
     pa = serializers.SerializerMethodField()
     # avg = serializers.SerializerMethodField()
     tb = serializers.SerializerMethodField()
     box_score_link = serializers.CharField(source='game_id.box_score_link', read_only=True)
     player_position = serializers.SerializerMethodField()
     home = serializers.BooleanField(source='game_id.selected_team_home', read_only=True)
-    
+    school = serializers.CharField(source='game_id.selected_team', read_only=True)
 
     def get_pa(self, obj: BatterStat):
         return obj.ab + obj.bb + obj.hbp + obj.ibb + obj.sh + obj.sf
@@ -62,6 +64,7 @@ class BatterStatSerializer(serializers.ModelSerializer):
 
 class BatterSituationalSerializer(serializers.ModelSerializer):
     player_name = serializers.CharField(source='player_id.player_name', read_only=True)
+    school = serializers.CharField(source='game_id.selected_team', read_only=True)
 
 
     class Meta:
@@ -171,25 +174,27 @@ class BatterStatSumSerializer(serializers.Serializer):
 
 class PitcherStatSerializer(serializers.ModelSerializer):
     player_name = serializers.CharField(source='player_id.player_name', read_only=True)
-    opponent= serializers.CharField(source='game_id.opponent', read_only=True)
+    opponent_name = serializers.CharField(source='game_id.opponent', read_only=True)
+    opponent_id = serializers.CharField(source='game_id.opponent.school_id', read_only=True)
     ab = serializers.SerializerMethodField()
     game_date = serializers.DateField(source='game_id.game_date', read_only=True)
     game_result = serializers.SerializerMethodField()
     box_score_link = serializers.CharField(source='game_id.box_score_link', read_only=True)
-    era = serializers.SerializerMethodField()
-    outs = serializers.SerializerMethodField()
+    # era = serializers.SerializerMethodField()
+    # outs = serializers.SerializerMethodField()
     decision = serializers.SerializerMethodField()
     home = serializers.BooleanField(source='game_id.selected_team_home', read_only=True)
+    school = serializers.CharField(source='game_id.selected_team', read_only=True)
 
-    def get_outs(self, obj):
-        innings_pitched = (
-            PitcherStat.objects
-                .filter(player_id=obj.player_id, game_id__lte=obj.game_id)
-        )
-        outs = 0
-        for session in innings_pitched:
-            outs += (10 * session.ip) - 7 * int(session.ip)
-        return outs
+    # def get_outs(self, obj):
+    #     innings_pitched = (
+    #         PitcherStat.objects
+    #             .filter(player_id=obj.player_id, game_id__lte=obj.game_id)
+    #     )
+    #     outs = 0
+    #     for session in innings_pitched:
+    #         outs += (10 * session.ip) - 7 * int(session.ip)
+    #     return outs
 
     def get_ab(self, obj):
         return obj.bf -  obj.bb - obj.hb - obj.ibb - obj.sf_allowed - obj.sh_allowed
@@ -198,19 +203,19 @@ class PitcherStatSerializer(serializers.ModelSerializer):
         expected_innings = 9
         inning_info = f" ({obj.game_id.total_innings})" if obj.game_id.total_innings != expected_innings else ''
         return f"{"W" if obj.game_id.selected_team_runs > obj.game_id.opponent_runs else "L"} {obj.game_id.selected_team_runs}-{obj.game_id.opponent_runs}{inning_info}"
-    def get_era(self, obj):
-        stats = (
-            PitcherStat.objects
-        .filter(player_id=obj.player_id, 
-        game_id__lte=obj.game_id)
-        .aggregate(
-            total_er=Sum('er'),
-            total_outs=Sum('ip') * 3
-        )
-        )
-        total_er  = stats['total_er'] or 0
-        total_outs = self.get_outs(obj)
-        return (total_er * 27) / total_outs if total_outs > 0 else None
+    # def get_era(self, obj):
+    #     stats = (
+    #         PitcherStat.objects
+    #     .filter(player_id=obj.player_id, 
+    #     game_id__lte=obj.game_id)
+    #     .aggregate(
+    #         total_er=Sum('er'),
+    #         total_outs=Sum('ip') * 3
+    #     )
+    #     )
+    #     total_er  = stats['total_er'] or 0
+    #     total_outs = self.get_outs(obj)
+    #     return (total_er * 27) / total_outs if total_outs > 0 else None
     
     def get_decision(self, obj):
         win_loss = "W" if obj.win else "L" if obj.loss else "S" if obj.sv else "ND"
@@ -313,8 +318,10 @@ class FieldingStatSerializer(serializers.ModelSerializer):
     game_date = serializers.DateField(source='game_id.game_date', read_only=True)
     game_result = serializers.SerializerMethodField()
     box_score_link = serializers.CharField(source='game_id.box_score_link', read_only=True)
-    opponent = serializers.CharField(source='game_id.opponent', read_only=True)
+    opponent_name = serializers.CharField(source='game_id.opponent', read_only=True)
+    opponent_id = serializers.CharField(source='game_id.opponent.school_id', read_only=True)
     cum_fcpt = serializers.SerializerMethodField()
+    school = serializers.CharField(source='game_id.selected_team', read_only=True)
 
     def get_cum_fcpt(self, obj: FieldingStat):
         current_fcpt = (
@@ -384,7 +391,7 @@ class FieldingStatSumByPosSerializer(serializers.Serializer):
 class GameInfoSerializer(serializers.ModelSerializer):
     result = serializers.SerializerMethodField()
     
-    
+
     def get_result(self, obj: BatterStat):
         expected_innings = 9
         inning_info = f"/{obj.total_innings}" if obj.total_innings != expected_innings else ''
@@ -443,3 +450,9 @@ class FieldingStatSumByPlayerSerializer(serializers.Serializer):
                  + Sum('sh'))
         )
         return total_pa['total_pa'] if total_pa['total_pa'] else None
+    
+class SchoolInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SchoolInfo
+        fields = '__all__'
+        read_only_fields = ['id']

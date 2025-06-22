@@ -1,11 +1,11 @@
 from django.shortcuts import render
-from .models import BatterStat, PitcherStat, PlayerInfo, FieldingStat, GameInfo, BattingSituational
+from .models import BatterStat, PitcherStat, PlayerInfo, FieldingStat, GameInfo, BattingSituational, SchoolInfo
 from .serializers import BatterStatSerializer, \
 PitcherStatSerializer, PlayerInfoSerializer, \
 FieldingStatSerializer, GameInfoSerializer, \
 BatterStatSumSerializer, PitcherStatSumSerializer, \
 FieldingStatSumByPosSerializer, FieldingStatSumByPlayerSerializer, \
-BatterSituationalSerializer
+BatterSituationalSerializer, SchoolInfoSerializer
 
 
 from rest_framework import viewsets, status
@@ -65,6 +65,13 @@ class PlayerInfoViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [AllowAny]
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['player_id', 'player_name', 'jersey_number', 'height', 'weight']
+
+class SchoolInfoViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = SchoolInfo.objects.all()
+    permission_classes = [AllowAny]
+    serializer_class = SchoolInfoSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = '__all__'
 
 class BatterStatCreateView(APIView):
     permission_classes = [AllowAny]
@@ -292,3 +299,17 @@ class TeamFieldingStatsByPlayerViewSet(viewsets.ReadOnlyModelViewSet):
             )
             .filter(~models.Q(player_position__exact='P') & models.Q(total_po__gt=0) & models.Q(total_a__gt=0))
         )
+
+class SchoolInfoCreateView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        api_key = request.headers.get('X-API-Key')
+        expected_key = settings.SCRAPER_API_KEY
+        if api_key != expected_key:
+            return Response({"error": "Unauthorized"}, status=status.HTTP_401_UNAUTHORIZED)
+        serializer = SchoolInfoSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
