@@ -21,7 +21,7 @@ export const createBatterGameLogColumns = (
     accessorFn: (row: any) => (row.home ? "H" : "A"),
     cell: (info: any) => info.getValue(),
   },
-  helper.accessor("opponent", {
+  helper.accessor("opponent_name", {
     header: "OPPONENT",
     cell: (info: any) => {
       const home = info.row.original.home;
@@ -223,7 +223,7 @@ export const createExtBattingColumns = (helper: ColumnHelper<BattingStat>) => [
     cell: (info: any) => info.getValue(),
     filterFn: dateFilterFn,
   }),
-  helper.accessor("opponent", {
+  helper.accessor("opponent_name", {
     header: "OPPONENT",
     cell: (info: any) => {
       const home = info.row.original.home;

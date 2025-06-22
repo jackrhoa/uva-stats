@@ -18,7 +18,7 @@ export const createFieldingColumns = (helper: ColumnHelper<FieldingStat>) => [
     cell: (info: any) => info.getValue(),
     filterFn: dateFilterFn,
   }),
-  helper.accessor("opponent", {
+  helper.accessor("opponent_name", {
     header: "Opponent",
     cell: (info: any) => info.getValue(),
   }),

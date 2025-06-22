@@ -49,9 +49,9 @@ export default function PlayerStats() {
       `batter_stats?player_id=${id}`,
       `pitcher_stats?player_id=${id}`,
       `fielding_stats?player_id=${id}`,
-      `total_batting_stats?player_id=${id}`,
-      `total_pitching_stats?player_id=${id}`,
-      `total_fielding_stats_by_pos?player_id=${id}`,
+      // `total_batting_stats?player_id=${id}`,
+      // `total_pitching_stats?player_id=${id}`,
+      // `total_fielding_stats_by_pos?player_id=${id}`,
     ],
     [id]
   );

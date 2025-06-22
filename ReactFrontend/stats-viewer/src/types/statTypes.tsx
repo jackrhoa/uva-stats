@@ -5,7 +5,7 @@ export type BattingStat = {
   player_position: string;
   game_result: string;
   game_date: string;
-  opponent: string;
+  opponent_name: string;
   game_id: number;
   ab: number;
   pa: number;
@@ -41,7 +41,7 @@ export type PitchingStat = {
   id: number;
   game_date: Date;
   game_result: string;
-  opponent: string;
+  opponent_name: string;
   decision: string;
   box_score_link: number;
   player_id: number;
@@ -82,7 +82,7 @@ export type FieldingStat = {
   player_name: string;
   player_id: number;
   game_date: Date;
-  opponent: string;
+  opponent_name: string;
   game_result: string;
   game_id: number;
   player_position: string;

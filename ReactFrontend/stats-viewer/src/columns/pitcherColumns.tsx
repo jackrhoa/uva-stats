@@ -9,7 +9,7 @@ export const createPitcherColumns = (helper: ColumnHelper<PitchingStat>) => [
     cell: (info: any) => info.getValue(),
     filterFn: dateFilterFn,
   }),
-  helper.accessor("opponent", {
+  helper.accessor("opponent_name", {
     header: "Opponent",
     cell: (info: any) => info.getValue(),
     footer: (info: any) => {
@@ -71,23 +71,20 @@ export const createPitcherColumns = (helper: ColumnHelper<PitchingStat>) => [
   {
     header: "IP",
     filterFn: compareOperatorFilterFn,
-    id: "ip",
-    accessorFn: (row: any) => parseFloat(row.ip),
+    id: "outs",
+    accessorFn: (row: any) => parseFloat(row.outs),
     cell: (info: any) => {
-      const ipValue = info.getValue();
-      return typeof ipValue === "number" ? ipValue.toFixed(1) : "--";
+      const outsValue = info.getValue();
+      return typeof outsValue === "number"
+        ? (Math.floor(outsValue / 3) + (outsValue % 3) * 0.1).toFixed(1)
+        : "--";
     },
     footer: (info: any) => {
       const totalOuts = info.table
         .getSortedRowModel()
         .rows.reduce((sum: number, row: any) => {
-          const ipValue = parseFloat(row.getValue("ip"));
-          return (
-            sum +
-            (typeof ipValue === "number"
-              ? 10 * ipValue - 7 * Math.floor(ipValue)
-              : -1000)
-          );
+          const outsValue = parseFloat(row.getValue("outs"));
+          return sum + outsValue;
         }, 0);
       return totalOuts > 0
         ? (Math.floor(totalOuts / 3) + (totalOuts % 3) * 0.1).toFixed(1)
@@ -135,7 +132,7 @@ export const createPitchingExtColumns = (
     cell: (info: any) => info.getValue(),
     filterFn: dateFilterFn,
   }),
-  helper.accessor("opponent", {
+  helper.accessor("opponent_name", {
     header: "OPPONENT",
     cell: (info: any) => info.getValue(),
     footer: (info: any) => {
@@ -197,23 +194,20 @@ export const createPitchingExtColumns = (
   {
     header: "IP",
     filterFn: compareOperatorFilterFn,
-    id: "ip",
-    accessorFn: (row: any) => parseFloat(row.ip),
+    id: "outs",
+    accessorFn: (row: any) => parseFloat(row.outs),
     cell: (info: any) => {
-      const ipValue = info.getValue();
-      return typeof ipValue === "number" ? ipValue.toFixed(1) : "--";
+      const outsValue = info.getValue();
+      return typeof outsValue === "number"
+        ? (Math.floor(outsValue / 3) + (outsValue % 3) * 0.1).toFixed(1)
+        : "--";
     },
     footer: (info: any) => {
       const totalOuts = info.table
         .getSortedRowModel()
         .rows.reduce((sum: number, row: any) => {
-          const ipValue = parseFloat(row.getValue("ip"));
-          return (
-            sum +
-            (typeof ipValue === "number"
-              ? 10 * ipValue - 7 * Math.floor(ipValue)
-              : -1000)
-          );
+          const outsValue = parseFloat(row.getValue("outs"));
+          return sum + outsValue;
         }, 0);
       return totalOuts > 0
         ? (Math.floor(totalOuts / 3) + (totalOuts % 3) * 0.1).toFixed(1)
