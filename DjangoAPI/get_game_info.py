@@ -68,24 +68,33 @@ class GameStats:
             try:
                 driver.get(f'https://stats.ncaa.org/contests/{self.ncaa_game_id}/box_score')
                 box_score_source = driver.page_source
+                print("Box score source retrieved")
                 self.box_score_df_list = pd.read_html(StringIO(box_score_source))
                 self.box_score_soup = BeautifulSoup(driver.page_source, "lxml")
             except:
-                raise ValueError('Unable to get box score from web')
+                try:
+                    print("Error retrieving box score. Trying again...")
+                    time.sleep(5)
+                    self.box_score_df_list = pd.read_html(StringIO(box_score_source))
+                    self.box_score_soup = BeautifulSoup(driver.page_source, "lxml")
+
+                except:
+                    raise ValueError('Unable to get box score from web')
+               
             try:
                 driver.get(f'https://stats.ncaa.org/contests/{self.ncaa_game_id}/individual_stats')
                 individual_stats_source = driver.page_source
                 self.individual_stats_df_list = pd.read_html(StringIO(individual_stats_source))
             except:
                 raise ValueError('Unable to get individual stats from web')
-            try:
-                driver.get(f'https://stats.ncaa.org/contests/{self.ncaa_game_id}/situational_stats')
-                self.situational_stats_source = driver.page_source
-                self.situational_stats_df_list = pd.read_html(StringIO(self.situational_stats_source))
-                self.situational_stats_soup = BeautifulSoup(driver.page_source, "lxml")
+            # try:
+            #     driver.get(f'https://stats.ncaa.org/contests/{self.ncaa_game_id}/situational_stats')
+            #     self.situational_stats_source = driver.page_source
+            #     self.situational_stats_df_list = pd.read_html(StringIO(self.situational_stats_source))
+            #     self.situational_stats_soup = BeautifulSoup(driver.page_source, "lxml")
                 
-            except:
-                raise ValueError('Unable to get situational stats from web')
+            # except:
+            #     raise ValueError('Unable to get situational stats from web')
             ## still need to get situational stats, and umpires
         else:
             raise ValueError('Please provide either a file name or a url')
@@ -117,8 +126,8 @@ class GameStats:
         self.add_selected_team_batting()
         self.add_selected_team_pitching()
         self.add_selected_team_fielding()
-        self.add_situational_batting()
-        self.get_hidden_text()
+        # self.add_situational_batting()
+        # self.get_hidden_text()
     def set_home_and_opponent(self) -> None:
         '''Sets selected_team_home and opponent variables in GameStats object
         \n
@@ -350,7 +359,7 @@ class GameStats:
                 'loss': int(self.losing_pitcher == player_name),
                 'sv': int(self.saving_pitcher == player_name),
             }
-            print("data", data)
+            # print("data", data)
             # print("type of data:", type(data))
 
             post_stats(
@@ -583,9 +592,9 @@ class GameStats:
             with_two_in_scoring = {}
             bases_empty = {}
             bases_loaded = {}
-            print('Raw player:', row['Player'])
+            # print('Raw player:', row['Player'])
             if row['Player'] == self.selected_team:
-                print(f'Reached {self.selected_team} row, stopping')
+                # print(f'Reached {self.selected_team} row, stopping')
                 return
             p_name_parts = str(row['Player']).strip().split(',')
             player_name = p_name_parts[1].strip() + ' ' + p_name_parts[0].strip()
@@ -609,13 +618,13 @@ class GameStats:
                 if i < 2:
                     continue
                 stat_column: dict = situational_columns[i]
-                print(f'Column {i} for player {player_name} ({pos}):', self.columns[i])
+                # print(f'Column {i} for player {player_name} ({pos}):', self.columns[i])
                 stats = str(row[self.columns[i]]).split('\n')
                 if len(stats) == 0:
                     raise ValueError(f'Invalid stats for {player_name} in situational stats (length = 0)')
                 if (len(stats) == 1 and stats[0] == ''):
-                    print(f'No stats found for player {player_name} in situational stats for {self.columns[i]}')
-                    print('Stats:', stats)
+                    # print(f'No stats found for player {player_name} in situational stats for {self.columns[i]}')
+                    # print('Stats:', stats)
                     continue
                 for stat in stats:
                     stat = stat.strip()
@@ -626,10 +635,10 @@ class GameStats:
                         if stat.strip() == '' or len(stat_info) != 2:
                             raise ValueError(f'Invalid stat format for {player_name} in situational stats: {stat}')
                         stat_column[stat_info[0]] = int(stat_info[1])
-                print(stat_column)
+                # print(stat_column)
 
             if not with_runners and not hits_with_risp and not vs_lhp and not vs_rhp and not leadoff_pct and not rbi_runner_on_3rd and not h_pinchhit and not runners_advanced and not with_two_outs and not with_two_runners and not with_two_in_scoring and not bases_empty and not bases_loaded:
-                print(f'No stats found for player {player_name} in situational stats AT ALL (testing)')
+                # print(f'No stats found for player {player_name} in situational stats AT ALL (testing)')
                 continue
             player_info, created = PlayerInfo.objects.get_or_create(
                 player_name=player_name,
@@ -762,8 +771,10 @@ class GameStats:
 if __name__ == "__main__":
 
     
-    VT1 = GameStats(
-        ncaa_game_id=6303762, selected_team='Virginia Tech')
+    # GAME = GameStats(
+    #     ncaa_game_id=6312898, selected_team='Virginia')
+    # NOTE: Selected team must be the same for all games
+    # to ensure the qualified filter works correctly
     # VT2 = GameStats(
     #     ncaa_game_id=6317490)
     # VT3 = GameStats(
@@ -771,32 +782,42 @@ if __name__ == "__main__":
     # BC = GameStats(
     #     ncaa_game_id=6385130)
     
-    # options = webdriver.ChromeOptions()
+    # with open('DjangoAPI/6314263.html', 'r') as f:
+    #     source = f.read()
+    #     try:
+    #         box_score = pd.read_html(StringIO(source))
+    #         print(box_score)
+    #     except:
+    #         print("unable to read box score")
 
-    # UAS = ("Mozilla/5.0 (Windows NT 6.1; WOW64; rv:40.0) Gecko/20100101 Firefox/40.1", 
-    #     "Mozilla/5.0 (Windows NT 6.3; rv:36.0) Gecko/20100101 Firefox/36.0",
-    #     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10; rv:33.0) Gecko/20100101 Firefox/33.0",
-    #     "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36",
-    #     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2227.1 Safari/537.36",
-    #     "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2227.0 Safari/537.36",
-    #     )
-    # ua = UAS[random.randrange(len(UAS))]
 
-    # options.add_argument(f'user-agent={ua}')
-    # options.add_argument('--no-sandbox')
-    # options.add_argument('--disable-dev-shm-usage')
-    # options.add_argument('--headless')
+
+    options = webdriver.ChromeOptions()
+
+    UAS = ("Mozilla/5.0 (Windows NT 6.1; WOW64; rv:40.0) Gecko/20100101 Firefox/40.1", 
+        "Mozilla/5.0 (Windows NT 6.3; rv:36.0) Gecko/20100101 Firefox/36.0",
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10; rv:33.0) Gecko/20100101 Firefox/33.0",
+        "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36",
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2227.1 Safari/537.36",
+        "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2227.0 Safari/537.36",
+        )
+    ua = UAS[random.randrange(len(UAS))]
+
+    options.add_argument(f'user-agent={ua}')
+    options.add_argument('--no-sandbox')
+    options.add_argument('--disable-dev-shm-usage')
+    options.add_argument('--headless')
     
-    # driver = webdriver.Chrome(
-    #     service=ChromeService(ChromeDriverManager().install()), options=options
-    #     )
-    # driver.get('https://stats.ncaa.org/teams/596439')
+    driver = webdriver.Chrome(
+        service=ChromeService(ChromeDriverManager().install()), options=options
+        )
+    driver.get('https://stats.ncaa.org/teams/596439')
 
-    # links = driver.find_elements(By.XPATH, '//a[@target="BOX_SCORE_WINDOW"]')
+    links = driver.find_elements(By.XPATH, '//a[@target="BOX_SCORE_WINDOW"]')
 
-    # for link in links:
-    #     # print(link.get_attribute('href'))
-    #     ncaa_game_id = int(link.get_attribute('href').split('/')[4])
-    #     print(ncaa_game_id)
-    #     new_game = GameStats(ncaa_game_id=ncaa_game_id)
-    #     time.sleep(1)
+    for link in links:
+        # print(link.get_attribute('href'))
+        ncaa_game_id = int(link.get_attribute('href').split('/')[4])
+        print(ncaa_game_id)
+        new_game = GameStats(ncaa_game_id=ncaa_game_id)
+        time.sleep(5)
