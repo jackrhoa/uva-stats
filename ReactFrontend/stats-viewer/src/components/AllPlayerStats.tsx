@@ -151,6 +151,7 @@ const AllPlayerStats = () => {
       columnVisibility: {
         total_team_games: false,
         qualified: false,
+        total_outs: false,
       },
       sorting: [
         {
@@ -182,6 +183,7 @@ const AllPlayerStats = () => {
         total_hr_allowed: false,
         total_team_games: false,
         qualified: false,
+        total_outs: false,
       },
       sorting: [
         { id: "total_ip", desc: true },
@@ -230,7 +232,7 @@ const AllPlayerStats = () => {
         setToggle={setToggle}
       />
       <div className="flex w-full gap-2 border-red-500 border6-2 rounded-lg p-1">
-        <div className="w-64 bg-gray-100 p-4">
+        <div className="w-64p-4">
           {(toggle === 1 || toggle === 0) && (
             <FilterGUI
               options={[
@@ -251,8 +253,8 @@ const AllPlayerStats = () => {
             <FilterGUI
               options={[
                 ["qualified", "Qualified"],
-                ["total_ip", "Innings Pitched"],
-                ["total_starts", "Starts"],
+                // ["total_ip", "Innings Pitched"],
+                // ["total_starts", "Starts"],
                 // ["total_h", "Hits Allowed"],
                 // ["total_r", "Runs Allowed"],
                 // ["total_er", "Earned Runs"],
@@ -273,15 +275,12 @@ const AllPlayerStats = () => {
             />
           )}
         </div>
-        <div className="flex-1 bg-orange-100 p-2">
+        <div className="flex-1 p-2">
           <div className={toggle === 0 ? "block" : "hidden"}>
             <DisplayTable
               table={totalBattingTable}
               isRowHighlighted={(row: Row<AllBattingStat>) => {
-                return (
-                  Number(row.getValue("total_pa")) / 3.1 >=
-                  Number(row.getValue("total_team_games"))
-                );
+                return Boolean(row.getValue("qualified"));
               }}
               customHeaders={batterSeasonTotalHeader}
             />
@@ -290,10 +289,7 @@ const AllPlayerStats = () => {
             <DisplayTable
               table={totalBatterAdvTable}
               isRowHighlighted={(row: Row<AllBattingStat>) => {
-                return (
-                  Number(row.getValue("total_pa")) / min_plate_appearance >=
-                  Number(row.getValue("total_team_games"))
-                );
+                return Boolean(row.getValue("qualified"));
               }}
               customHeaders={batterSeasonTotalHeader}
             />
@@ -302,8 +298,7 @@ const AllPlayerStats = () => {
             <DisplayTable
               table={totalPitchingTable}
               isRowHighlighted={(row: Row<AllPitchingStat>) =>
-                Number(row.getValue("total_ip")) / min_innings_pitched >=
-                Number(row.getValue("total_team_games"))
+                Boolean(row.getValue("qualified"))
               }
               customHeaders={pitcherSeasonTotalHeader}
             />
@@ -312,8 +307,7 @@ const AllPlayerStats = () => {
             <DisplayTable
               table={totalPitchingAdvTable}
               isRowHighlighted={(row: Row<AllPitchingStat>) =>
-                Number(row.getValue("total_ip")) / min_innings_pitched >=
-                Number(row.getValue("total_team_games"))
+                Boolean(row.getValue("qualified"))
               }
               customHeaders={pitcherSeasonTotalHeader}
             />
@@ -322,7 +316,7 @@ const AllPlayerStats = () => {
             <DisplayTable
               table={totalFieldingByPlayerTable}
               isRowHighlighted={(row: Row<AllFieldingStatByPlayer>) =>
-                Number(row.getValue("total_pa")) / min_plate_appearance >=
+                Number(row.getValue("total_pa")) / 3.1 >=
                 Number(row.getValue("total_team_games"))
               }
               customHeaders={batterSeasonTotalHeader}

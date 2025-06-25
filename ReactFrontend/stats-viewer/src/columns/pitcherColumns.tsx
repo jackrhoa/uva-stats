@@ -327,14 +327,20 @@ export const createTotalPitchingColumns = (
     cell: (info) => info.getValue(),
     sortDescFirst: true,
   }),
+  helper.accessor("total_outs", {
+    header: "Outs",
+  }),
   helper.accessor("total_team_games", {
     header: "Team G",
     cell: (info) => info.getValue(),
   }),
   {
     id: "qualified",
-    accessorFn: (row: any) =>
-      row.total_ip / min_innings_pitched >= row.total_team_games,
+    accessorFn: (row: any) => {
+      const total_outs = Number(row.total_outs);
+      return total_outs / 3 / min_innings_pitched > row.total_team_games;
+    },
+
     header: "Qualified?",
     cell: (info: any) => {
       const qualified = info.getValue();
@@ -349,7 +355,7 @@ export const createTotalPitchingColumns = (
       const row = info.row;
       return (
         <a
-          href={`/player/${row.original.player_id}`}
+          href={`/player/${row.original.player_id}?toggle=3`}
           className="text-blue-600 hover:underline"
         >
           {info.getValue()}
@@ -357,29 +363,37 @@ export const createTotalPitchingColumns = (
       );
     },
   }),
-  helper.accessor("total_ip", {
+  {
     header: "IP",
     filterFn: compareOperatorFilterFn,
-    cell: (info) =>
-      typeof info.getValue() === "number" ? info.getValue().toFixed(1) : "--",
-    // filterFn: greaterThanOrEqualTo,
-    footer: (info) => {
+    id: "total_ip",
+    accessorFn: (row: any) => {
+      const outsValue = parseInt(row.total_outs);
+
+      return typeof outsValue === "number"
+        ? (Math.floor(outsValue / 3) + (outsValue % 3) * 0.1).toFixed(1)
+        : null;
+    },
+    cell: (info: any) => {
+      return info.getValue() != null ? info.getValue() : "--";
+      // const outsValue = info.getValue();
+      // return typeof outsValue === "number"
+      //   ? (Math.floor(outsValue / 3) + (outsValue % 3) * 0.1).toFixed(1)
+      //   : "--";
+    },
+    footer: (info: any) => {
       const totalOuts = info.table
         .getSortedRowModel()
         .rows.reduce((sum: number, row: any) => {
-          const ipValue = row.getValue("total_ip");
-          return (
-            sum +
-            (typeof ipValue === "number"
-              ? 10 * ipValue - 7 * Math.floor(ipValue)
-              : -1000)
-          );
+          const outsValue = parseFloat(row.getValue("total_outs"));
+          return sum + outsValue;
         }, 0);
       return totalOuts > 0
         ? (Math.floor(totalOuts / 3) + (totalOuts % 3) * 0.1).toFixed(1)
         : "--";
     },
-  }),
+    sortDescFirst: true,
+  },
   helper.accessor("total_wins", {
     header: "W",
     cell: (info) => info.getValue(),
@@ -493,7 +507,7 @@ export const createTotalPitchingAdvColumns = (
       const row = info.row;
       return (
         <a
-          href={`/player/${row.original.player_id}`}
+          href={`/player/${row.original.player_id}?toggle=3`}
           className="text-blue-600 hover:underline"
         >
           {info.getValue()}
@@ -503,8 +517,11 @@ export const createTotalPitchingAdvColumns = (
   }),
   {
     id: "qualified",
-    accessorFn: (row: any) =>
-      row.total_ip / min_innings_pitched >= row.total_team_games,
+    accessorFn: (row: any) => {
+      const total_outs = Number(row.total_outs);
+      return total_outs / 3 / min_innings_pitched > row.total_team_games;
+    },
+
     header: "Qualified?",
     cell: (info: any) => {
       const qualified = info.getValue();
@@ -513,32 +530,38 @@ export const createTotalPitchingAdvColumns = (
     enableColumnFilter: true,
     enableSorting: false,
   },
+
   helper.accessor("total_team_games", {
     header: "Team G",
     cell: (info) => info.getValue(),
   }),
-  helper.accessor("total_ip", {
+  helper.accessor("total_outs", {
+    header: "Outs",
+  }),
+  {
     header: "IP",
     filterFn: compareOperatorFilterFn,
-    cell: (info) =>
-      typeof info.getValue() === "number" ? info.getValue().toFixed(1) : "--",
-    footer: (info) => {
+    id: "total_ip",
+    accessorFn: (row: any) => parseFloat(row.total_outs),
+    cell: (info: any) => {
+      const outsValue = info.getValue();
+      return typeof outsValue === "number"
+        ? (Math.floor(outsValue / 3) + (outsValue % 3) * 0.1).toFixed(1)
+        : "--";
+    },
+    footer: (info: any) => {
       const totalOuts = info.table
         .getSortedRowModel()
         .rows.reduce((sum: number, row: any) => {
-          const ipValue = row.getValue("total_ip");
-          return (
-            sum +
-            (typeof ipValue === "number"
-              ? 10 * ipValue - 7 * Math.floor(ipValue)
-              : -1000)
-          );
+          const outsValue = parseFloat(row.getValue("total_outs"));
+          return sum + outsValue;
         }, 0);
       return totalOuts > 0
         ? (Math.floor(totalOuts / 3) + (totalOuts % 3) * 0.1).toFixed(1)
         : "--";
     },
-  }),
+    sortDescFirst: true,
+  },
   helper.accessor("total_h", {
     header: "H",
     filterFn: compareOperatorFilterFn,
@@ -653,8 +676,7 @@ export const createTotalPitchingAdvColumns = (
     filterFn: compareOperatorFilterFn,
     id: "h_9ip",
     accessorFn: (row: any) => {
-      const ip: number = parseFloat(row.total_ip);
-      const outs = 10 * ip - 7 * Math.floor(ip);
+      const outs = row.total_outs;
       return outs > 0 ? (27 * row.total_h) / outs : null;
     },
     cell: (info: any) =>
@@ -686,8 +708,7 @@ export const createTotalPitchingAdvColumns = (
     filterFn: compareOperatorFilterFn,
     id: "bb_9ip",
     accessorFn: (row: any) => {
-      const ip: number = parseFloat(row.total_ip);
-      const outs = 10 * ip - 7 * Math.floor(ip);
+      const outs = row.total_outs;
       return outs > 0 ? (27 * row.total_bb) / outs : null;
     },
     cell: (info: any) =>
@@ -719,8 +740,7 @@ export const createTotalPitchingAdvColumns = (
     filterFn: compareOperatorFilterFn,
     id: "k_9ip",
     accessorFn: (row: any) => {
-      const ip: number = parseFloat(row.total_ip);
-      const outs = 10 * ip - 7 * Math.floor(ip);
+      const outs = row.total_outs;
       return outs > 0 ? (27 * parseInt(row.total_so)) / outs : null;
     },
     cell: (info: any) =>
@@ -752,8 +772,7 @@ export const createTotalPitchingAdvColumns = (
     filterFn: compareOperatorFilterFn,
     id: "hr_9ip",
     accessorFn: (row: any) => {
-      const ip: number = parseFloat(row.total_ip);
-      const outs = 10 * ip - 7 * Math.floor(ip);
+      const outs = row.total_outs;
       return outs > 0 ? (27 * parseInt(row.total_hr_allowed)) / outs : null;
     },
     cell: (info: any) =>

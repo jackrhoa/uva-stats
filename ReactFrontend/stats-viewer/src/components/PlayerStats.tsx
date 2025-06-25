@@ -20,6 +20,7 @@ import type {
 import {
   createBatterGameLogColumns,
   createExtBattingColumns,
+  createBatterSituationalColumns,
   // createTotalIndivBattingColumns,
 } from "../columns/batterColumns.tsx";
 import {
@@ -28,12 +29,9 @@ import {
 } from "../columns/pitcherColumns.tsx";
 import { createFieldingColumns } from "../columns/fieldingColumns.tsx";
 import { loadState, saveState } from "../helpers/saveState.ts";
-// import getSeasonStats, {
-//   getGroupedSeasonStats,
-// } from "../helpers/aggregateStats.ts";
 
 export default function PlayerStats() {
-  const [toggle, setToggle] = useState(0);
+  const [toggle, setToggle] = useState(1);
 
   const { id } = useParams<{ id: string }>();
 
@@ -49,6 +47,7 @@ export default function PlayerStats() {
       `batter_stats?player_id=${id}`,
       `pitcher_stats?player_id=${id}`,
       `fielding_stats?player_id=${id}`,
+      `batter_situational_stats?player_id=${id}`,
       // `total_batting_stats?player_id=${id}`,
       // `total_pitching_stats?player_id=${id}`,
       // `total_fielding_stats_by_pos?player_id=${id}`,
@@ -64,6 +63,10 @@ export default function PlayerStats() {
     () => playerData.batter_stats || [],
     [playerData.batter_stats]
   );
+  const batterSituationalStats = useMemo(
+    () => playerData.batter_situational_stats || [],
+    [playerData.batter_situational_stats]
+  );
   const pitcherStats = useMemo(
     () => playerData.pitcher_stats || [],
     [playerData.pitcher_stats]
@@ -72,6 +75,28 @@ export default function PlayerStats() {
     () => playerData.fielding_stats || [],
     [playerData.fielding_stats]
   );
+
+  const flattenedSituationalStats = useMemo(() => {
+    return batterSituationalStats.flatMap((stat) => ({
+      player_name: stat.player_name,
+      player_id: stat.player_id,
+      school: stat.school,
+      with_runners: JSON.stringify(stat.with_runners),
+      hits_with_risp: {
+        H: stat.hits_with_risp.H,
+        AB: stat.hits_with_risp.AB,
+      },
+      vs_lhp: JSON.stringify(stat.vs_lhp),
+      vs_rhp: JSON.stringify(stat.vs_rhp),
+      leadoff_pct: JSON.stringify(stat.leadoff_pct),
+      rbi_runner_on_3rd: JSON.stringify(stat.rbi_runner_on_3rd),
+      h_pinchhit: JSON.stringify(stat.h_pinchhit),
+      runners_advanced: JSON.stringify(stat.runners_advanced),
+      with_two_outs: JSON.stringify(stat.with_two_outs),
+      with_two_runners: JSON.stringify(stat.with_two_runners),
+    }));
+  }, [batterSituationalStats]);
+
   // const allBattingStats = useMemo(
   //   () => playerData.total_batting_stats || [],
   //   [playerData.total_batting_stats]
@@ -94,6 +119,22 @@ export default function PlayerStats() {
     }
     console.log(" toggle state:", toggle);
   }, [id]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const newToggle = params.get("toggle");
+    if (newToggle !== null && newToggle !== undefined) {
+      setToggle(parseInt(newToggle, 10));
+    }
+  }, [location.search]);
+
+  // useEffect(() => {
+  //   const params = new URLSearchParams(location.search);
+  //   const x = params.get("x");
+  //   if (x !== null) {
+  //     setXValue(x);
+  //   }
+  // }, [location.search]);
 
   const pitcherTable = useReactTable<PitchingStat>({
     data: pitcherStats,
@@ -153,6 +194,7 @@ export default function PlayerStats() {
         hits: false,
         sb: false,
         cs: false,
+        home_away: false,
       },
 
       //   // columnFilters: [
@@ -189,6 +231,16 @@ export default function PlayerStats() {
     },
     // onColumnFiltersChange: setColumnFilters,
   });
+  // const batterSituationalTable = useReactTable({
+  //   data: batterSituationalStats,
+  //   columns: createBatterSituationalColumns(createColumnHelper()),
+  //   getCoreRowModel: getCoreRowModel(),
+  //   getSortedRowModel: getSortedRowModel(),
+  //   getFilteredRowModel: getFilteredRowModel(),
+  //   initialState: {
+  //     columnVisibility: {},
+  //   },
+  // });
 
   // const playerSeasonRow = getSeasonStats(batterStats);
   // const seasonStatsData = [playerSeasonRow];
@@ -225,15 +277,13 @@ export default function PlayerStats() {
   }
 
   if (error) {
-    return <div>Error: {error}</div>;
-  }
+    console.log("Error:", error);
 
-  if (!batterStats && !pitcherStats && !fieldingStats) {
-    return <div>Error accessing the stats.</div>;
-  }
-
-  if (!batterStats.length && !pitcherStats.length) {
-    return <div>No player stats available.</div>;
+    return (
+      <div className="text-black mt-15 text-lg">
+        Player with id {id} not found.
+      </div>
+    );
   }
 
   return (
@@ -255,7 +305,7 @@ export default function PlayerStats() {
               : "hidden"
           }
         >
-          <li
+          {/* <li
             className={`border-2 px-2 py-1 rounded-full cursor-pointer ${
               toggle === 0
                 ? "bg-blue-600 text-white text-semibold border-transparent"
@@ -267,7 +317,7 @@ export default function PlayerStats() {
             }}
           >
             Season Totals
-          </li>
+          </li> */}
         </div>
         <div className={batterStats.length > 0 ? "block" : "hidden"}>
           <li
@@ -300,6 +350,21 @@ export default function PlayerStats() {
             Extended Batting Game Log
           </li>
         </div>
+        {/* <div className={batterStats.length > 0 ? "block" : "hidden"}>
+          <li
+            className={`border-2 px-2 py-1 rounded-full cursor-pointer ${
+              toggle === 6
+                ? "bg-blue-600 text-white text-semibold border-transparent"
+                : "border-gray text-gray-500 hover:bg-blue-300"
+            }`}
+            onClick={() => {
+              setToggle(6);
+              saveState(id + "Toggle", 6);
+            }}
+          >
+            Situational Batting
+          </li>
+        </div> */}
         <div className={pitcherStats.length > 0 ? "block" : "hidden"}>
           <li
             className={`border-2 px-2 py-1 rounded-full cursor-pointer ${
@@ -346,8 +411,8 @@ export default function PlayerStats() {
           </li>
         </div>
       </ul>
-      <div className="flex w-full gap-2 border-red-500 border-2 rounded-lg p-1">
-        <div className="w-64 bg-gray-100 p-4">
+      <div className="flex w-full gap-2 rounded-lg p-1">
+        <div className="w-64 p-4">
           {(toggle === 1 || toggle === 2) && (
             <FilterGUI
               options={[
@@ -395,7 +460,7 @@ export default function PlayerStats() {
           )}
         </div>
 
-        <div className="flex-1 bg-orange-100 p-4">
+        <div className="flex-1 p-4">
           {/* <div className={toggle === 0 ? "block" : "hidden"}>
             <DisplayTable table={seasonTotalBattingTable} />
           </div> */}
@@ -405,6 +470,11 @@ export default function PlayerStats() {
           <div className={toggle === 2 ? "block" : "hidden"}>
             {batterStats.length > 0 && <DisplayTable table={batterExtTable} />}
           </div>
+          {/* <div className={toggle === 6 ? "block" : "hidden"}>
+            {batterStats.length > 0 && (
+              <DisplayTable table={batterSituationalTable} />
+            )}
+          </div> */}
           <div className={toggle === 3 ? "block" : "hidden"}>
             {pitcherStats.length > 0 && <DisplayTable table={pitcherTable} />}
           </div>

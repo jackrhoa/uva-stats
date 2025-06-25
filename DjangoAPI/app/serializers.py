@@ -247,7 +247,6 @@ class PitcherStatSumSerializer(serializers.Serializer):
     player_name = serializers.CharField(source='player_id__player_name', read_only=True)
     jersey_number = serializers.IntegerField(source='player_id__jersey_number', read_only=True)
     total_team_games = serializers.SerializerMethodField()
-    total_ip = serializers.SerializerMethodField()
     total_outs = serializers.SerializerMethodField()
     total_h = serializers.IntegerField()
     total_r = serializers.IntegerField()
@@ -277,19 +276,8 @@ class PitcherStatSumSerializer(serializers.Serializer):
     total_whip = serializers.SerializerMethodField()
     total_games = serializers.IntegerField()
     def get_total_outs(self, obj):
-        innings_pitched = (
-        PitcherStat.objects
-            .filter(player_id=obj['player_id'])
-            )
-        outs = 0
-        for session in innings_pitched:
-            outs += (10 * session.ip) - 7 * int(session.ip)
-        return outs
+        return obj['total_outs'] if type(obj['total_outs']) == int else None
 
-    def get_total_ip(self, obj):
-        outs = self.get_total_outs(obj)
-        return float(outs // 3) + float(0.1) * int(outs % 3) if outs > 0 else 0
-    
     def get_total_ab(self, obj):
         return (
             obj['total_bf'] - 
@@ -309,7 +297,7 @@ class PitcherStatSumSerializer(serializers.Serializer):
             obj['total_ibb'] +
             obj['total_h']
         )
-        return walks_and_hits / (self.get_total_outs(obj) / 3) if self.get_total_ip(obj) > 0 else None
+        return walks_and_hits / (self.get_total_outs(obj) / 3) if self.get_total_outs(obj) > 0 else None
 
     def get_total_team_games(self, obj):
         return GameInfo.objects.count()

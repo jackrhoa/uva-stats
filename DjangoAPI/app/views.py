@@ -195,6 +195,7 @@ class TeamPitchingStatsViewSet(viewsets.ReadOnlyModelViewSet):
                 total_h=models.Sum('h'),
                 total_r=models.Sum('r'),
                 total_er=models.Sum('er'),
+                total_outs=models.Sum('outs'),
                 total_bb=models.Sum('bb'),
                 total_so=models.Sum('so'),
                 total_bf=models.Sum('bf'),

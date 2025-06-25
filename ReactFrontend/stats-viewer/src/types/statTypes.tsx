@@ -36,7 +36,32 @@ export type BattingStat = {
   tb: number;
   box_score_link: number;
 };
+// Since this will be used for columns, we only want to include column stats
+export type BattingSituationalStat = {
+  player_name: string;
+  player_id: number;
+  school: string;
+  with_runners: JSON;
+  hits_with_risp: {
+    H: number;
+    AB: number;
+  };
+  vs_lhp: {
+    H: number;
+    AB: number;
+  };
 
+  vs_rhp: JSON;
+  leadoff_pct: JSON;
+  rbi_runner_on_3rd: JSON;
+  h_pinchhit: JSON;
+  runners_advanced: JSON;
+  with_two_outs: JSON;
+  with_two_runners: JSON;
+  with_two_in_scoring: JSON;
+  bases_empty: JSON;
+  bases_loaded: JSON;
+};
 export type PitchingStat = {
   id: number;
   game_date: Date;
@@ -137,7 +162,7 @@ export type AllPitchingStat = {
   player_name: string;
   jersey_number: number;
   total_team_games: number;
-  total_ip: number;
+  total_outs: number;
   total_h: number;
   total_r: number;
   total_er: number;

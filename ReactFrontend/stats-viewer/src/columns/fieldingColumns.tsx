@@ -85,7 +85,7 @@ export const createTotalFieldingByPlayerColumns = (
     header: "Player",
     cell: (info) => (
       <a
-        href={`player/${info.row.original.player_id}`}
+        href={`player/${info.row.original.player_id}?toggle=5`}
         className="text-blue-600 hover:underline"
       >
         {info.getValue()}

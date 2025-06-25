@@ -1,5 +1,9 @@
 import { type ColumnHelper } from "@tanstack/react-table";
-import type { BattingStat, AllBattingStat } from "../types/statTypes.tsx";
+import type {
+  BattingStat,
+  AllBattingStat,
+  BattingSituationalStat,
+} from "../types/statTypes.tsx";
 import { dashStatSortingFn } from "../helpers/sortingFns.ts";
 import { dot_and_three_decimals } from "../helpers/miscHelpers.tsx";
 import { getColumnSum, min_plate_appearance } from "../helpers/miscHelpers.tsx";
@@ -385,7 +389,7 @@ export const createTotalBattingColumns = (
     header: "Player",
     cell: (info) => (
       <a
-        href={`player/${info.row.original.player_id}`}
+        href={`player/${info.row.original.player_id}?toggle=1`}
         className="text-blue-600 hover:underline"
       >
         {info.getValue()}
@@ -542,7 +546,7 @@ export const createTotalBattingAdvColumns = (
     header: "Player",
     cell: (info) => (
       <a
-        href={`/player/${info.row.original.player_id}`}
+        href={`/player/${info.row.original.player_id}?toggle=1`}
         className="text-blue-600 hover:underline"
       >
         {info.getValue()}
@@ -1026,4 +1030,47 @@ export const createTotalIndivBattingColumns = (
     header: "G",
     cell: (info: any) => info.getValue(),
   }),
+];
+
+export const createBatterSituationalColumns = (
+  helper: ColumnHelper<BattingSituationalStat>
+) => [
+  helper.accessor("hits_with_risp.H", {
+    header: "H",
+    cell: (info: any) => info.getValue(),
+    filterFn: dateFilterFn,
+  }),
+  helper.accessor("hits_with_risp.AB", {
+    header: "AB",
+    cell: (info: any) => info.getValue(),
+    filterFn: dateFilterFn,
+  }),
+  // {
+  //   header: "H/A",
+  //   id: "home_away",
+  //   accessorFn: (row: any) => (row.home ? "H" : "A"),
+  //   cell: (info: any) => info.getValue(),
+  // },
+  // helper.accessor("opponent_name", {
+  //   header: "OPPONENT",
+  //   cell: (info: any) => {
+  //     const home = info.row.original.home;
+  //     // console.log("Home:", home);
+  //     // const home = false;
+  //     return home != null && !home
+  //       ? "@ " + info.getValue()
+  //       : "vs " + info.getValue();
+  //   },
+  //   footer: (info: any) => {
+  //     const rows = info.table.getFilteredRowModel().rows;
+  //     const totalGames = rows.length;
+  //     return `${totalGames} GP`;
+  //   },
+  // }),
+  // helper.accessor("pa", {
+  //   header: "PA",
+  //   filterFn: compareOperatorFilterFn,
+  //   cell: (info: any) => info.getValue(),
+  //   footer: (info: any) => getColumnSum(info, info.column.id),
+  // }),
 ];
