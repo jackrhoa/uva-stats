@@ -20,7 +20,7 @@ import type {
 import {
   createBatterGameLogColumns,
   createExtBattingColumns,
-  createBatterSituationalColumns,
+  // createBatterSituationalColumns,
   // createTotalIndivBattingColumns,
 } from "../columns/batterColumns.tsx";
 import {
@@ -63,10 +63,10 @@ export default function PlayerStats() {
     () => playerData.batter_stats || [],
     [playerData.batter_stats]
   );
-  const batterSituationalStats = useMemo(
-    () => playerData.batter_situational_stats || [],
-    [playerData.batter_situational_stats]
-  );
+  // const batterSituationalStats = useMemo(
+  //   () => playerData.batter_situational_stats || [],
+  //   [playerData.batter_situational_stats]
+  // );
   const pitcherStats = useMemo(
     () => playerData.pitcher_stats || [],
     [playerData.pitcher_stats]
@@ -76,26 +76,26 @@ export default function PlayerStats() {
     [playerData.fielding_stats]
   );
 
-  const flattenedSituationalStats = useMemo(() => {
-    return batterSituationalStats.flatMap((stat) => ({
-      player_name: stat.player_name,
-      player_id: stat.player_id,
-      school: stat.school,
-      with_runners: JSON.stringify(stat.with_runners),
-      hits_with_risp: {
-        H: stat.hits_with_risp.H,
-        AB: stat.hits_with_risp.AB,
-      },
-      vs_lhp: JSON.stringify(stat.vs_lhp),
-      vs_rhp: JSON.stringify(stat.vs_rhp),
-      leadoff_pct: JSON.stringify(stat.leadoff_pct),
-      rbi_runner_on_3rd: JSON.stringify(stat.rbi_runner_on_3rd),
-      h_pinchhit: JSON.stringify(stat.h_pinchhit),
-      runners_advanced: JSON.stringify(stat.runners_advanced),
-      with_two_outs: JSON.stringify(stat.with_two_outs),
-      with_two_runners: JSON.stringify(stat.with_two_runners),
-    }));
-  }, [batterSituationalStats]);
+  // const flattenedSituationalStats = useMemo(() => {
+  //   return batterSituationalStats.flatMap((stat) => ({
+  //     player_name: stat.player_name,
+  //     player_id: stat.player_id,
+  //     school: stat.school,
+  //     with_runners: JSON.stringify(stat.with_runners),
+  //     hits_with_risp: {
+  //       H: stat.hits_with_risp.H,
+  //       AB: stat.hits_with_risp.AB,
+  //     },
+  //     vs_lhp: JSON.stringify(stat.vs_lhp),
+  //     vs_rhp: JSON.stringify(stat.vs_rhp),
+  //     leadoff_pct: JSON.stringify(stat.leadoff_pct),
+  //     rbi_runner_on_3rd: JSON.stringify(stat.rbi_runner_on_3rd),
+  //     h_pinchhit: JSON.stringify(stat.h_pinchhit),
+  //     runners_advanced: JSON.stringify(stat.runners_advanced),
+  //     with_two_outs: JSON.stringify(stat.with_two_outs),
+  //     with_two_runners: JSON.stringify(stat.with_two_runners),
+  //   }));
+  // }, [batterSituationalStats]);
 
   // const allBattingStats = useMemo(
   //   () => playerData.total_batting_stats || [],

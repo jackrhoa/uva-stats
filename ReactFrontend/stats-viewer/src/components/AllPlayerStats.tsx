@@ -21,7 +21,6 @@ import { greaterThanOrEqualTo } from "../helpers/filterFns.ts";
 import {
   batterSeasonTotalHeader,
   pitcherSeasonTotalHeader,
-  min_innings_pitched,
   min_plate_appearance,
 } from "../helpers/miscHelpers.tsx";
 import {
@@ -316,7 +315,7 @@ const AllPlayerStats = () => {
             <DisplayTable
               table={totalFieldingByPlayerTable}
               isRowHighlighted={(row: Row<AllFieldingStatByPlayer>) =>
-                Number(row.getValue("total_pa")) / 3.1 >=
+                Number(row.getValue("total_pa")) / min_plate_appearance >=
                 Number(row.getValue("total_team_games"))
               }
               customHeaders={batterSeasonTotalHeader}
