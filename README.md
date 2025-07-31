@@ -42,10 +42,13 @@ Docker is the easiest way to run this web app on your local machine.
     ```bash
     docker-compose down
     ```
+## Affilitation
+
+This project is not affiliated with the University of Virginia or the NCAA in any way.
 
 ## License
 
-This project is licensed under the MIT License - see the `LICENSE` file for details.
+This project is licensed under the MIT License - see the `LICENSE` file for details. 
 
 ## Contact
 
