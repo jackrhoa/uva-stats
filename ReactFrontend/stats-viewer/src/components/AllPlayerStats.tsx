@@ -236,7 +236,6 @@ const AllPlayerStats = () => {
             <FilterGUI
               options={[
                 ["qualified", "Qualified"],
-                ["total_hr", "Home Runs"],
                 ["total_hits", "Hits"],
                 ["total_hr", "HR"],
                 ["total_rbi", "RBI"],
