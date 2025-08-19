@@ -32,6 +32,14 @@ export const createFieldingColumns = (helper: ColumnHelper<FieldingStat>) => [
         {info.getValue()}
       </a>
     ),
+    footer: (info: any) => {
+      const rows = info.table.getFilteredRowModel().rows;
+      const totalGames = rows.length;
+      const wins = rows.filter((row: any) =>
+        row.getValue("game_result").includes("W")
+      ).length;
+      return `${wins}-${totalGames - wins}`;
+    },
     sortDescFirst: true,
   }),
   helper.accessor("player_position", {
@@ -43,18 +51,33 @@ export const createFieldingColumns = (helper: ColumnHelper<FieldingStat>) => [
     id: "tc",
     accessorFn: (row: any) => row.po + row.a + row.e,
     cell: (info: any) => info.getValue(),
+    footer: (info: any) => {
+      const rows = info.table.getFilteredRowModel().rows;
+      const totalTC = rows.reduce(
+        (sum: number, row: Row<FieldingStat>) =>
+          sum +
+          (Number(row.getValue("po")) ?? 0) +
+          (Number(row.getValue("a")) ?? 0) +
+          (Number(row.getValue("e")) ?? 0),
+        0
+      );
+      return totalTC || "--";
+    },
   },
   helper.accessor("po", {
     header: "PO",
     cell: (info: any) => info.getValue(),
+    footer: (info: any) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("a", {
     header: "A",
     cell: (info: any) => info.getValue(),
+    footer: (info: any) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("e", {
     header: "E",
     cell: (info: any) => info.getValue(),
+    footer: (info: any) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("cum_fcpt", {
     header: "FPCT",
@@ -63,14 +86,35 @@ export const createFieldingColumns = (helper: ColumnHelper<FieldingStat>) => [
         ? dot_and_three_decimals(info.getValue())
         : "--";
     },
+    footer: (info: any) => {
+      const rows = info.table.getFilteredRowModel().rows;
+      const totalTC = rows.reduce(
+        (sum: number, row: Row<FieldingStat>) =>
+          sum +
+          (Number(row.getValue("po")) ?? 0) +
+          (Number(row.getValue("a")) ?? 0) +
+          (Number(row.getValue("e")) ?? 0),
+        0
+      );
+      const totalPOA = rows.reduce(
+        (sum: number, row: Row<FieldingStat>) =>
+          sum +
+          (Number(row.getValue("po")) ?? 0) +
+          (Number(row.getValue("a")) ?? 0),
+        0
+      );
+      return totalTC > 0 ? dot_and_three_decimals(totalPOA / totalTC) : "--";
+    },
   }),
   helper.accessor("dp", {
     header: "DP",
     cell: (info: any) => info.getValue(),
+    footer: (info: any) => getColumnSum(info, info.column.id),
   }),
   helper.accessor("tp", {
     header: "TP",
     cell: (info: any) => info.getValue(),
+    footer: (info: any) => getColumnSum(info, info.column.id),
   }),
 ];
 

@@ -126,7 +126,11 @@ export const createBatterGameLogColumns = (
         (sum: number, row: any) => sum + (Number(row.getValue("ab")) ?? 0),
         0
       );
-      return totalAB > 0 ? `${totalHits}-${totalAB}` : "--";
+      return totalAB > 0
+        ? `${totalHits}-${totalAB} (${dot_and_three_decimals(
+            totalHits / totalAB
+          )})`
+        : "--";
     },
     sortingFn: dashStatSortingFn,
     sortDescFirst: true,
@@ -214,7 +218,7 @@ export const createBatterGameLogColumns = (
         (sum: number, row: any) => sum + (Number(row.getValue("cs")) ?? 0),
         0
       );
-      return totalCS > 0 ? `${totalSB}-${totalSB + totalCS}` : "--";
+      return totalCS + totalSB > 0 ? `${totalSB}-${totalSB + totalCS}` : "--";
     },
     sortingFn: dashStatSortingFn,
     sortDescFirst: true,
