@@ -26,7 +26,7 @@ export const createBatterGameLogColumns = (
     cell: (info: any) => info.getValue(),
   },
   helper.accessor("opponent_name", {
-    header: "OPPONENT NAME!",
+    header: "OPPONENT !",
     cell: (info: any) => {
       const home = info.row.original.home;
       // console.log("Home:", home);
