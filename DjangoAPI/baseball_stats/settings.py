@@ -34,7 +34,7 @@ SECRET_KEY = config('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['uvastats.jackrhoa.com']
+ALLOWED_HOSTS = ['uvastats.jackrhoa.com', 'localhost',]
 
 CORS_ALLOW_ALL_ORIGINS = True
 
@@ -103,9 +103,9 @@ WSGI_APPLICATION = 'baseball_stats.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': config('DB_NAME'),
-        'USER': config('DB_USER'),
-        'PASSWORD': config('DB_PASSWORD'),
+        'NAME': config('DB_NAME', default='baseball_stats'),
+        'USER': config('DB_USER', default='postgres'),
+        'PASSWORD': config('DB_PASSWORD', default='pass123'),
         'HOST': config('DB_HOST', default='localhost'),
         'PORT': config('DB_PORT', default='5432'),
     }
