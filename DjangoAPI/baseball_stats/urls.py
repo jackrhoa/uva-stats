@@ -25,6 +25,7 @@ TeamFieldingStatsByPosViewSet, TeamFieldingStatsByPlayerViewSet, \
 BatterSituationalCreateView, BatterSituationalViewSet, \
 SchoolInfoCreateView, SchoolInfoViewSet
 
+
 router = DefaultRouter()
 router.register(r'batter_stats', BatterStatViewSet, basename='batter_stats')
 router.register(r'batter_situational_stats', BatterSituationalViewSet, basename='batter_situational_stats')
