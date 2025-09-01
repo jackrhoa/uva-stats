@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { variables } from "../Variables.tsx";
+import { Error } from "./Error.tsx";
 import {
   useReactTable,
   getCoreRowModel,
@@ -277,13 +278,7 @@ export default function PlayerStats() {
   }
 
   if (error) {
-    console.log("Error:", error);
-
-    return (
-      <div className="text-black mt-15 text-lg">
-        Player with id {id} not found.
-      </div>
-    );
+    return <Error message={error} />;
   }
 
   return (

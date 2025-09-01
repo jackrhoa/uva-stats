@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { variables } from "../Variables.tsx";
 import usePlayerStats from "../hooks/usePlayerStats.ts";
+import { Error } from "./Error.tsx";
 import {
   useReactTable,
   getCoreRowModel,
@@ -214,7 +215,7 @@ const AllPlayerStats = () => {
   }
 
   if (error) {
-    return <div className="text-center p-15 text-2xl">{error}</div>;
+    return <Error message={error} />;
   }
 
   return (
