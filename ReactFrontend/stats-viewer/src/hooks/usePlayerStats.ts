@@ -22,7 +22,7 @@ export const usePlayerStats = ({
         for (const stat of statsToReceive) {
           const response = await fetch(`${API_BASE_URL}${stat}`);
           if (!response.ok) {
-            throw new Error(`HTTP error with ${stat} data: ${response.status}`);
+            throw new Error(`HTTP Error ${response.status}: ${response.statusText}`);
           }
           const json = await response.json();
           newData[stat.split("?")[0] || "unknown"] = json;

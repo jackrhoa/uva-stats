@@ -214,7 +214,7 @@ const AllPlayerStats = () => {
   }
 
   if (error) {
-    return <div>Error: {error}</div>;
+    return <div className="text-center p-15 text-2xl">{error}</div>;
   }
 
   return (
