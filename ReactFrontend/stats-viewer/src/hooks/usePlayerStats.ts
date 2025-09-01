@@ -25,7 +25,7 @@ export const usePlayerStats = ({
             throw new Error(`HTTP Error ${response.status}: ${response.statusText}`);
           }
           const json = await response.json();
-          newData[stat.split("?")[0] || "unknown"] = json;
+          newData[stat.split("?")[0].replace('/', '') || "unknown"] = json;
         }
         setPlayerData(newData);
       } catch (err: any) {

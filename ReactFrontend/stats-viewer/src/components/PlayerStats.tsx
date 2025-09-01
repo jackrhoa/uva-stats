@@ -42,13 +42,13 @@ export default function PlayerStats() {
     useState<ColumnFiltersState>([]);
   const [fieldingColumnFilters, setFieldingColumnFilters] =
     useState<ColumnFiltersState>([]);
-
+  // question marks must be directly proceeded by flashes to prevent automatic redirects
   const statsToReceive = useMemo(
     () => [
-      `batter_stats?player_id=${id}`,
-      `pitcher_stats?player_id=${id}`,
-      `fielding_stats?player_id=${id}`,
-      `batter_situational_stats?player_id=${id}`,
+      `batter_stats/?player_id=${id}`,
+      `pitcher_stats/?player_id=${id}`,
+      `fielding_stats/?player_id=${id}`,
+      `batter_situational_stats/?player_id=${id}`,
       // `total_batting_stats?player_id=${id}`,
       // `total_pitching_stats?player_id=${id}`,
       // `total_fielding_stats_by_pos?player_id=${id}`,

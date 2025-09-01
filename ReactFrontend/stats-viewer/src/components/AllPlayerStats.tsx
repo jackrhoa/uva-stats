@@ -49,12 +49,12 @@ const AllPlayerStats = () => {
       setToggle(savedToggle);
     }
   }, []);
-
+  // stats to receive should contain trailing slash to prevent automatic redirects
   const statsToReceive = useMemo(
     () => [
-      "total_batting_stats",
-      "total_pitching_stats",
-      "total_fielding_stats_by_player",
+      "total_batting_stats/",
+      "total_pitching_stats/",
+      "total_fielding_stats_by_player/",
     ],
     []
   );
