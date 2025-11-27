@@ -765,7 +765,7 @@ export const createTotalPitchingAdvColumns = (
           const soValue = row.getValue("total_so");
           return sum + (typeof soValue === "number" ? soValue : 0);
         }, 0);
-      return totalBF > 0 ? (100 * (totalSO / totalBF)).toFixed(1) : "--";
+      return totalBF > 0 ? (100 * (totalSO / totalBF)).toFixed(1) + "%" : "--";
     },
     sortDescFirst: false,
   },
@@ -798,7 +798,7 @@ export const createTotalPitchingAdvColumns = (
           const hrValue = row.getValue("total_hr_allowed");
           return sum + (typeof hrValue === "number" ? hrValue : 0);
         }, 0);
-      return totalBF > 0 ? (100 * (totalHR / totalBF)).toFixed(2) : "--";
+      return totalBF > 0 ? (100 * (totalHR / totalBF)).toFixed(2) + "%" : "--";
     },
     sortDescFirst: false,
   },
