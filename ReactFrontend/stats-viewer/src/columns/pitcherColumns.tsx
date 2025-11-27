@@ -1,7 +1,8 @@
-import type { PitchingStat, AllPitchingStat } from "../types/statTypes.tsx";
-import type { ColumnHelper } from "@tanstack/react-table";
+import type {PitchingStat, AllPitchingStat, BattingStat} from "../types/statTypes.tsx";
+import type {CellContext, ColumnHelper} from "@tanstack/react-table";
 import { compareOperatorFilterFn, dateFilterFn } from "../helpers/filterFns.ts";
 import { getColumnSum, min_innings_pitched } from "../helpers/miscHelpers.tsx";
+import type {Row} from "@tanstack/table-core";
 
 export const createPitcherColumns = (helper: ColumnHelper<PitchingStat>) => [
   helper.accessor("game_date", {
@@ -517,13 +518,13 @@ export const createTotalPitchingAdvColumns = (
   }),
   {
     id: "qualified",
-    accessorFn: (row: any) => {
+    accessorFn: (row: AllPitchingStat) => {
       const total_outs = Number(row.total_outs);
       return total_outs / 3 / min_innings_pitched > row.total_team_games;
     },
 
     header: "Qualified?",
-    cell: (info: any) => {
+    cell: (info: CellContext<AllPitchingStat, number>) => {
       const qualified = info.getValue();
       return qualified ? "Qualified" : "Not Qualified";
     },
@@ -542,17 +543,17 @@ export const createTotalPitchingAdvColumns = (
     header: "IP",
     filterFn: compareOperatorFilterFn,
     id: "total_ip",
-    accessorFn: (row: any) => parseFloat(row.total_outs),
-    cell: (info: any) => {
+    accessorFn: (row: AllPitchingStat) => row.total_outs,
+    cell: (info: CellContext<AllPitchingStat, number>) => {
       const outsValue = info.getValue();
       return typeof outsValue === "number"
         ? (Math.floor(outsValue / 3) + (outsValue % 3) * 0.1).toFixed(1)
         : "--";
     },
-    footer: (info: any) => {
+    footer: (info: CellContext<AllPitchingStat, number>) => {
       const totalOuts = info.table
         .getSortedRowModel()
-        .rows.reduce((sum: number, row: any) => {
+        .rows.reduce((sum: number, row: Row<AllPitchingStat>) => {
           const outsValue = parseFloat(row.getValue("total_outs"));
           return sum + outsValue;
         }, 0);
@@ -617,7 +618,7 @@ export const createTotalPitchingAdvColumns = (
     footer: (info) => {
       const totalOuts = info.table
         .getSortedRowModel()
-        .rows.reduce((sum: number, row: any) => {
+        .rows.reduce((sum: number, row: Row<AllPitchingStat>) => {
           const ipValue = row.getValue("total_ip");
           return (
             sum +
@@ -628,7 +629,7 @@ export const createTotalPitchingAdvColumns = (
         }, 0);
       const totalEr = info.table
         .getSortedRowModel()
-        .rows.reduce((sum: number, row: any) => {
+        .rows.reduce((sum: number, row: Row<AllPitchingStat>) => {
           const erValue = row.getValue("total_er");
           return sum + (typeof erValue === "number" ? erValue : 0);
         }, 0);
@@ -644,7 +645,7 @@ export const createTotalPitchingAdvColumns = (
     footer: (info) => {
       const totalOuts = info.table
         .getSortedRowModel()
-        .rows.reduce((sum: number, row: any) => {
+        .rows.reduce((sum: number, row: Row<AllPitchingStat>) => {
           const ipValue = row.getValue("total_ip");
           return (
             sum +
@@ -655,13 +656,13 @@ export const createTotalPitchingAdvColumns = (
         }, 0);
       const totalH = info.table
         .getSortedRowModel()
-        .rows.reduce((sum: number, row: any) => {
+        .rows.reduce((sum: number, row: Row<AllPitchingStat>) => {
           const hValue = row.getValue("total_h");
           return sum + (typeof hValue === "number" ? hValue : 0);
         }, 0);
       const totalBB = info.table
         .getSortedRowModel()
-        .rows.reduce((sum: number, row: any) => {
+        .rows.reduce((sum: number, row: Row<AllPitchingStat>) => {
           const bbValue = row.getValue("total_bb");
           return sum + (typeof bbValue === "number" ? bbValue : 0);
         }, 0);
@@ -675,16 +676,16 @@ export const createTotalPitchingAdvColumns = (
     header: "H/9",
     filterFn: compareOperatorFilterFn,
     id: "h_9ip",
-    accessorFn: (row: any) => {
+    accessorFn: (row: AllPitchingStat) => {
       const outs = row.total_outs;
       return outs > 0 ? (27 * row.total_h) / outs : null;
     },
-    cell: (info: any) =>
+    cell: (info: CellContext<AllPitchingStat, number>) =>
       typeof info.getValue() === "number" ? info.getValue().toFixed(1) : "--",
-    footer: (info: any) => {
+    footer: (info: CellContext<AllPitchingStat, number>) => {
       const totalOuts = info.table
         .getSortedRowModel()
-        .rows.reduce((sum: number, row: any) => {
+        .rows.reduce((sum: number, row: Row<AllPitchingStat>) => {
           const ipValue = row.getValue("total_ip");
           return (
             sum +
@@ -695,7 +696,7 @@ export const createTotalPitchingAdvColumns = (
         }, 0);
       const totalH = info.table
         .getSortedRowModel()
-        .rows.reduce((sum: number, row: any) => {
+        .rows.reduce((sum: number, row: Row<AllPitchingStat>) => {
           const hValue = row.getValue("total_h");
           return sum + (typeof hValue === "number" ? hValue : 0);
         }, 0);
@@ -704,98 +705,97 @@ export const createTotalPitchingAdvColumns = (
     sortDescFirst: false,
   },
   {
-    header: "BB/9",
+    header: "BB%",
     filterFn: compareOperatorFilterFn,
-    id: "bb_9ip",
-    accessorFn: (row: any) => {
-      const outs = row.total_outs;
-      return outs > 0 ? (27 * row.total_bb) / outs : null;
+    id: "bb_pct",
+    accessorFn: (row: AllPitchingStat) => {
+      const bb = row.total_bb;
+      const bf = row.total_bf;
+      // does not include IBB
+      return bf > 0 ? 100 * (bb / bf) : null;
     },
-    cell: (info: any) =>
+    cell: (info: CellContext<AllPitchingStat, number>) =>
       typeof info.getValue() === "number" ? info.getValue().toFixed(1) : "--",
-    footer: (info: any) => {
-      const totalOuts = info.table
+    footer: (info: CellContext<AllPitchingStat, number>) => {
+      const totalBF = info.table
         .getSortedRowModel()
-        .rows.reduce((sum: number, row: any) => {
-          const ipValue = row.getValue("total_ip");
+        .rows.reduce((sum: number, row: Row<AllPitchingStat>) => {
+          const bf = row.getValue("total_bf"); // WHY IS THE TYPES DIFFERENT!??@
           return (
-            sum +
-            (typeof ipValue === "number"
-              ? 10 * ipValue - 7 * Math.floor(ipValue)
-              : -1000)
+            sum + //// in complete
+            (typeof bf === "number"
+              ? bf
+              : -10000)
           );
         }, 0);
       const totalBB = info.table
         .getSortedRowModel()
-        .rows.reduce((sum: number, row: any) => {
+        .rows.reduce((sum: number, row: Row<AllPitchingStat>) => {
           const bbValue = row.getValue("total_bb");
           return sum + (typeof bbValue === "number" ? bbValue : 0);
         }, 0);
-      return totalOuts > 0 ? ((totalBB * 27) / totalOuts).toFixed(1) : "--";
+      return totalBF > 0 ? (100 * (totalBB / totalBF)).toFixed(1) + "%" : "--";
     },
     sortDescFirst: false,
   },
   {
-    header: "K/9",
+    header: "K%",
     filterFn: compareOperatorFilterFn,
-    id: "k_9ip",
-    accessorFn: (row: any) => {
-      const outs = row.total_outs;
-      return outs > 0 ? (27 * parseInt(row.total_so)) / outs : null;
+    id: "k_pct",
+    accessorFn: (row: AllPitchingStat): number | null => {
+      const bf: number = row.total_bf;
+      const so: number = row.total_so;
+      return bf > 0 ? 100 * (so / bf) : null;
     },
-    cell: (info: any) =>
+    cell: (info: CellContext<AllPitchingStat, number>) =>
       typeof info.getValue() === "number" ? info.getValue().toFixed(1) : "--",
-    footer: (info: any) => {
-      const totalOuts = info.table
+    footer: (info: CellContext<AllPitchingStat, number>) => {
+      const totalBF = info.table
         .getSortedRowModel()
-        .rows.reduce((sum: number, row: any) => {
-          const ipValue = row.getValue("total_ip");
+        .rows.reduce((sum: number, row: Row<AllPitchingStat>) => {
+          const bf = row.getValue("total_bf");
           return (
             sum +
-            (typeof ipValue === "number"
-              ? 10 * ipValue - 7 * Math.floor(ipValue)
-              : -1000)
+            (typeof bf === "number"
+              ? bf
+              : -10000)
           );
         }, 0);
       const totalSO = info.table
         .getSortedRowModel()
-        .rows.reduce((sum: number, row: any) => {
+        .rows.reduce((sum: number, row: Row<AllPitchingStat>) => {
           const soValue = row.getValue("total_so");
           return sum + (typeof soValue === "number" ? soValue : 0);
         }, 0);
-      return totalOuts > 0 ? ((totalSO * 27) / totalOuts).toFixed(1) : "--";
+      return totalBF > 0 ? ((totalSO / totalBF) * 100).toFixed(1) + "%" : "--";
     },
     sortDescFirst: false,
   },
   {
-    header: "HR/9",
+    header: "HR%",
     filterFn: compareOperatorFilterFn,
-    id: "hr_9ip",
-    accessorFn: (row: any) => {
-      const outs = row.total_outs;
-      return outs > 0 ? (27 * parseInt(row.total_hr_allowed)) / outs : null;
+    id: "hr_pct",
+    accessorFn: (row: AllPitchingStat): number | null => {
+      const bf: number = row.total_bf;
+      const hr_allowed: number = row.total_hr_allowed;
+      return bf > 0 ? 100 * (hr_allowed / bf) : null;
     },
-    cell: (info: any) =>
-      typeof info.getValue() === "number" ? info.getValue().toFixed(2) : "--",
-    footer: (info: any) => {
-      const totalOuts = info.table
+    cell: (info: CellContext<AllPitchingStat, number>) =>
+      typeof info.getValue() === "number" ? info.getValue().toFixed(1) : "--",
+    footer: (info: CellContext<AllPitchingStat, number>) => {
+      const totalBF = info.table
         .getSortedRowModel()
-        .rows.reduce((sum: number, row: any) => {
-          const ipValue = row.getValue("total_ip");
-          return (
-            sum +
-            (typeof ipValue === "number"
-              ? 10 * ipValue - 7 * Math.floor(ipValue)
-              : -1000)
-          );
+        .rows.reduce((sum: number, row: Row<AllPitchingStat>) => {
+          const bf: number = row.getValue("total_bf");
+          return (sum + bf);
         }, 0);
       const totalHR = info.table
         .getSortedRowModel()
-        .rows.reduce((sum: number, row: any) => {
+        .rows.reduce((sum: number, row: Row<AllPitchingStat>) => {
           const hrValue = row.getValue("total_hr_allowed");
           return sum + (typeof hrValue === "number" ? hrValue : 0);
         }, 0);
-      return totalOuts > 0 ? ((totalHR * 27) / totalOuts).toFixed(2) : "--";
+      return totalBF > 0 ? (100 * (totalHR / totalBF)).toFixed(1) + "%": "--";
     },
     sortDescFirst: false,
   },
@@ -803,21 +803,21 @@ export const createTotalPitchingAdvColumns = (
     header: "K/BB",
     filterFn: compareOperatorFilterFn,
     id: "k_bb",
-    accessorFn: (row: any) => {
+    accessorFn: (row: AllPitchingStat) => {
       return row.total_bb > 0 ? row.total_so / row.total_bb : null;
     },
-    cell: (info: any) =>
+    cell: (info: CellContext<AllPitchingStat, number>) =>
       typeof info.getValue() === "number" ? info.getValue().toFixed(2) : "--",
-    footer: (info: any) => {
+    footer: (info: CellContext<AllPitchingStat, number>) => {
       const totalBB = info.table
         .getSortedRowModel()
-        .rows.reduce((sum: number, row: any) => {
+        .rows.reduce((sum: number, row: Row<AllPitchingStat>) => {
           const bbValue = row.getValue("total_bb");
           return sum + (typeof bbValue === "number" ? bbValue : 0);
         }, 0);
       const totalSO = info.table
         .getSortedRowModel()
-        .rows.reduce((sum: number, row: any) => {
+        .rows.reduce((sum: number, row: Row<AllPitchingStat>) => {
           const soValue = row.getValue("total_so");
           return sum + (typeof soValue === "number" ? soValue : 0);
         }, 0);
