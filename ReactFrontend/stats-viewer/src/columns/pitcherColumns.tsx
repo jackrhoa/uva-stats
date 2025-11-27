@@ -704,9 +704,9 @@ export const createTotalPitchingAdvColumns = (
     sortDescFirst: false,
   },
   {
-    header: "BB/9",
+    header: "BB%",
     filterFn: compareOperatorFilterFn,
-    id: "bb_9ip",
+    id: "bb_pct",
     accessorFn: (row: any) => {
       const outs = row.total_outs;
       return outs > 0 ? (27 * row.total_bb) / outs : null;
