@@ -704,24 +704,25 @@ export const createTotalPitchingAdvColumns = (
     sortDescFirst: false,
   },
   {
-    header: "BB/9",
+    header: "BB%",
     filterFn: compareOperatorFilterFn,
-    id: "bb_9ip",
+    id: "bb_pct",
     accessorFn: (row: any) => {
-      const outs = row.total_outs;
-      return outs > 0 ? (27 * row.total_bb) / outs : null;
+      const bf = row.total_bf;
+      const bb = row.total_bb;
+      return bf > 0 ? 100 * (bb / bf) : null;
     },
     cell: (info: any) =>
       typeof info.getValue() === "number" ? info.getValue().toFixed(1) : "--",
     footer: (info: any) => {
-      const totalOuts = info.table
+      const totalBF = info.table
         .getSortedRowModel()
         .rows.reduce((sum: number, row: any) => {
-          const ipValue = row.getValue("total_ip");
+          const bf = row.getValue("total_bf");
           return (
             sum +
-            (typeof ipValue === "number"
-              ? 10 * ipValue - 7 * Math.floor(ipValue)
+            (typeof bf === "number"
+              ? bf
               : -1000)
           );
         }, 0);
@@ -731,7 +732,7 @@ export const createTotalPitchingAdvColumns = (
           const bbValue = row.getValue("total_bb");
           return sum + (typeof bbValue === "number" ? bbValue : 0);
         }, 0);
-      return totalOuts > 0 ? ((totalBB * 27) / totalOuts).toFixed(1) : "--";
+      return totalBF > 0 ? (100 * (totalBB / totalBF)).toFixed(1) + "%" : "--";
     },
     sortDescFirst: false,
   },
