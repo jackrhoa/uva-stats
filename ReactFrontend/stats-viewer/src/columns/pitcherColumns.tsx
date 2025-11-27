@@ -737,24 +737,25 @@ export const createTotalPitchingAdvColumns = (
     sortDescFirst: false,
   },
   {
-    header: "K/9",
+    header: "K%",
     filterFn: compareOperatorFilterFn,
-    id: "k_9ip",
+    id: "k_pct",
     accessorFn: (row: any) => {
-      const outs = row.total_outs;
-      return outs > 0 ? (27 * parseInt(row.total_so)) / outs : null;
+      const bf = row.total_bf;
+      const so = row.total_so;
+      return bf > 0 ? 100 * (so / bf) : null;
     },
     cell: (info: any) =>
       typeof info.getValue() === "number" ? info.getValue().toFixed(1) : "--",
     footer: (info: any) => {
-      const totalOuts = info.table
+      const totalBF = info.table
         .getSortedRowModel()
         .rows.reduce((sum: number, row: any) => {
-          const ipValue = row.getValue("total_ip");
+          const bf = row.getValue("total_bf");
           return (
             sum +
-            (typeof ipValue === "number"
-              ? 10 * ipValue - 7 * Math.floor(ipValue)
+            (typeof bf === "number"
+              ? bf
               : -1000)
           );
         }, 0);
@@ -764,29 +765,30 @@ export const createTotalPitchingAdvColumns = (
           const soValue = row.getValue("total_so");
           return sum + (typeof soValue === "number" ? soValue : 0);
         }, 0);
-      return totalOuts > 0 ? ((totalSO * 27) / totalOuts).toFixed(1) : "--";
+      return totalBF > 0 ? (100 * (totalSO / totalBF)).toFixed(1) : "--";
     },
     sortDescFirst: false,
   },
   {
-    header: "HR/9",
+    header: "HR%",
     filterFn: compareOperatorFilterFn,
-    id: "hr_9ip",
+    id: "hr_pct",
     accessorFn: (row: any) => {
-      const outs = row.total_outs;
-      return outs > 0 ? (27 * parseInt(row.total_hr_allowed)) / outs : null;
+      const bf = row.total_bf;
+      const hra = row.total_hr_allowed;
+      return bf > 0 ? 100 * (hra / bf) : null;
     },
     cell: (info: any) =>
-      typeof info.getValue() === "number" ? info.getValue().toFixed(2) : "--",
+      typeof info.getValue() === "number" ? info.getValue().toFixed(1) : "--",
     footer: (info: any) => {
-      const totalOuts = info.table
+      const totalBF = info.table
         .getSortedRowModel()
         .rows.reduce((sum: number, row: any) => {
-          const ipValue = row.getValue("total_ip");
+          const bf = row.getValue("total_bf");
           return (
             sum +
-            (typeof ipValue === "number"
-              ? 10 * ipValue - 7 * Math.floor(ipValue)
+            (typeof bf === "number"
+              ? bf
               : -1000)
           );
         }, 0);
@@ -796,7 +798,7 @@ export const createTotalPitchingAdvColumns = (
           const hrValue = row.getValue("total_hr_allowed");
           return sum + (typeof hrValue === "number" ? hrValue : 0);
         }, 0);
-      return totalOuts > 0 ? ((totalHR * 27) / totalOuts).toFixed(2) : "--";
+      return totalBF > 0 ? (100 * (totalHR / totalBF)).toFixed(2) : "--";
     },
     sortDescFirst: false,
   },
