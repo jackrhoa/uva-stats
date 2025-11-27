@@ -1,6 +1,6 @@
 # UVA ⚾  Stats
 
-> Virginia baseball game-by-game and season statistics that are filterable and sortable, scraped directly from box scores.
+> Virginia baseball game-by-game and season statistics that are filterable and sortable.
 
 [![Website](https://img.shields.io/badge/Website-Live-brightgreen.svg)](https://uvastats.jackrhoa.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
