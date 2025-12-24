@@ -84,7 +84,7 @@ export default function PlayerStats() {
   const results = useMemo(
       () => {
 
-        const results: Record<string, number | string>[] = [{}];
+        const results: Record<string, number>[] = [{}];
 
         // each different "situation" should be its own ARRAY
 
@@ -98,8 +98,8 @@ export default function PlayerStats() {
 
           if (typeof searchByField[field] === "object") {
 
-            const temp: Record<string, number | string> = {};
-            temp["Situation"] = field;
+            const temp: Record<string, number> = {};
+            temp["Situation"] = iter;
             let first_key = 0;
             for (const nested_field in searchByField[field]) {
               if (first_key == 0) {

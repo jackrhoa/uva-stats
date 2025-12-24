@@ -1037,7 +1037,7 @@ export const createTotalIndivBattingColumns = (
 ];
 
 export const createBatterSituationalColumns = (
-  helper: ColumnHelper<SituationalStat>
+  helper: ColumnHelper<any>
 ) => [
     helper.accessor("Situation", {
       header: "Situation",
@@ -1070,7 +1070,7 @@ export const createBatterSituationalColumns = (
     // filterFn: dateFilterFn,
   }),
     helper.accessor("RBI", {
-    header: "RBI",
+    header: "RBIII",
     cell: (info: any) => info.getValue() || 0,
     // filterFn: dateFilterFn,
   }),
