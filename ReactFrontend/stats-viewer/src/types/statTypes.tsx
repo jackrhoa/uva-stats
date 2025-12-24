@@ -226,3 +226,17 @@ export type AllFieldingStatByPlayer = {
   total_pa: number;
   all_positions: JSON;
 };
+
+export type SituationalStat = {
+  H: number;
+  K: number;
+  R: number;
+  AB: number;
+  FO: number;
+  GO: number;
+  RBI: number;
+  BB: number;
+  Situation: string;
+  // noinspection SpellCheckingInspection
+  succ_opp: string;
+}

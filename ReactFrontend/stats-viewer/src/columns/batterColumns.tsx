@@ -2,7 +2,7 @@ import { type ColumnHelper } from "@tanstack/react-table";
 import type {
   BattingStat,
   AllBattingStat,
-  BattingSituationalStat,
+  BattingSituationalStat, SituationalStat,
 } from "../types/statTypes.tsx";
 import { dashStatSortingFn } from "../helpers/sortingFns.ts";
 import { dot_and_three_decimals } from "../helpers/miscHelpers.tsx";
@@ -1037,18 +1037,47 @@ export const createTotalIndivBattingColumns = (
 ];
 
 export const createBatterSituationalColumns = (
-  helper: ColumnHelper<BattingSituationalStat>
+  helper: ColumnHelper<SituationalStat>
 ) => [
-  helper.accessor("hits_with_risp.H", {
+    helper.accessor("Situation", {
+      header: "Situation",
+      cell: (info: any) => info.getValue(),
+      // filterFn:
+    }),
+    helper.accessor("games", {
+    header: "G",
+    cell: (info: any) => info.getValue() || 0,
+    // filterFn: dateFilterFn,
+  }),
+  helper.accessor("H", {
     header: "H",
-    cell: (info: any) => info.getValue(),
-    filterFn: dateFilterFn,
+    cell: (info: any) => info.getValue() || 0,
+    // filterFn: dateFilterFn,
   }),
-  helper.accessor("hits_with_risp.AB", {
+  helper.accessor("AB", {
     header: "AB",
-    cell: (info: any) => info.getValue(),
-    filterFn: dateFilterFn,
+    cell: (info: any) => info.getValue() || 0,
+    // filterFn: dateFilterFn,
   }),
+    helper.accessor("BB", {
+    header: "BB",
+    cell: (info: any) => info.getValue() || 0,
+    // filterFn: dateFilterFn,
+  }),
+    helper.accessor("HR", {
+    header: "HR",
+    cell: (info: any) => info.getValue() || 0,
+    // filterFn: dateFilterFn,
+  }),
+    helper.accessor("RBI", {
+    header: "RBI",
+    cell: (info: any) => info.getValue() || 0,
+    // filterFn: dateFilterFn,
+  }),
+
+
+
+
   // {
   //   header: "H/A",
   //   id: "home_away",

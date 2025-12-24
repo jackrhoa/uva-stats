@@ -17,9 +17,11 @@ import type {
   BattingStat,
   PitchingStat,
   FieldingStat,
+  BattingSituationalStat,
+  SituationalStat,
 } from "../types/statTypes.tsx";
 import {
-  createBatterGameLogColumns,
+  createBatterGameLogColumns, createBatterSituationalColumns,
   createExtBattingColumns,
   // createBatterSituationalColumns,
   // createTotalIndivBattingColumns,
@@ -64,10 +66,10 @@ export default function PlayerStats() {
     () => playerData.batter_stats || [],
     [playerData.batter_stats]
   );
-  // const batterSituationalStats = useMemo(
-  //   () => playerData.batter_situational_stats || [],
-  //   [playerData.batter_situational_stats]
-  // );
+  const batterSituationalStats: BattingSituationalStat[] = useMemo(
+      () => playerData.batter_situational_stats || [],
+      [playerData.batter_situational_stats]
+  );
   const pitcherStats = useMemo(
     () => playerData.pitcher_stats || [],
     [playerData.pitcher_stats]
@@ -76,6 +78,86 @@ export default function PlayerStats() {
     () => playerData.fielding_stats || [],
     [playerData.fielding_stats]
   );
+
+
+
+  const results = useMemo(
+      () => {
+
+        const results: Record<string, number | string>[] = [{}];
+
+        // each different "situation" should be its own ARRAY
+
+        for (const gamePlayed in batterSituationalStats) {
+          console.log("GAME PLAYED: " + gamePlayed);
+          const searchByField: Record<string, any> = batterSituationalStats[gamePlayed];
+          let iter = 0;
+        for (const field in batterSituationalStats[gamePlayed]) {
+
+
+
+          if (typeof searchByField[field] === "object") {
+
+            const temp: Record<string, number | string> = {};
+            temp["Situation"] = field;
+            let first_key = 0;
+            for (const nested_field in searchByField[field]) {
+              if (first_key == 0) {
+                  if (temp["games"] === undefined) {
+                    temp["games"] = 1;
+                  } else
+                    temp["games"] += 1;
+
+                first_key++;
+              }
+
+              if (typeof searchByField[field][nested_field] === "string") {
+                // DO NOTHING because we cannot add strings
+              } else {
+                temp[nested_field] = searchByField[field][nested_field];
+              }
+            }
+            // put temp directly in results array if values don't exist already
+            if (results[iter] === undefined) {
+              results[iter] = temp;
+            } else {
+              // add new values to existing fields if values exist
+              for (const key in temp) {
+                if (results[iter][key] === undefined) {
+                  results[iter][key] = temp[key];
+                } else if (typeof results[iter][key] === "string") {
+                  results[iter][key] = temp[key];
+                } else if (typeof results[iter][key] === "number" && typeof temp[key] === "number")
+                {
+                  results[iter][key] += temp[key];
+                }
+              }
+            }
+            iter++;
+
+          }
+        }
+      }
+        return results
+      }
+  , [batterSituationalStats]);
+
+
+
+  // const flatBatterSituationalStats = useMemo(
+  //     () => {
+  //       const flat: any = batterSituationalStats.flat();
+  //       return flat;
+  //     }
+  // , [batterSituationalStats]);
+
+
+  // console.log("H vs RHP: " + HvsRHP);
+  // console.log("AB vs RHP: " + ABvsRHP);
+  // console.log(results[0]["H"] + "-" + results[0]["AB"] + " vs RHP");
+  //
+  //
+  // console.log("TESTT:: " + batterSituationalStats);
 
   // const flattenedSituationalStats = useMemo(() => {
   //   return batterSituationalStats.flatMap((stat) => ({
@@ -232,16 +314,18 @@ export default function PlayerStats() {
     },
     // onColumnFiltersChange: setColumnFilters,
   });
-  // const batterSituationalTable = useReactTable({
-  //   data: batterSituationalStats,
-  //   columns: createBatterSituationalColumns(createColumnHelper()),
-  //   getCoreRowModel: getCoreRowModel(),
-  //   getSortedRowModel: getSortedRowModel(),
-  //   getFilteredRowModel: getFilteredRowModel(),
-  //   initialState: {
-  //     columnVisibility: {},
-  //   },
-  // });
+  const batterSituationalTable: any = useReactTable({
+    data: results,
+    // what i've written the code for is to get individual stats in a list. However, the
+    // way this table thing works is that it makes each row
+    columns: createBatterSituationalColumns(createColumnHelper()),
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    initialState: {
+      columnVisibility: {},
+    },
+  });
 
   // const playerSeasonRow = getSeasonStats(batterStats);
   // const seasonStatsData = [playerSeasonRow];
@@ -390,7 +474,7 @@ export default function PlayerStats() {
             Extended Pitching Game Log
           </li>
         </div>
-        <div className={fieldingStats.length > 0 ? "block" : "hidden"}>
+        <div className={batterSituationalStats.length > 0 ? "block" : "hidden"}>
           <li
             className={`border-1 px-2 py-1 rounded-full cursor-pointer ${
               toggle === 5
@@ -400,6 +484,21 @@ export default function PlayerStats() {
             onClick={() => {
               setToggle(5);
               saveState(batterStats[0].player_id + "Toggle", 5);
+            }}
+          >
+            Situational Stats
+          </li>
+        </div>
+        <div className={fieldingStats.length > 0 ? "block" : "hidden"}>
+          <li
+            className={`border-1 px-2 py-1 rounded-full cursor-pointer ${
+              toggle === 6
+                ? "bg-blue-600 text-white text-semibold border-transparent"
+                : "border-gray text-gray-500 hover:bg-blue-300"
+            }`}
+            onClick={() => {
+              setToggle(6);
+              saveState(batterStats[0].player_id + "Toggle", 6);
             }}
           >
             Fielding
@@ -439,7 +538,7 @@ export default function PlayerStats() {
               setColumnFilters={setPitchingColumnFilters}
             />
           )}
-          {toggle === 5 && (
+          {toggle === 6 && (
             <FilterGUI
               options={[
                 // ["ip", "Innings Pitched"],
@@ -465,11 +564,6 @@ export default function PlayerStats() {
           <div className={toggle === 2 ? "block" : "hidden"}>
             {batterStats.length > 0 && <DisplayTable table={batterExtTable} />}
           </div>
-          {/* <div className={toggle === 6 ? "block" : "hidden"}>
-            {batterStats.length > 0 && (
-              <DisplayTable table={batterSituationalTable} />
-            )}
-          </div> */}
           <div className={toggle === 3 ? "block" : "hidden"}>
             {pitcherStats.length > 0 && <DisplayTable table={pitcherTable} />}
           </div>
@@ -479,6 +573,11 @@ export default function PlayerStats() {
             )}
           </div>
           <div className={toggle === 5 ? "block" : "hidden"}>
+            {batterSituationalStats.length > 0 && (
+                <DisplayTable table={batterSituationalTable}/>
+            )}
+          </div>
+          <div className={toggle === 6 ? "block" : "hidden"}>
             {fieldingStats.length > 0 && <DisplayTable table={fieldingTable} />}
           </div>
         </div>
