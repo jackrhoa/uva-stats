@@ -52,4 +52,4 @@ This project is licensed under the MIT License - see the `LICENSE` file for deta
 
 ## Contact
 
-Feel free to email me at [zcy4pf@virginia.edu](mailto:zcy4pf@virginia.edu) with any feedback, suggestions, or thoughts!
+Feel free to email me at zcy4pf {ALT + 64} virginia {ALT + 46} edu with any feedback, suggestions, or thoughts!
