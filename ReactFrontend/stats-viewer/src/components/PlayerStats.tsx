@@ -84,7 +84,7 @@ export default function PlayerStats() {
   const results = useMemo(
       () => {
 
-        const results: Record<string, number>[] = [{}];
+        const results: Record<string, number | string>[] = [{}];
 
         // each different "situation" should be its own ARRAY
 
@@ -98,15 +98,19 @@ export default function PlayerStats() {
 
           if (typeof searchByField[field] === "object") {
 
-            const temp: Record<string, number> = {};
-            temp["Situation"] = iter;
+            const temp: Record<string, number | string> = {};
+            temp["Situation"] = field;
             let first_key = 0;
             for (const nested_field in searchByField[field]) {
               if (first_key == 0) {
                   if (temp["games"] === undefined) {
                     temp["games"] = 1;
                   } else
-                    temp["games"] += 1;
+
+                      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    { // @ts-expect-error
+                      temp["games"] += 1;
+                    }
 
                 first_key++;
               }
@@ -129,6 +133,8 @@ export default function PlayerStats() {
                   results[iter][key] = temp[key];
                 } else if (typeof results[iter][key] === "number" && typeof temp[key] === "number")
                 {
+                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                  // @ts-expect-error
                   results[iter][key] += temp[key];
                 }
               }
