@@ -79,74 +79,74 @@ export default function PlayerStats() {
   );
 
 
-
-  const results = useMemo(
-      () => {
-
-        const results: Record<string, number | string>[] = [{}];
-
-        // each different "situation" should be its own ARRAY
-
-        for (const gamePlayed in batterSituationalStats) {
-          console.log("GAME PLAYED: " + gamePlayed);
-          const searchByField: Record<string, any> = batterSituationalStats[gamePlayed];
-          let iter = 0;
-        for (const field in batterSituationalStats[gamePlayed]) {
-
-
-
-          if (typeof searchByField[field] === "object") {
-
-            const temp: Record<string, number | string> = {};
-            temp["Situation"] = field;
-            let first_key = 0;
-            for (const nested_field in searchByField[field]) {
-              if (first_key == 0) {
-                  if (temp["games"] === undefined) {
-                    temp["games"] = 1;
-                  } else
-
-                      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                    { // @ts-expect-error
-                      temp["games"] += 1;
-                    }
-
-                first_key++;
-              }
-
-              if (typeof searchByField[field][nested_field] === "string") {
-                // DO NOTHING because we cannot add strings
-              } else {
-                temp[nested_field] = searchByField[field][nested_field];
-              }
-            }
-            // put temp directly in results array if values don't exist already
-            if (results[iter] === undefined) {
-              results[iter] = temp;
-            } else {
-              // add new values to existing fields if values exist
-              for (const key in temp) {
-                if (results[iter][key] === undefined) {
-                  results[iter][key] = temp[key];
-                } else if (typeof results[iter][key] === "string") {
-                  results[iter][key] = temp[key];
-                } else if (typeof results[iter][key] === "number" && typeof temp[key] === "number")
-                {
-                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                  // @ts-expect-error
-                  results[iter][key] += temp[key];
-                }
-              }
-            }
-            iter++;
-
-          }
-        }
-      }
-        return results
-      }
-  , [batterSituationalStats]);
-
+  //
+  // const results = useMemo(
+  //     () => {
+  //
+  //       const results: Record<string, number | string>[] = [{}];
+  //
+  //       // each different "situation" should be its own ARRAY
+  //
+  //       for (const gamePlayed in batterSituationalStats) {
+  //         console.log("GAME PLAYED: " + gamePlayed);
+  //         const searchByField: Record<string, any> = batterSituationalStats[gamePlayed];
+  //         let iter = 0;
+  //       for (const field in batterSituationalStats[gamePlayed]) {
+  //
+  //
+  //
+  //         if (typeof searchByField[field] === "object") {
+  //
+  //           const temp: Record<string, number | string> = {};
+  //           temp["Situation"] = field;
+  //           let first_key = 0;
+  //           for (const nested_field in searchByField[field]) {
+  //             if (first_key == 0) {
+  //                 if (temp["games"] === undefined) {
+  //                   temp["games"] = 1;
+  //                 } else
+  //
+  //                     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  //                   { // @ts-expect-error
+  //                     temp["games"] += 1;
+  //                   }
+  //
+  //               first_key++;
+  //             }
+  //
+  //             if (typeof searchByField[field][nested_field] === "string") {
+  //               // DO NOTHING because we cannot add strings
+  //             } else {
+  //               temp[nested_field] = searchByField[field][nested_field];
+  //             }
+  //           }
+  //           // put temp directly in results array if values don't exist already
+  //           if (results[iter] === undefined) {
+  //             results[iter] = temp;
+  //           } else {
+  //             // add new values to existing fields if values exist
+  //             for (const key in temp) {
+  //               if (results[iter][key] === undefined) {
+  //                 results[iter][key] = temp[key];
+  //               } else if (typeof results[iter][key] === "string") {
+  //                 results[iter][key] = temp[key];
+  //               } else if (typeof results[iter][key] === "number" && typeof temp[key] === "number")
+  //               {
+  //                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  //                 // @ts-expect-error
+  //                 results[iter][key] += temp[key];
+  //               }
+  //             }
+  //           }
+  //           iter++;
+  //
+  //         }
+  //       }
+  //     }
+  //       return results
+  //     }
+  // , [batterSituationalStats]);
+  //
 
 
   // const flatBatterSituationalStats = useMemo(
