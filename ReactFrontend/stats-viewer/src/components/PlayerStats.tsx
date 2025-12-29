@@ -232,8 +232,10 @@ export default function PlayerStats() {
     },
     // onColumnFiltersChange: setColumnFilters,
   });
-  // const batterSituationalTable = useReactTable({
-  //   data: batterSituationalStats,
+  // const batterSituationalTable: any = useReactTable({
+  //   data: results,
+  //   // what i've written the code for is to get individual stats in a list. However, the
+  //   // way this table thing works is that it makes each row
   //   columns: createBatterSituationalColumns(createColumnHelper()),
   //   getCoreRowModel: getCoreRowModel(),
   //   getSortedRowModel: getSortedRowModel(),
