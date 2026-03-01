@@ -1,20 +1,40 @@
-FROM node:20 as build
+FROM node:20 AS dev
 
 WORKDIR /app
 
+# Install dependencies
 COPY package*.json ./
 RUN npm install
 
+# Copy source code
 COPY . .
 
-RUN npm run build
+# React dev server runs on port 3000
+EXPOSE 5173
 
-FROM nginx:alpine
-
-COPY --from=build /app/dist /usr/share/nginx/html
-COPY default.conf /etc/nginx/conf.d/default.conf
+# Start React development server
+CMD ["npm", "run", "dev"]
 
 
-EXPOSE 80
-
-CMD ["nginx", "-g", "daemon off;"]
+####### BEGIN BUILD VERSIOn
+#
+#FROM node:20 as build
+#
+#WORKDIR /app
+#
+#COPY package*.json ./
+#RUN npm install
+#
+#COPY . .
+#
+#RUN npm run build
+#
+#FROM nginx:alpine
+#
+#COPY --from=build /app/dist /usr/share/nginx/html
+#COPY default.conf /etc/nginx/conf.d/default.conf
+#
+#
+#EXPOSE 80
+#
+#CMD ["nginx", "-g", "daemon off;"]
