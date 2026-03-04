@@ -23,6 +23,7 @@ import type {
 import {
   createBatterGameLogColumns, createBatterSituationalColumns,
   createExtBattingColumns,
+  HIDDEN_SITUATIONS
   // createBatterSituationalColumns,
   // createTotalIndivBattingColumns,
 } from "../columns/batterColumns.tsx";
@@ -144,7 +145,9 @@ export default function PlayerStats() {
           }
         }
       }
-        return results
+        return results.filter(
+            (row) => !HIDDEN_SITUATIONS.has(row.Situation as string)
+        );
       }
   , [batterSituationalStats]);
 

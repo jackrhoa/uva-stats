@@ -1053,12 +1053,18 @@ const SITUATIONAL_KEY_MAP: Record<string, string> = {
   bases_loaded: "Bases Loaded",
 };
 
+export const HIDDEN_SITUATIONS = new Set([
+  "runners_advanced",
+  "with_two_runners",
+  "with_two_in_scoring",
+]);
+
 
 export const createBatterSituationalColumns = (
   helper: ColumnHelper<any>
 ) => [
-    helper.accessor("Situation", {
-  header: "Situation",
+  helper.accessor("Situation", {
+  header: "SPLIT",
   cell: (info) => {
     const rawValue = info.getValue();
     return SITUATIONAL_KEY_MAP[rawValue] ?? rawValue;
