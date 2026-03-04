@@ -48,6 +48,33 @@ def convert_ip_to_outs(ip) -> int:
     return outs
 
 
+# Column names for situational stats DataFrame
+SITUATIONAL_COLUMNS = [
+    "Player", "Position", "with runners",
+    "hits scorepos", "vs LHP", "vs RHP",
+    "leadoff pct", "RBI3rd", "H-pinchit",
+    "adv-ops", "with 2 outs", "with runrs2",
+    "with scorepos2", "bases empty", "bases loaded",
+]
+
+# Maps column index -> JSON key name for situational stats
+SITUATIONAL_KEY_MAP = {
+    2: "with_runners",
+    3: "hits_with_risp",
+    4: "vs_lhp",
+    5: "vs_rhp",
+    6: "leadoff_pct",
+    7: "rbi_runner_on_3rd",
+    8: "h_pinchhit",
+    9: "runners_advanced",
+    10: "with_two_outs",
+    11: "with_two_runners",
+    12: "with_two_in_scoring",
+    13: "bases_empty",
+    14: "bases_loaded",
+}
+
+
 # ============================================================================
 # GAME PARSER — extracts all data into plain dicts (no Django needed)
 # ============================================================================
@@ -63,14 +90,12 @@ class GameParser:
         self.selected_team = selected_team
 
         # Scrape using your existing NcaaGameScraper
-        scraper = NcaaGameScraper(ncaa_game_id, selected_team=selected_team, headless=False)
+        scraper = NcaaGameScraper(ncaa_game_id, selected_team=selected_team, headless=headless)
         scraper.fetch()
         self.box_score_df_list = scraper.box_score_df_list
         self.box_score_soup = scraper.box_score_soup
         self.individual_stats_df_list = scraper.individual_stats_df_list
-
-        print("Scraped!")
-        print("Box Score soup:", self.box_score_soup)
+        self.situational_stats_soup = scraper.situational_stats_soup
 
         # Parse everything
         self.date = self._parse_date()
@@ -250,6 +275,7 @@ class GameParser:
             "batting": self._extract_batting(),
             "pitching": self._extract_pitching(),
             "fielding": self._extract_fielding(),
+            "situational_batting": self._extract_situational_batting(),
         }
         return result
 
@@ -354,6 +380,135 @@ class GameParser:
             })
         return rows
 
+    # ------ Situational Stats ------
+
+    def _parse_situational_html(self) -> pd.DataFrame | None:
+        """
+        Parse the hidden tooltip text from the situational stats page.
+        Returns a DataFrame with player rows, or None if unavailable.
+        """
+        if self.situational_stats_soup is None:
+            return None
+
+        tables_with_thead = [
+            t for t in self.situational_stats_soup.find_all("table")
+            if t.find("thead")
+        ]
+
+        if not tables_with_thead:
+            print("  WARNING: No situational stats tables found")
+            return None
+
+        # Home team is the second table, away team is the first
+        if self.selected_team_home:
+            if len(tables_with_thead) < 2:
+                print("  WARNING: Not enough situational stats tables for home team")
+                return None
+            table = tables_with_thead[1]
+        else:
+            table = tables_with_thead[0]
+
+        data = []
+        for row in table.select("tbody > tr"):
+            cells = row.find_all("td")
+            if not cells or not cells[0].get_text(strip=True):
+                continue
+
+            player = cells[0].get_text(strip=True)
+            pos = cells[1].get_text(strip=True)
+            stats = []
+
+            for cell in cells[2:]:
+                a = cell.find("a")
+                if a and a.has_attr("title") and a["title"].strip():
+                    stats.append(a["title"].strip())
+                else:
+                    stats.append("")
+
+            data.append([player, pos] + stats)
+
+        if not data:
+            return None
+
+        df = pd.DataFrame(data, columns=SITUATIONAL_COLUMNS)
+        return df
+
+    def _parse_situational_cell(self, cell_text: str) -> dict:
+        """
+        Parse a single situational stats cell (tooltip text) into a dict.
+
+        The tooltip text looks like:
+            "3-7\nAB = 7\nH = 3\nRBI = 2"
+
+        Returns dict like: {"succ_opp": "3-7", "AB": 7, "H": 3, "RBI": 2}
+        """
+        result = {}
+        lines = str(cell_text).split('\n')
+
+        for line in lines:
+            line = line.strip()
+            if not line:
+                continue
+            if '-' in line and '=' not in line:
+                # This is the success-opportunity line like "3-7"
+                result['succ_opp'] = line
+            else:
+                parts = line.split(' = ')
+                if len(parts) == 2 and parts[0].strip() and parts[1].strip():
+                    try:
+                        result[parts[0].strip()] = int(parts[1].strip())
+                    except ValueError:
+                        result[parts[0].strip()] = parts[1].strip()
+
+        return result
+
+    def _extract_situational_batting(self) -> list[dict]:
+        """
+        Extract situational batting stats for the selected team.
+        Returns list of dicts, one per player.
+        """
+        df = self._parse_situational_html()
+        if df is None:
+            print("  No situational batting stats available")
+            return []
+
+        rows = []
+        for _, row in df.iterrows():
+            # Stop when we hit the team totals row
+            if row['Player'] == self.selected_team:
+                break
+
+            # Parse player name from "Last,First" to "First Last"
+            p_name_parts = str(row['Player']).strip().split(',')
+            if len(p_name_parts) < 2:
+                continue
+            player_name = p_name_parts[1].strip() + ' ' + p_name_parts[0].strip()
+            pos = str(row['Position']).strip().capitalize()
+
+            # Parse each situational column
+            stats = {}
+            for col_idx, key_name in SITUATIONAL_KEY_MAP.items():
+                col_name = SITUATIONAL_COLUMNS[col_idx]
+                cell_text = row[col_name]
+                if not cell_text or str(cell_text).strip() == '':
+                    continue
+                parsed = self._parse_situational_cell(cell_text)
+                if parsed:
+                    stats[key_name] = parsed
+
+            # Skip players with no situational data at all
+            if not stats:
+                continue
+
+            rows.append({
+                "player_name": player_name,
+                "position": pos,
+                "stats": stats,
+            })
+
+        print(f"  Situational batting: {len(rows)} players")
+        return rows
+
 
 # ============================================================================
 # CLI
@@ -385,7 +540,8 @@ def main():
             print(f"\nSaved: {out_path}")
             print(f"  {gp.selected_team} vs {gp.opponent} on {gp.date}")
             print(f"  Score: {gp.selected_team_runs}-{gp.opponent_runs}")
-            print(f"  Batters: {len(data['batting'])}, Pitchers: {len(data['pitching'])}, Fielders: {len(data['fielding'])}")
+            print(f"  Batters: {len(data['batting'])}, Pitchers: {len(data['pitching'])}, "
+                  f"Fielders: {len(data['fielding'])}, Situational: {len(data['situational_batting'])}")
 
         except Exception as e:
             print(f"ERROR scraping game {game_id}: {e}")

@@ -114,6 +114,29 @@ def upload_game(data: dict) -> None:
         post_stats("fielding_stats/create", stat_data)
         print(f"  Fielder: {fielder['player_name']}")
 
+    # 6. Situational batting stats
+    for sit_batter in data.get("situational_batting", []):
+        player_info, created = PlayerInfo.objects.get_or_create(
+            player_name=sit_batter["player_name"],
+            defaults={
+                "player_position": {sit_batter["position"]: 1},
+                "jersey_number": None,
+            }
+        )
+
+        if created:
+            print(f"  WARNING: Created new player from situational stats: {sit_batter['player_name']}")
+
+        stat_data = {
+            "player_id": player_info.player_id,
+            "game_id": game_id,
+            **sit_batter["stats"],
+        }
+        # Remove empty dicts (matching your original cleaned = {k: v for k, v in data.items() if v != {}})
+        stat_data = {k: v for k, v in stat_data.items() if v != {}}
+        post_stats("situational_batting/create", stat_data)
+        print(f"  Situational: {sit_batter['player_name']}")
+
     print(f"  Done uploading game {meta['ncaa_game_id']}")
 
 
