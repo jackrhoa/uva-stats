@@ -7,3 +7,6 @@ DjangoAPI/baseball_stats/app/migrations/__pycache__/
 /ReactFrontend/node_modules
 *.env
 *.pem
+*.json
+*.html
+*.sql
