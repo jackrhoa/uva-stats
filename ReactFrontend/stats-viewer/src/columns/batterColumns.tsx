@@ -1057,6 +1057,8 @@ export const HIDDEN_SITUATIONS = new Set([
   "runners_advanced",
   "with_two_runners",
   "with_two_in_scoring",
+  "h_pinchhit", // only checks whether someone got a hit, nothing more
+  "rbi_runner_on_3rd", // only checks for 'bringing the runner home' on 3rd
 ]);
 
 
