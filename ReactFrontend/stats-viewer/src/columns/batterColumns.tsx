@@ -2,7 +2,7 @@ import { type ColumnHelper } from "@tanstack/react-table";
 import type {
   BattingStat,
   AllBattingStat,
-  BattingSituationalStat, SituationalStat,
+  // BattingSituationalStat, SituationalStat,
 } from "../types/statTypes.tsx";
 import { dashStatSortingFn } from "../helpers/sortingFns.ts";
 import { dot_and_three_decimals } from "../helpers/miscHelpers.tsx";
@@ -1036,14 +1036,34 @@ export const createTotalIndivBattingColumns = (
   }),
 ];
 
+
+const SITUATIONAL_KEY_MAP: Record<string, string> = {
+  with_runners: "Runners On",
+  hits_with_risp: "RISP",
+  vs_lhp: "vs LHP",
+  vs_rhp: "vs RHP",
+  leadoff_pct: "Leadoff",
+  rbi_runner_on_3rd: "Runner on 3rd",
+  h_pinchhit: "as PH",
+  runners_advanced: "Runners Advanced",
+  with_two_outs: "2 outs",
+  with_two_runners: "Two Runners On",
+  with_two_in_scoring: "2 RISP",
+  bases_empty: "Bases Empty",
+  bases_loaded: "Bases Loaded",
+};
+
+
 export const createBatterSituationalColumns = (
   helper: ColumnHelper<any>
 ) => [
     helper.accessor("Situation", {
-      header: "Situation",
-      cell: (info: any) => info.getValue(),
-      // filterFn:
-    }),
+  header: "Situation",
+  cell: (info) => {
+    const rawValue = info.getValue();
+    return SITUATIONAL_KEY_MAP[rawValue] ?? rawValue;
+  },
+}),
     helper.accessor("games", {
     header: "G",
     cell: (info: any) => info.getValue() || 0,
@@ -1086,40 +1106,8 @@ export const createBatterSituationalColumns = (
     // filterFn: dateFilterFn,
   }),
     helper.accessor("RBI", {
-    header: "RBIII",
+    header: "RBI",
     cell: (info: any) => info.getValue() || 0,
     // filterFn: dateFilterFn,
   }),
-
-
-
-
-  // {
-  //   header: "H/A",
-  //   id: "home_away",
-  //   accessorFn: (row: any) => (row.home ? "H" : "A"),
-  //   cell: (info: any) => info.getValue(),
-  // },
-  // helper.accessor("opponent_name", {
-  //   header: "OPPONENT",
-  //   cell: (info: any) => {
-  //     const home = info.row.original.home;
-  //     // console.log("Home:", home);
-  //     // const home = false;
-  //     return home != null && !home
-  //       ? "@ " + info.getValue()
-  //       : "vs " + info.getValue();
-  //   },
-  //   footer: (info: any) => {
-  //     const rows = info.table.getFilteredRowModel().rows;
-  //     const totalGames = rows.length;
-  //     return `${totalGames} GP`;
-  //   },
-  // }),
-  // helper.accessor("pa", {
-  //   header: "PA",
-  //   filterFn: compareOperatorFilterFn,
-  //   cell: (info: any) => info.getValue(),
-  //   footer: (info: any) => getColumnSum(info, info.column.id),
-  // }),
 ];
