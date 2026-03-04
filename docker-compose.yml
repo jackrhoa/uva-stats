@@ -34,8 +34,9 @@ services:
     platform: linux/amd64
     build:
       context: ./ReactFrontend/stats-viewer
-    # volumes:
-      # - ./ReactFrontend/stats-viewer:/app
+      args:
+        - VITE_API_BASE_URL=http://localhost:8000/api/
+    working_dir: /app
     ports:
       - 3000:80
     depends_on:

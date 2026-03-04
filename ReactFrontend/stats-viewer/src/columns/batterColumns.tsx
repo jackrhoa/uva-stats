@@ -2,7 +2,7 @@ import { type ColumnHelper } from "@tanstack/react-table";
 import type {
   BattingStat,
   AllBattingStat,
-  BattingSituationalStat, SituationalStat,
+  // BattingSituationalStat, SituationalStat,
 } from "../types/statTypes.tsx";
 import { dashStatSortingFn } from "../helpers/sortingFns.ts";
 import { dot_and_three_decimals } from "../helpers/miscHelpers.tsx";
@@ -26,7 +26,7 @@ export const createBatterGameLogColumns = (
     cell: (info: any) => info.getValue(),
   },
   helper.accessor("opponent_name", {
-    header: "OPPONENT !",
+    header: "OPPONENT",
     cell: (info: any) => {
       const home = info.row.original.home;
       // console.log("Home:", home);
@@ -1036,14 +1036,42 @@ export const createTotalIndivBattingColumns = (
   }),
 ];
 
+
+const SITUATIONAL_KEY_MAP: Record<string, string> = {
+  with_runners: "Runners On",
+  hits_with_risp: "RISP",
+  vs_lhp: "vs LHP",
+  vs_rhp: "vs RHP",
+  leadoff_pct: "Leadoff",
+  rbi_runner_on_3rd: "Runner on 3rd",
+  h_pinchhit: "as PH",
+  runners_advanced: "Runners Advanced",
+  with_two_outs: "2 outs",
+  with_two_runners: "Two Runners On",
+  with_two_in_scoring: "2 RISP",
+  bases_empty: "Bases Empty",
+  bases_loaded: "Bases Loaded",
+};
+
+export const HIDDEN_SITUATIONS = new Set([
+  "runners_advanced",
+  "with_two_runners",
+  "with_two_in_scoring",
+  "h_pinchhit", // only checks whether someone got a hit, nothing more
+  "rbi_runner_on_3rd", // only checks for 'bringing the runner home' on 3rd
+]);
+
+
 export const createBatterSituationalColumns = (
   helper: ColumnHelper<any>
 ) => [
-    helper.accessor("Situation", {
-      header: "Situation",
-      cell: (info: any) => info.getValue(),
-      // filterFn:
-    }),
+  helper.accessor("Situation", {
+  header: "SPLIT",
+  cell: (info) => {
+    const rawValue = info.getValue();
+    return SITUATIONAL_KEY_MAP[rawValue] ?? rawValue;
+  },
+}),
     helper.accessor("games", {
     header: "G",
     cell: (info: any) => info.getValue() || 0,
@@ -1059,8 +1087,106 @@ export const createBatterSituationalColumns = (
     cell: (info: any) => info.getValue() || 0,
     // filterFn: dateFilterFn,
   }),
+    {
+    header: "AVG",
+    id: "avg",
+    filterFn: compareOperatorFilterFn,
+    accessorFn: (row: any) => {
+      const totalHits = row.H;
+      const totalAtBats = row.AB;
+      return totalAtBats > 0
+        ? totalHits / totalAtBats
+        : null;
+    },
+    cell: (info: any) => {
+      const avg = info.getValue();
+      return avg != null ? dot_and_three_decimals(avg) : "--";
+    },
+  },
+  {
+    header: "OBP",
+    id: "obp",
+    filterFn: compareOperatorFilterFn,
+    accessorFn: (row: any) => {
+      const totalHits = row.H || 0;
+      const totalWalks = row.BB || 0;
+      const totalHBP = row.HBP || 0;
+
+      const totalAtBats = row.AB || 0;
+      const totalSacFlies = row.SF || 0;
+
+      const numerator = totalHits + totalWalks + totalHBP;
+      const denominator = totalAtBats + totalWalks + totalHBP + totalSacFlies;
+
+      return denominator > 0
+        ? numerator / denominator
+        : null;
+    },
+    cell: (info: any) => {
+      const obp = info.getValue();
+      return obp != null ? dot_and_three_decimals(obp) : "--";
+    },
+  },
+  {
+    header: "OPS",
+    id: "ops",
+    filterFn: compareOperatorFilterFn,
+    accessorFn: (row: any) => {
+      const totalHits = row.H || 0;
+      const totalWalks = row.BB || 0;
+      const totalHBP = row.HBP || 0;
+
+      const totalAtBats = row.AB || 0;
+      const totalSacFlies = row.SF || 0;
+
+      const obp_numerator = totalHits + totalWalks + totalHBP;
+      const obp_denominator = totalAtBats + totalWalks + totalHBP + totalSacFlies;
+
+      let obp = null;
+
+      if (obp_denominator > 0) {
+        obp = obp_numerator / obp_denominator;
+      } else {
+        obp = null;
+      }
+
+      const totalDoubles = row["2B"] || 0;
+      const totalTriples = row["3B"] || 0;
+      const totalHomeruns = row.HR || 0;
+
+      const totalSingles = (totalHits - totalTriples - totalDoubles) || 0;
+
+      const slg_numerator = totalSingles +
+          2 * totalDoubles +
+          3 * totalTriples +
+          4 * totalHomeruns;
+
+      const slg_denominator = totalAtBats;
+
+      let slg = null;
+
+      if (slg_denominator > 0) {
+         slg = slg_numerator / slg_denominator;
+      } else {
+         slg = null;
+      }
+
+      return slg != null && obp != null
+        ? slg + obp
+        : null;
+    },
+    cell: (info: any) => {
+      const ops = info.getValue();
+      return ops != null ? dot_and_three_decimals(ops) : "--";
+    },
+  },
     helper.accessor("BB", {
     header: "BB",
+    cell: (info: any) => info.getValue() || 0,
+    // filterFn: dateFilterFn,
+  }),
+    helper.accessor("2B", {
+    header: "2B",
     cell: (info: any) => info.getValue() || 0,
     // filterFn: dateFilterFn,
   }),
@@ -1069,41 +1195,14 @@ export const createBatterSituationalColumns = (
     cell: (info: any) => info.getValue() || 0,
     // filterFn: dateFilterFn,
   }),
-    helper.accessor("RBI", {
-    header: "RBIII",
+    helper.accessor("R", {
+    header: "R",
     cell: (info: any) => info.getValue() || 0,
     // filterFn: dateFilterFn,
   }),
-
-
-
-
-  // {
-  //   header: "H/A",
-  //   id: "home_away",
-  //   accessorFn: (row: any) => (row.home ? "H" : "A"),
-  //   cell: (info: any) => info.getValue(),
-  // },
-  // helper.accessor("opponent_name", {
-  //   header: "OPPONENT",
-  //   cell: (info: any) => {
-  //     const home = info.row.original.home;
-  //     // console.log("Home:", home);
-  //     // const home = false;
-  //     return home != null && !home
-  //       ? "@ " + info.getValue()
-  //       : "vs " + info.getValue();
-  //   },
-  //   footer: (info: any) => {
-  //     const rows = info.table.getFilteredRowModel().rows;
-  //     const totalGames = rows.length;
-  //     return `${totalGames} GP`;
-  //   },
-  // }),
-  // helper.accessor("pa", {
-  //   header: "PA",
-  //   filterFn: compareOperatorFilterFn,
-  //   cell: (info: any) => info.getValue(),
-  //   footer: (info: any) => getColumnSum(info, info.column.id),
-  // }),
+    helper.accessor("RBI", {
+    header: "RBI",
+    cell: (info: any) => info.getValue() || 0,
+    // filterFn: dateFilterFn,
+  }),
 ];

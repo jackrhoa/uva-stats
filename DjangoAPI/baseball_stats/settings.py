@@ -56,7 +56,6 @@ INSTALLED_APPS = [
     'app',
     'corsheaders',
     'django_filters',
-
 ]
 
 REST_FRAMEWORK = {
