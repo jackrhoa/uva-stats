@@ -28,7 +28,7 @@ Docker is the easiest way to run this web app on your local machine.
 
 2.  **Clone the repository and navigate to the root directory:**
     ```bash
-    git clone https://github.com/jackrhoa1/uva-stats.git
+    git clone https://github.com/jackrhoa/uva-stats.git
     cd uva-stats
     ```
 
