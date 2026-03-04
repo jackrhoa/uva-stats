@@ -485,7 +485,7 @@ export default function PlayerStats() {
         </div>
         <div className={batterSituationalStats.length > 0 ? "block" : "hidden"}>
           <li
-            className={`border-1 px-2 py-1 rounded-full cursor-pointer ${
+            className={`border-2 px-2 py-1 rounded-full cursor-pointer ${
               toggle === 5
                 ? "bg-blue-600 text-white text-semibold border-transparent"
                 : "border-gray text-gray-500 hover:bg-blue-300"
@@ -500,7 +500,7 @@ export default function PlayerStats() {
         </div>
         <div className={fieldingStats.length > 0 ? "block" : "hidden"}>
           <li
-            className={`border-1 px-2 py-1 rounded-full cursor-pointer ${
+            className={`border-2 px-2 py-1 rounded-full cursor-pointer ${
               toggle === 6
                 ? "bg-blue-600 text-white text-semibold border-transparent"
                 : "border-gray text-gray-500 hover:bg-blue-300"
