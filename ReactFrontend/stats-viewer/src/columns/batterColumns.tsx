@@ -1103,13 +1103,100 @@ export const createBatterSituationalColumns = (
       return avg != null ? dot_and_three_decimals(avg) : "--";
     },
   },
+  {
+    header: "OBP",
+    id: "obp",
+    filterFn: compareOperatorFilterFn,
+    accessorFn: (row: any) => {
+      const totalHits = row.H || 0;
+      const totalWalks = row.BB || 0;
+      const totalHBP = row.HBP || 0;
+
+      const totalAtBats = row.AB || 0;
+      const totalSacFlies = row.SF || 0;
+
+      const numerator = totalHits + totalWalks + totalHBP;
+      const denominator = totalAtBats + totalWalks + totalHBP + totalSacFlies;
+
+      return denominator > 0
+        ? numerator / denominator
+        : null;
+    },
+    cell: (info: any) => {
+      const obp = info.getValue();
+      return obp != null ? dot_and_three_decimals(obp) : "--";
+    },
+  },
+  {
+    header: "OPS",
+    id: "ops",
+    filterFn: compareOperatorFilterFn,
+    accessorFn: (row: any) => {
+      const totalHits = row.H || 0;
+      const totalWalks = row.BB || 0;
+      const totalHBP = row.HBP || 0;
+
+      const totalAtBats = row.AB || 0;
+      const totalSacFlies = row.SF || 0;
+
+      const obp_numerator = totalHits + totalWalks + totalHBP;
+      const obp_denominator = totalAtBats + totalWalks + totalHBP + totalSacFlies;
+
+      let obp = null;
+
+      if (obp_denominator > 0) {
+        obp = obp_numerator / obp_denominator;
+      } else {
+        obp = null;
+      }
+
+      const totalDoubles = row["2B"] || 0;
+      const totalTriples = row["3B"] || 0;
+      const totalHomeruns = row.HR || 0;
+
+      const totalSingles = (totalHits - totalTriples - totalDoubles) || 0;
+
+      const slg_numerator = totalSingles +
+          2 * totalDoubles +
+          3 * totalTriples +
+          4 * totalHomeruns;
+
+      const slg_denominator = totalAtBats;
+
+      let slg = null;
+
+      if (slg_denominator > 0) {
+         slg = slg_numerator / slg_denominator;
+      } else {
+         slg = null;
+      }
+
+      return slg != null && obp != null
+        ? slg + obp
+        : null;
+    },
+    cell: (info: any) => {
+      const ops = info.getValue();
+      return ops != null ? dot_and_three_decimals(ops) : "--";
+    },
+  },
     helper.accessor("BB", {
     header: "BB",
     cell: (info: any) => info.getValue() || 0,
     // filterFn: dateFilterFn,
   }),
+    helper.accessor("2B", {
+    header: "2B",
+    cell: (info: any) => info.getValue() || 0,
+    // filterFn: dateFilterFn,
+  }),
     helper.accessor("HR", {
     header: "HR",
+    cell: (info: any) => info.getValue() || 0,
+    // filterFn: dateFilterFn,
+  }),
+    helper.accessor("R", {
+    header: "R",
     cell: (info: any) => info.getValue() || 0,
     // filterFn: dateFilterFn,
   }),
