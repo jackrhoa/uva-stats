@@ -1,4 +1,3 @@
 export const variables = {
-  API_BASE_URL: "/api/",
-  // http://54.88.45.86:8000/api/ --> this value works
+  API_BASE_URL: import.meta.env.VITE_API_BASE_URL || "/api/",
 };

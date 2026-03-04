@@ -7,8 +7,9 @@ RUN npm install
 
 COPY . .
 
-# React dev server runs on port 3000
-EXPOSE 5173
+ARG VITE_API_BASE_URL=/api/
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
+
 RUN npm run build
 
 FROM nginx:alpine
