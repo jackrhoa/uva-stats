@@ -1059,6 +1059,22 @@ export const createBatterSituationalColumns = (
     cell: (info: any) => info.getValue() || 0,
     // filterFn: dateFilterFn,
   }),
+    {
+    header: "AVG",
+    id: "avg",
+    filterFn: compareOperatorFilterFn,
+    accessorFn: (row: any) => {
+      const totalHits = row.H;
+      const totalAtBats = row.AB;
+      return totalAtBats > 0
+        ? totalHits / totalAtBats
+        : null;
+    },
+    cell: (info: any) => {
+      const avg = info.getValue();
+      return avg != null ? dot_and_three_decimals(avg) : "--";
+    },
+  },
     helper.accessor("BB", {
     header: "BB",
     cell: (info: any) => info.getValue() || 0,
