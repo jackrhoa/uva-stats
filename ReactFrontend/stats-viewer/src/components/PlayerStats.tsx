@@ -18,7 +18,7 @@ import type {
   PitchingStat,
   FieldingStat,
   BattingSituationalStat,
-  SituationalStat,
+  // SituationalStat,
 } from "../types/statTypes.tsx";
 import {
   createBatterGameLogColumns, createBatterSituationalColumns,
